@@ -50,13 +50,13 @@ Die gemeinsame Basis enthält PR13 (vollständige Claude-Fenster), PR15/18 (auto
 | Ausgeführte Prüfung | Ergebnis |
 | --- | --- |
 | Python-Referenz mit echtem Tk auf Mac | 145 Tests bestanden |
-| Rust-Kern | 84 Tests bestanden |
+| Rust-Kern | 85 Tests bestanden |
 | Tauri-Bridge/URL-Grenzen | 2 Tests bestanden |
-| React-Flows, Kontextwechsel und Fehler | 21 Tests bestanden |
+| React-Flows, Kontextwechsel und Fehler | 22 Tests bestanden |
 | Typprüfung, Produktionsbuild, Clippy mit `-D warnings` | bestanden |
 | npm-Audit | 0 gemeldete Schwachstellen |
-| Cross-Language-/Prozesstests | je 22 auf Mac, lokalemLinux-x86_64-Container und echtemLinux-Host bestanden |
-| Kontrollierte Last | je 100 eindeutige Aufträge und native Ausführungen; Mac 3,338 s, Container 4,414 s, echter Linux-Host 2,510 s |
+| Cross-Language-/Prozesstests | je 23 auf Mac, lokalem Linux-x86_64-Container und echtem Linux-Host bestanden |
+| Kontrollierte Last | je 100 eindeutige Aufträge und native Ausführungen; Mac 3,411 s, Container 2,995 s, echter Linux-Host 2,511 s |
 | Rust-Client zu bestehendem Python 0.4.2-Server | 7 bestehende IDs und gespeicherter Bericht identisch; Cache-only |
 | Rust-Client zu nativem Rust 0.5-Server über echtes SSH | kompatibel; unterbrochene Antwort nach Commit und identischer Retry erzeugen genau einen Auftrag |
 | Mac-Releasepaket | eigenständige arm64-App, 15,59 MiB, lokale Ad-hoc-Signatur deep/strict gültig |
@@ -78,3 +78,7 @@ python3 scripts/test_native_desktop.py --output /tmp/fleet-native-qa
 Der Diagnosehook ist ausschließlich im Debug-Build enthalten; das optimierte Release enthält ihn nicht. Es gab keine Änderung an produktiven Credentials. Ein neuer echter Anbieter-Login braucht weiterhin die persönliche Browser-Zustimmung.
 
 Windows ist als Ziel implementiert und als CI-Matrix vorbereitet, aber hier nicht nativ ausgeführt. Mac- und Linux-Nachweise sind keine Windows-Abnahme. Das Mac-Paket ist lokal signiert und nicht öffentlich notarisiert; es wird als `.app` gebaut, der Windows-Build erzeugt NSIS. GitHub-CI wird getrennt vom lokalen Ergebnis dokumentiert. Maschinenlesbare Nachweise: [rust-tauri-validation.json](rust-tauri-validation.json).
+
+Der geprüfte Implementierungsstand ist `c47144087d3d7f665600ef0183af1c94dcd5180d`. Zwei unabhängige Reviews fanden je einen P2; beide wurden behoben und erneut ohne offene Befunde geprüft. [Reviewnachweis](reviews/rust-tauri-review.md). Die abschließende native Fensteraufnahme stammt ebenfalls aus diesem Stand.
+
+GitHub startete die CI-Jobs dieses Kandidaten wegen fehlgeschlagener Zahlungen beziehungsweise des Ausgabenlimits der Organisation nicht. Dies ist keine grüne CI und keine Windows-Abnahme. [Nativer Workflow](https://github.com/the-fin-at/agent-pool/actions/runs/40778503951), [Python-Referenzworkflow](https://github.com/the-fin-at/agent-pool/actions/runs/40778503882).

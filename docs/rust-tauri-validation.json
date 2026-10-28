@@ -6,17 +6,17 @@
     "passed": 145
   },
   "rust_core": {
-    "passed": 84,
+    "passed": 85,
     "desktop_bridge_tests": 2,
     "clippy": "passed with -D warnings"
   },
   "frontend": {
-    "tests_passed": 21,
+    "tests_passed": 22,
     "typecheck_build": "passed",
     "npm_audit_vulnerabilities": 0
   },
   "compatibility": {
-    "cases": 22,
+    "cases": 23,
     "macOS": "passed",
     "local_linux_x86_64_container": "passed",
     "real_linux_x86_64_host": "passed",
@@ -25,9 +25,9 @@
   "controlled_workload": {
     "unique_jobs": 100,
     "native_executions": 100,
-    "macOS_seconds": 3.338,
-    "linux_container_seconds": 4.414,
-    "real_linux_seconds": 2.51,
+    "macOS_seconds": 3.411,
+    "linux_container_seconds": 2.995,
+    "real_linux_seconds": 2.511,
     "meaning": "broker and controlled subprocess throughput, not model inference speed"
   },
   "existing_local_state": {
@@ -101,22 +101,36 @@
       "native_screenshot": true
     },
     "release_hooks_absent": true,
-    "diagnosed_environment_failure": "A locked macOS session suspended WebView timers. The preflight now exits77 before spawning an app; final rerun on unlocked console passed23checks."
+    "diagnosed_environment_failure": "A locked macOS session suspended WebView timers. The preflight now exits77 before spawning an app; final rerun on unlocked console passed23checks.",
+    "debug_binary_sha256": "6217d9ba35ae790c542bd5f7d686542e9849862b88ecfad6daedead139be0a7f"
   },
   "release": {
     "platform": "macOS arm64",
     "app_mib": 15.59,
     "signature": "local ad-hoc, deep/strict verification passed",
     "notarized": false,
-    "app_executable_sha256": "09465c27db4f8ce6bc339b3b55efefd28dd4a02ac441651217f0b85de8bbfc58",
-    "mac_cli_sha256": "2cc9e2967db1550376c822012b17bdd7c6e0fc49f3bf5d0e1711112293df09f1",
-    "linux_cli_sha256": "9e108712fb5dbca9e792deec66818e281f03d85418eebec6ce7d2a9d41ad897f"
+    "app_executable_sha256": "8d38dbaff79a2cfb8f63cee88d8543e89e1c9b2447284641360d12a85951af5c",
+    "mac_cli_sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+    "linux_cli_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8"
   },
   "windows": {
     "native_execution": "not run",
     "ci_matrix": "configured",
     "installer": "NSIS"
   },
-  "ci": "pending candidate push; prior runs billing-blocked",
-  "production_service_changed": false
+  "ci": {
+    "status": "blocked before execution by GitHub organization billing/spending limit",
+    "verified_candidate": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "native_run": "https://github.com/the-fin-at/agent-pool/actions/runs/40778503951",
+    "reference_run": "https://github.com/the-fin-at/agent-pool/actions/runs/40778503882",
+    "windows_native_execution": "not run"
+  },
+  "production_service_changed": false,
+  "reviewed_implementation_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+  "reviews": {
+    "standards_open_findings": 0,
+    "spec_open_findings": 0,
+    "fixed_findings": 2,
+    "fix_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d"
+  }
 }
