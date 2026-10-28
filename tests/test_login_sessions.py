@@ -154,3 +154,47 @@ class NativeLoginProcessTests(unittest.TestCase):
         self.store.update_profile(name,enabled=False)
         login.cancel(self.home,key);self.wait(key,{'cancelled'})
         self.assertFalse(self.store.profile(name)['enabled'])
+
+
+@unittest.skipIf(os.name == 'nt', 'POSIX executable fixture')
+class InstalledArchiveLoginTests(unittest.TestCase):
+    def test_extensionless_installed_archive_launches_login_outside_source_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            from scripts.build_zipapp import build_archive
+            archive=build_archive(root/'agent-fleet')
+            home=root/'state';store=Store(home)
+            binary=root/'native-cli'
+            binary.write_text('#!'+sys.executable+'\n'+Path(__file__).with_name('fake_login.py').read_text());binary.chmod(0o755)
+            store.add_profile('installed','codex',str(binary)); key=uuid.uuid4().hex
+            env={k:v for k,v in os.environ.items() if k != 'PYTHONPATH'}
+            invalid=subprocess.run([sys.executable,str(archive),'--home',str(home),'auth','get','invalid'],cwd=root,env=env,capture_output=True,text=True,timeout=10)
+            self.assertEqual(invalid.returncode,1,invalid.stdout)
+            done=subprocess.run([sys.executable,str(archive),'--home',str(home),'auth','start','installed','--provider','codex','--key',key],cwd=root,env=env,capture_output=True,text=True,timeout=20)
+            self.assertEqual(done.returncode,0,done.stderr+done.stdout)
+            try:
+                until=time.monotonic()+4
+                while time.monotonic()<until:
+                    data=login.status(home,key)
+                    if data['state']!='starting': break
+                    time.sleep(.05)
+                self.assertEqual(data['state'],'awaiting_browser',data)
+                self.assertEqual(data['device_code'],'ABCD-EFGHI')
+            finally:
+                login.cancel(home,key)
+                until=time.monotonic()+3
+                while login.status(home,key)['state'] in login.ACTIVE and time.monotonic()<until:time.sleep(.05)
+                store.close()
+
+
+class InstalledArchiveExitTests(unittest.TestCase):
+    def test_archive_preserves_pending_success_and_error_exit_codes(self):
+        from scripts.build_zipapp import build_archive
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);archive=build_archive(root/'agent-fleet');home=root/'pool'
+            def call(*args):
+                return subprocess.run([sys.executable,str(archive),'--home',str(home),*args],cwd=root,capture_output=True,text=True,timeout=15)
+            self.assertEqual(call('init').returncode,0)
+            self.assertEqual(call('job','get','does-not-exist').returncode,1)
+            job=json.loads(call('job','submit','--provider','codex','--cwd',str(root),'--prompt','pending','--key','pending').stdout)
+            self.assertEqual(call('job','get',job['id']).returncode,2)

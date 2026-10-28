@@ -13,7 +13,7 @@ DEFAULT_SOURCE = "@codex-default"
 
 
 def sources(store, include_default=True):
-    result = [{**p, "authdir": str(store.authdir(p["name"])), "managed": True} for p in store.profiles()]
+    result = [{**p, "authdir": str(p.get("auth_home") or store.authdir(p["name"])), "managed": True} for p in store.profiles()]
     default = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).expanduser().resolve()
     managed_paths = {Path(p["authdir"]).resolve() for p in result}
     if include_default and default.is_dir() and default not in managed_paths:
@@ -31,7 +31,7 @@ def read_source(home, source, probe=read_codex_status):
             return old
         now = time.time()
         try:
-            data = probe(source, Path(source["authdir"]))
+            data = probe(source, store.authdir(source["name"]) if source["managed"] else Path(source["authdir"]))
             windows = data.get("windows")
             fresh = {k: data.get(k) for k in ("connected", "email", "plan", "account_type", "error")}
             fresh["checked_at"] = now

@@ -39,7 +39,7 @@ def executable(binary):
         local = Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData/Local"))
         search += [str(local / "Programs/OpenAI/Codex/bin"), str(local / "Microsoft/WinGet/Links")]
     else:
-        search += ["/opt/homebrew/bin", "/usr/local/bin"]
+        search += [str(Path.home() / ".npm-global/bin"), str(Path.home() / ".npm/bin"), "/opt/homebrew/bin", "/usr/local/bin"]
     found = shutil.which(binary, path=os.pathsep.join(search))
     if found is None:
         raise ValueError(f"Native CLI not found: {binary}; install it or set profile --binary")
