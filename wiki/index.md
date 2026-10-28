@@ -23,3 +23,7 @@ Am 2026-10-28 wurde der Wiki-Ort `agent-pool/wiki/` von Johannes im Chief-of-Sta
 ## Nutzerkorrektur und Abnahmecheckpoint vom 2026-10-28
 
 Die [Zielauswahl pro Projekt](entscheidungen.md) ersetzt die frühere persönliche maschinenweite Standardziel-Empfehlung. [Zielauftrag](ziel.md), [Auftragsübersicht](auftraege.md) und [Releaseplan](release-1.0.md) enthalten den daraus folgenden Vertrag. Zusätzlich dokumentiert die Auftragsübersicht den Merge dieses Wikis über PR #16 und einen getrennten kontrollierten Python-Prozessnachweis; daraus folgt keine Rust-Abnahme.
+
+## Abschluss des Projektziel-Strangs am 2026-10-28
+
+[PR #18](https://github.com/the-fin-at/agent-pool/pull/18) brachte die projektbezogene Zielwahl auf `main` bei `2d7774cad132a542cdf99c8eaf7b3b4567794d90`. [Entscheidungen](entscheidungen.md), [Aufträge](auftraege.md) und [Releaseplan](release-1.0.md) ergänzen Vertrag, abgegrenzte Nachweise und den nächsten Rust-Schritt. Der gemeinsame Checkout wurde anschließend kontrolliert auf diesen Stand gebracht; die zuvor untracked Wiki-Kopie blieb byte-identisch gesichert.
