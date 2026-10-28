@@ -96,6 +96,11 @@ class UnifiedClaudeLimitsTests(unittest.TestCase):
                           'unifiedWindows':{'seven_day':{'utilization':.02,'resetsAt':2000}}})
         self.assertEqual([(w['key'],w['used']) for w in out.windows],[('seven_day',2),('five_hour',50)])
 
+    def test_nested_reset_alias_takes_precedence_over_root_reset(self):
+        out=self.outcome({'rateLimitType':'five_hour','resetsAt':1000,'unified_windows':{
+            'five_hour':{'utilization':.2,'resets_at':2000}}})
+        self.assertEqual(out.windows[0]['reset'],2000)
+
 
 class BrokerTests(unittest.TestCase):
     def setUp(self):

@@ -63,6 +63,9 @@ def claude_windows(event):
                 continue
             # A root rejection applies to its limiting window, not every other window.
             inherited = {k: info[k] for k in ("utilization", "status", "resetsAt", "resets_at") if k in info} if kind == active else {}
+            if "resetsAt" in observation or "resets_at" in observation:
+                inherited.pop("resetsAt", None)
+                inherited.pop("resets_at", None)
             window = claude_window({"rate_limit_info": {**inherited, **observation, "rateLimitType": kind}})
             if window:
                 result.append(window)
