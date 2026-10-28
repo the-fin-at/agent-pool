@@ -36,7 +36,7 @@ Current candidate preference after eligibility filtering: earliest available wee
 
 `python -m unittest discover -s tests -p test_pool_routing.py -v` proves seven scenarios against the public Store/tick boundary: full5h skip, full-week skip, runtime same-job failover/unknown reset hold, earliest jointly eligible reset, other-provider queue progress, explicit full-profile pin, and model-family isolation without provider substitution. The test provider runner is controlled and isolated; real account quotas are never overwritten or deliberately exhausted.
 
-`python -m unittest discover -s tests -p test_native_lock_routing.py -v` exercises actual native locks and `run_native` with a controlled subprocess: pinned-busy queue progress, unpinned same-provider alternative, bounded all-busy idle/recovery, and explicit-pin isolation. These isolated checks use temporary pools without real account data.
+`python -m unittest discover -s tests -p test_native_lock_routing.py -v` exercises actual native locks and `run_native` with a controlled subprocess: pinned-busy queue progress, unpinned same-provider alternative, bounded all-busy idle/recovery, and explicit-pin isolation. These isolated checks use temporary pools without real account data. [Red/green evidence and exact source revision](native-lock-routing-validation.json).
 
 Existing broker/quota tests additionally cover unknown utilization, model-specific applicability, provider/pin boundaries, edit-review semantics and earliest-weekly preference. These behaviors must remain equivalent when migrating from Python to another backend; a new implementation need not preserve module names, but should run equivalent public CLI/queue scenarios.
 
