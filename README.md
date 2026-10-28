@@ -4,7 +4,7 @@ Agent Fleet hieß bis Version 0.2 Agent Pool. Der bisherige Befehl `agent-pool` 
 
 **Ein persönlicher Auftragsverteiler für Codex und Claude Code – lokal oder zentral auf Linux, mit Desktop-Manager für Mac und Windows.**
 
-[Installation in 5 Schritten](docs/quickstart.md) · [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) · [Desktop](docs/desktop.md) · [Übersicht & Login](docs/overview-login.md) · [Linux-Server & Remote](docs/remote.md) · [CLI & Betrieb](docs/cli.md) · [Agenten-Skill](skills/agent-fleet/SKILL.md)
+[Installation in 5 Schritten](docs/quickstart.md) · [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) · [Desktop](docs/desktop.md) · [Übersicht & Login](docs/overview-login.md) · [Linux-Server & Remote](docs/remote.md) · [CLI & Betrieb](docs/cli.md) · [Agenten-Skill](skills/agent-fleet/SKILL.md) · [Setup-Skill](skills/setup-agents-fleet/SKILL.md)
 
 Ein Agent vergibt einen Auftrag. Agent Fleet wählt ein verfügbares Profil, startet die offizielle Provider-CLI und speichert den Bericht. Sind die gemeldeten Kontingente ausgeschöpft, wartet die Queue auf den tatsächlichen Reset. Die Desktop-App zeigt parallel, welche Accounts verbunden sind und wie viel Kontingent noch frei ist.
 
@@ -124,7 +124,7 @@ Standard ist Lesen. Mit `--allow-edits` darf der Worker Dateien bearbeiten. Code
 
 ## Den Skill nutzen
 
-Der lokale Installer kopiert [`skills/agent-fleet`](skills/agent-fleet/SKILL.md) in die persönlichen Skill-Verzeichnisse für Codex und Claude Code. Danach bei Bedarf eine neue Agenten-Sitzung öffnen und beispielsweise beauftragen:
+Der lokale Installer kopiert [`agent-fleet`](skills/agent-fleet/SKILL.md), den Kompatibilitäts-Skill `agent-pool` und [`setup-agents-fleet`](skills/setup-agents-fleet/SKILL.md) in die persönlichen Skill-Verzeichnisse für Codex und Claude Code. Mit `$setup-agents-fleet` führt der Agent durch Installation/Update, lokale oder Remote-Einrichtung und native Browser-Anmeldungen. Bestehende Installationen werden nach Vergleich gezielt aktualisiert; der Erstinstaller überschreibt sie nicht. Danach bei Bedarf eine neue Agenten-Sitzung öffnen und beispielsweise beauftragen:
 
 > Nutze den agent-fleet-Skill. Lass einen Codex-Worker die Architektur dieses Projekts untersuchen und hole seinen Bericht ab. Es sollen keine Dateien geändert werden.
 

@@ -15,7 +15,8 @@ if not archive.is_file():
     parser.error("Build first: python scripts/build_zipapp.py")
 names = ["agent-fleet", "agent-pool"]
 binaries = [args.bin_dir / (name + ".pyz" if os.name == "nt" else name) for name in names]
-skills = [(base / name, root / "skills" / name) for base in [args.codex_skills, args.claude_skills] for name in names]
+skill_names = [*names, "setup-agents-fleet"]
+skills = [(base / name, root / "skills" / name) for base in [args.codex_skills, args.claude_skills] for name in skill_names]
 for path in [*binaries, *(target for target, source in skills)]:
     if path.exists() or path.is_symlink():
         parser.error(f"Destination already exists; inspect it before updating: {path}")
