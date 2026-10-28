@@ -57,3 +57,7 @@ Das Release enthält deshalb die lokal geprüfte Apple-Silicon-App und das porta
 ## Agent Fleet 0.4 · Übersicht und integrierter Login
 
 118 Tests mit echtem Tk bestanden. Die neue Kontextnavigation und sechs native Fensterzustände sind visuell geprüft. Das gebaute Mac-App-Paket startet den neuen Login-Worker korrekt und zeigt drei bestehende Accounts ohne Abfragefehler. Die echte GUI-/SSH-/Linux-Kette mit kontrollierten nativen Provider-CLIs umfasst beide Login-Verfahren und die Rückkehr zur verbundenen Account-Ansicht. [Gesamtnachweis](overview-validation.json), [Ablauf und Grenzen](overview-login.md). Neue echte Provider-Browserzustimmung auf einem produktiven Host und Windows-UI-/EXE-Abnahme stehen aus.
+
+## 0.4.1: realer Linux-Host
+
+[128 lokale Tests, Linux-Lauf, drei Prüfschleifen, realer Codex-Auftrag, Paket-Smoke und Review](claw-remote-validation.md). [Maschinenlesbare Nachweise](claw-remote-validation.json). Geprüfter Quellstand: 479e869; spätere Delivery-Commits ergänzen ausschließlich Dokumentation und Nachweise.

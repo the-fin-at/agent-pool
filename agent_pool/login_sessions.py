@@ -9,6 +9,7 @@ import time
 import uuid
 import queue
 import shutil
+import zipfile
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -73,7 +74,7 @@ def worker_command(home, ident):
     if getattr(sys, "frozen", False):
         return [sys.executable, *argv]
     launch = Path(sys.argv[0]).resolve()
-    if launch.suffix in {".pyz", ".pyzw"} and launch.is_file():
+    if launch.is_file() and zipfile.is_zipfile(launch):
         return [sys.executable, str(launch), *argv]
     return [sys.executable, "-m", "agent_pool", *argv]
 
@@ -130,6 +131,7 @@ def start(home, name, provider, key, spawn=None):
                     try:
                         launched = subprocess.run(["systemd-run","--user","--collect","--quiet",
                             "--unit=agent-fleet-login-"+key,"--working-directory="+cwd,
+                            "--setenv=PATH="+os.environ.get("PATH", os.defpath),
                             "--property=RuntimeMaxSec=960","--property=UMask=0077","--property=KillMode=control-group",
                             "--",*command],stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=10)
                         managed = launched.returncode == 0

@@ -230,3 +230,15 @@ root.mainloop()
             self.assertNotEqual(str(self.app.refresh_button.cget('state')), 'disabled')
         finally:
             release.set()
+
+    def test_connected_account_without_email_is_not_labelled_signed_out(self):
+        self.accounts[0]['email']=None
+        self.app.accounts=[self.accounts[0]];self.app.render();self.root.update()
+        def labels(widget):
+            values=[]
+            try:values.append(widget.cget('text'))
+            except tk.TclError:pass
+            for child in widget.winfo_children():values.extend(labels(child))
+            return values
+        self.assertNotIn('Nicht angemeldet',labels(self.root))
+        self.assertIn('Verbunden',labels(self.root))

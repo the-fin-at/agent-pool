@@ -94,6 +94,7 @@ def parser():
     add.add_argument("name")
     add.add_argument("--provider", choices=["codex", "claude"], required=True)
     add.add_argument("--binary", help="Native CLI executable or absolute path")
+    add.add_argument("--auth-home", help="Attach an existing native account directory on this machine; no credential copy")
     profiles.add_parser("list")
     for op in ["enable", "disable", "release"]:
         profiles.add_parser(op).add_argument("name")
@@ -252,7 +253,7 @@ def dispatch(store, args):
         emit({"python": sys.version.split()[0], "platform": sys.platform, "home": str(store.home), "checks": checks})
     elif args.action == "profile":
         if args.operation == "add":
-            store.add_profile(args.name, args.provider, args.binary or args.provider)
+            store.add_profile(args.name, args.provider, args.binary or args.provider, auth_home=args.auth_home)
         elif args.operation in {"enable", "disable", "release"}:
             if args.operation == "release":
                 store.update_profile(args.name, hold_until=None, hold_reason=None)

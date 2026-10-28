@@ -173,3 +173,16 @@ Die [Opus-Architekturprüfung](reviews/opus-remote-review.md) und die [Entscheid
 ## Native Anmeldung über die App ab 0.4
 
 Nach der einmaligen Server- und SSH-Einrichtung können Codex- und Claude-Accounts direkt aus dem Dashboard angemeldet werden. Ein eigenes SSH-Terminal pro Account ist dafür nicht mehr nötig. Browser-Zustimmung und gegebenenfalls Rückgabecode bleiben beim Benutzer. Details: [Übersicht und Login](overview-login.md). Für den aktuellen Login-Ablauf benötigen Client und Server Version 0.4.
+
+## Vorhandenen nativen Server-Account einbinden (0.4.1)
+
+Ein bereits auf demselben Server angemeldeter Account kann ausdrücklich registriert werden, ohne seine Zugangsdaten zu kopieren:
+
+```sh
+agent-fleet profile add server-codex --provider codex --binary /absoluter/pfad/codex --auth-home "$HOME/.codex"
+agent-fleet profile enable server-codex
+```
+
+`--auth-home` ist eine administrative lokale Registrierung auf dem Server, kein RPC-Befehl. Das Verzeichnis muss existieren und dem aktuellen Benutzer gehören. Der gespeicherte aufgelöste Pfad wird bei Verwendung geprüft; doppelte Registrierungen werden abgelehnt. Die Registrierung verändert seine Rechte nicht. Native Provider-Prozesse verwenden dieses vorhandene Verzeichnis einschließlich ihrer regulären Token-Erneuerung. Andere native Prozesse außerhalb des Brokers beachten dessen Account-Lock nicht. Für neu anzumeldende zusätzliche Abos weiterhin die getrennten Standardprofile und den Browser-Login verwenden.
+
+Bei einem Downgrade auf 0.4.0 zuerst angehängte Profile deaktivieren: die alte Version kennt den zusätzlichen Profilpfad nicht. Bestehende isolierte Profile und Queue-Daten werden durch das additive Datenbankfeld erhalten.

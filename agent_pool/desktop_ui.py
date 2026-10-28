@@ -314,10 +314,10 @@ class FleetView:
         name = account.get("display_name") or ("Standardaccount" if not account.get("managed") else account["name"])
         name_label = self.text(identity, name, size=24, bold=True)
         name_label.pack(anchor="w")
-        email = self.text(identity, account.get("email") or "Nicht angemeldet", size=16, color=MUTED,
+        full_email = account.get("email") or ("Verbunden" if account.get("connected") else "Nicht angemeldet")
+        email = self.text(identity, full_email, size=16, color=MUTED,
                           wraplength=200, justify="left")
         email.pack(anchor="w", pady=(5, 0))
-        full_email = account.get("email") or "Nicht angemeldet"
         def fit_email(event):
             width = max(80, event.width-4)
             value = full_email

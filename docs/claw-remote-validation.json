@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-28",
+  "version": "0.4.1",
+  "source_commit": "479e869",
+  "host": "claw-remote",
+  "platform": "Linux x86_64 / Python 3.14.4",
+  "local_tests": {
+    "count": 128,
+    "passed": true,
+    "runtime": "macOS / Python 3.12.14 / Tk9"
+  },
+  "linux_tests": {
+    "count": 128,
+    "skipped": 30,
+    "passed": true,
+    "note": "GUI/display tests skipped on headless server; native GUI exercised separately on Mac"
+  },
+  "real_provider_task": {
+    "id": "3e700bf6dd774f24a3a4ef3998b4517d",
+    "profile": "server-codex",
+    "status": "succeeded",
+    "attempts": 1,
+    "result": "FLEET-REMOTE-20261028\n42"
+  },
+  "gui": {
+    "real_ssh": true,
+    "real_server_metadata": true,
+    "human_consent_completed": false,
+    "checks": {
+      "discovery_connection_filters_details_without_modals": true,
+      "real_ui_native_remote_login_and_abandon_cancel": true,
+      "failed_ssh_recovery": true,
+      "delayed_transport_responsive_and_stale_reply_ignored": true,
+      "rapid_context_switches_without_tk_errors": true
+    },
+    "status_latency_ms": {
+      "samples": 20,
+      "p50": 654.37,
+      "p95": 820.27,
+      "max": 820.64
+    },
+    "event_loop_ms": {
+      "samples": 108,
+      "p95": 31.06,
+      "max": 43.71
+    }
+  },
+  "real_ssh_lost_ack": {
+    "real_ssh": true,
+    "controlled_pool": true,
+    "provider_inference": false,
+    "reply_interrupted_after_commit": true,
+    "identical_retry_one_job": true,
+    "no_model_worker_started": true
+  },
+  "controlled_server_checks": {
+    "controlled_provider": true,
+    "real_provider_inference": false,
+    "checks": {
+      "malformed_rpc_rejected": 5,
+      "concurrent_submissions_one_job": 16,
+      "utf8_and_shell_payload_literal": true,
+      "weekly_limit_still_blocks_after_short_reset": true,
+      "queued_cancellation": true,
+      "sigterm_child_cleanup_and_no_automatic_replay": true,
+      "native_timeout_marks_review_and_kills_child": true,
+      "no_fixture_process_or_queue_leak": true,
+      "installed_archive_login_and_native_cleanup": true
+    },
+    "performance": {
+      "jobs": 100,
+      "unique_executions": 100,
+      "seconds": 18.754,
+      "jobs_per_second": 5.33
+    }
+  },
+  "claude_native_start_cancel": {
+    "native_claude_version": "2.1.312",
+    "state": "awaiting_code",
+    "official_browser_link": true,
+    "human_consent_completed": false,
+    "cancelled": true
+  },
+  "review": {
+    "standards_open_findings": 0,
+    "spec_open_findings": 0,
+    "reviewed_commit": "479e869"
+  },
+  "human_consent_for_additional_accounts": false,
+  "native_windows_tested": false,
+  "packages": {
+    "mac_app_signature_verified": true,
+    "packaged_login_fixture": true,
+    "archive_source_match": true,
+    "cli_sha256": "1d2bade96a8e43ce9a3065aec5b75d8bc6935ba8a21f477f5911d7d9ec170410",
+    "packaged_remote_smoke": {
+      "width": 1280,
+      "height": 900,
+      "refresh_completed": true,
+      "font": "Albert Sans",
+      "columns": 3,
+      "remote": "claw-remote",
+      "accounts": [
+        {
+          "name": "claude-1",
+          "connected": false,
+          "windows": 0,
+          "error": false
+        },
+        {
+          "name": "codex-1",
+          "connected": false,
+          "windows": 0,
+          "error": false
+        },
+        {
+          "name": "codex-2",
+          "connected": false,
+          "windows": 0,
+          "error": false
+        },
+        {
+          "name": "codex-3",
+          "connected": false,
+          "windows": 0,
+          "error": false
+        },
+        {
+          "name": "server-claude",
+          "connected": false,
+          "windows": 0,
+          "error": false
+        },
+        {
+          "name": "server-codex",
+          "connected": true,
+          "windows": 1,
+          "error": false
+        }
+      ]
+    }
+  },
+  "installed": {
+    "mac_client": "0.4.1",
+    "server": "0.4.1",
+    "server_hash_matches_client": true,
+    "worker_enabled_and_online": true,
+    "existing_services_active": true,
+    "existing_auth_directory_mode": "0755",
+    "installed_cli_remote_failure_exit": 1
+  }
+}

@@ -17,7 +17,8 @@ portable = output / "Agent Fleet.pyzw"
 with tempfile.TemporaryDirectory() as folder:
     stage = Path(folder)
     shutil.copytree(root / "agent_pool", stage / "agent_pool", ignore=shutil.ignore_patterns("__pycache__"))
-    zipapp.create_archive(stage, portable, interpreter="/usr/bin/env python3", main="agent_pool.desktop:main", compressed=True)
+    (stage / "__main__.py").write_text("from agent_pool.desktop import main\nraise SystemExit(main())\n")
+    zipapp.create_archive(stage, portable, interpreter="/usr/bin/env python3", compressed=True)
 print(portable, flush=True)
 if args.portable_only:
     raise SystemExit(0)

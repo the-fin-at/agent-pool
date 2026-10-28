@@ -179,3 +179,5 @@ Der lokale Mac-Lauf besteht aus **55 erfolgreichen Tests**, einschließlich nati
 - [CLI, Quoten, Fehler und Wiederanlauf](docs/cli.md)
 - [Architektur und Recherche](docs/research-2026-10-28.md)
 - [Prüfnachweis](docs/validation.md)
+
+Realer Linux-Betrieb und drei Prüfschleifen auf `claw-remote`: [Einrichtung, Fehlerfälle und Messwerte](docs/claw-remote-validation.md).

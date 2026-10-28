@@ -11,6 +11,9 @@ from contextlib import contextmanager
 from pathlib import Path
 
 
+ATTACHED_PROFILE_UNAVAILABLE = "Attached native profile is missing or changed; restore its original directory"
+
+
 def default_home():
     if os.environ.get("AGENT_POOL_HOME"):
         return Path(os.environ["AGENT_POOL_HOME"]).expanduser().resolve()
@@ -89,6 +92,9 @@ class Store:
           attempts INTEGER NOT NULL DEFAULT 0, max_attempts INTEGER NOT NULL,
           timeout REAL NOT NULL, result TEXT, error TEXT);
         ''')
+        self.db.execute("BEGIN IMMEDIATE")
+        if "auth_home" not in {row[1] for row in self.db.execute("PRAGMA table_info(profiles)")}:
+            self.db.execute("ALTER TABLE profiles ADD COLUMN auth_home TEXT")
         self.db.commit()
         if os.name != "nt":
             (self.home / "queue.sqlite3").chmod(0o600)
@@ -128,21 +134,37 @@ class Store:
         return dict(row)
 
     def authdir(self, name):
-        self.profile(name)
+        profile = self.profile(name)
+        if profile.get("auth_home"):
+            path = Path(profile["auth_home"])
+            if not path.is_dir() or str(path.resolve()) != profile["auth_home"]:
+                raise ValueError(ATTACHED_PROFILE_UNAVAILABLE)
+            return path
         path = self.home / "profiles" / name
         private_dir(path)
         return path
 
-    def add_profile(self, name, provider, binary):
+    def add_profile(self, name, provider, binary, auth_home=None):
         if not re.fullmatch(r"[a-z][a-z0-9-]{0,47}", name):
             raise ValueError("Profile name: lowercase letters, digits and hyphens; start with a letter")
         if name.upper().split(".")[0] in {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1,10)), *(f"LPT{i}" for i in range(1,10))}:
             raise ValueError("Reserved Windows profile name")
         if provider not in {"codex", "claude"}:
             raise ValueError("Provider must be codex or claude")
+        if auth_home is not None:
+            path = Path(auth_home).expanduser().resolve()
+            if not path.is_dir():
+                raise ValueError("Native auth home must be an existing directory on this machine")
+            if hasattr(os, "getuid") and path.stat().st_uid != os.getuid():
+                raise ValueError("Native auth home must belong to the current user")
+            auth_home = str(path)
         with self.db:
-            self.db.execute("INSERT INTO profiles(name,provider,binary) VALUES(?,?,?)",
-                            (name, provider, binary))
+            self.db.execute("BEGIN IMMEDIATE")
+            target = Path(auth_home or self.home / "profiles" / name).resolve()
+            if any(Path(p.get("auth_home") or self.home / "profiles" / p["name"]).resolve() == target for p in self.profiles()):
+                raise ValueError("This native account directory is already registered")
+            self.db.execute("INSERT INTO profiles(name,provider,binary,auth_home) VALUES(?,?,?,?)",
+                            (name, provider, binary, auth_home))
         self.authdir(name)
 
     def update_profile(self, name, **values):

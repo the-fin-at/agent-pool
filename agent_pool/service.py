@@ -27,7 +27,7 @@ RestartSec=10
 UMask=0077
 KillMode=control-group
 TimeoutStopSec=30
-Environment="PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=%h/.local/bin:%h/.npm-global/bin:%h/.npm/bin:/usr/local/bin:/usr/bin:/bin"
 NoNewPrivileges=yes
 
 [Install]

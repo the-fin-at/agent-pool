@@ -65,4 +65,4 @@ Pro Versuch einen neuen zufälligen UUID-Hex-Schlüssel verwenden; das Beispiel 
 - Ein vollständiger neuer Provider-Login mit menschlicher Browser-Zustimmung auf einem konkreten produktiven Linux-Host sowie native Windows-UI-Abnahme stehen weiterhin aus. Es wurde kein persönlicher Server bereitgestellt. GitHub-CI ist separat zu betrachten.
 
 
-Vor dem Merge des 0.4-Pull-Requests den Branch `feat/overview-connections-login` aus `the-fin-at/agent-pool` für Client und Server verwenden. Ältere Release-Pakete unterstützen die neue Anmeldung noch nicht.
+Die Übersicht und Anmeldung sind seit PR #2 auf `main`. Die Realserver-Korrekturen und vorhandenen nativen Profile benötigen 0.4.1. Ältere Release-Pakete unterstützen diese Korrekturen noch nicht.
