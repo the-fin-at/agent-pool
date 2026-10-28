@@ -47,3 +47,8 @@ Das Release enthält deshalb die lokal geprüfte Apple-Silicon-App und das porta
 - Interaktive Desktop-Prüfung auf einem eigenen Windows-Rechner, zusätzlich zu einem möglichen CI-Runner-Test.
 - Langzeitbetrieb und harte Prozess-Kills mit möglicherweise überlebenden nativen Kindprozessen.
 - Messung der Routingheuristik gegen reale Verbrauchsverläufe; es wird kein nachgewiesenes globales Optimum der Abo-Ausschöpfung behauptet.
+
+
+## Agent Fleet 0.3 · THE-FIN-Desktop
+
+93 Tests mit Tk bestanden. Native macOS-App und portable `.pyzw` starten mit eingebetteter Albert Sans; beide haben drei verbundene Accounts ohne Abfragefehler gelesen. Die native App wurde bei 1280 × 840 geprüft, der visuelle Vergleich bei 1568 × 956 sowie 760 × 700. [Design-Abnahme](../design-qa.md) und [maschinenlesbarer Nachweis](desktop-redesign-validation.json). Windows-EXE und Windows-GUI bleiben unbestätigt; die bestehende GitHub-Abrechnungsblockade gilt weiter.

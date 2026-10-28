@@ -3,14 +3,18 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "local-agent-pool"
-version = "0.2.0"
+name = "local-agent-fleet"
+version = "0.3.0"
 description = "Durable local task broker for native Codex and Claude Code profiles"
 requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
+agent-fleet = "agent_pool.cli:main"
 agent-pool = "agent_pool.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["agent_pool*"]
+
+[tool.setuptools.package-data]
+agent_pool = ["assets/manifest.json", "assets/fonts/*", "assets/icons/*", "assets/brand/*", "assets/controls/*"]

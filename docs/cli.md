@@ -13,8 +13,8 @@
 Beispiel für eine **tatsächlich beobachtete** Quote (Zeitpunkt durch den echten künftigen Reset ersetzen):
 
 ```sh
-agent-pool quota set claude-1 --window five-hour --used 100 --reset-at "2026-10-29T08:00:00+01:00"
-agent-pool quota set claude-1 --window weekly --model opus --used 75 --reset-at "2026-11-02T12:00:00+01:00"
+agent-fleet quota set claude-1 --window five-hour --used 100 --reset-at "2026-10-29T08:00:00+01:00"
+agent-fleet quota set claude-1 --window weekly --model opus --used 75 --reset-at "2026-11-02T12:00:00+01:00"
 ```
 
 `quota show` liefert beobachtete Fenster, Zeitpunkte und Sperrgründe; `quota_known:false` heißt unbekannt. Die Anzeige ist eine Beobachtung, keine Reservierung: Nutzung in einer anderen App kann den verbleibenden Anteil zwischen zwei Abfragen ändern. GPT- und Claude-Modelle bleiben getrennt; kein automatischer Provider- oder Modellwechsel ohne expliziten Auftrag.
@@ -28,12 +28,12 @@ agent-pool quota set claude-1 --window weekly --model opus --used 75 --reset-at 
 Bei einem Limit während eines Schreibauftrags, Timeout oder Workerabbruch ist die bisherige Arbeit möglicherweise teilweise ausgeführt. Der Broker startet sie nicht automatisch neu. Nach einem harten Betriebssystemabbruch können native Kindprozesse noch laufen: zuerst Prozesse und Arbeitsverzeichnis prüfen, dann explizit freigeben:
 
 ```sh
-agent-pool work --once
-agent-pool job retry <id>
-agent-pool profile release <name>
+agent-fleet work --once
+agent-fleet job retry <id>
+agent-fleet profile release <name>
 ```
 
-`work --once` markiert beim Wiederanlauf verwaiste `running`-Einträge als `needs_review`. `job retry` ist nur für angehaltene terminale Jobs möglich; damit bestätigt der Bediener die Prüfung. `profile release` hebt nur einen lokalen Hold auf und schafft kein Provider-Kontingent. Jobabbruch: `job cancel <id>` für einen noch nicht laufenden Auftrag. Während ein Worker aktiv ist, sind administrative Profiländerungen und Wiederholungen gesperrt.
+`work --once` markiert beim Wiederanlauf verwaiste `running`-Einträge als `needs_review`. `job retry` ist nur für angehaltene terminale Jobs möglich; damit bestätigt der Bediener die Prüfung. `profile release` hebt nur einen lokalen Hold auf und schafft kein Provider-Kontingent. Jobabbruch: `job cancel <id>` für einen noch nicht laufenden Auftrag. Ein aktiver Worker reserviert nur die Ausführung; wartende Jobs können parallel abgebrochen und Profile für nachfolgende Starts pausiert werden. Native Login- und Jobprozesse desselben Profils sind durch einen Account-Lock serialisiert.
 
 ## Daten und Einrichtung
 
@@ -48,7 +48,12 @@ Nutzung bleibt an die Bedingungen des jeweiligen Accounts gebunden. Mehrere Prof
 ```sh
 python3 -m unittest discover -s tests -v
 python3 scripts/build_zipapp.py
-python3 dist/agent-pool.pyz --version
+python3 dist/agent-fleet.pyz --version
 ```
 
 Die Prozess-Tests starten echte Betriebssystemprozesse mit kontrollierten Provider-Fixtures. Sie testen keine echte Modellantwort. Der Bericht [`docs/validation.md`](validation.md) trennt lokale Prüfungen, echte CLI-Protokollprüfungen und offene Live-/Windows-Prüfungen.
+
+
+## Remote
+
+Für zentrale Linux-Pools steht `--remote <Name>` vor dem Unterbefehl. Remote-Aufträge verwenden registrierte `--workspace`-Namen und verpflichtende stabile `--key`-Werte; der Client liest `--prompt-file` lokal. Remote-`run` übermittelt und wartet, startet aber keinen Worker. Einrichtung, eingeschränkte SSH-Schlüssel und Dienste: [Remote-Anleitung](remote.md).
