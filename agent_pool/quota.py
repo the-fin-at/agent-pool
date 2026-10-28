@@ -51,6 +51,27 @@ def claude_window(event):
             "model": kind.removeprefix("seven_day_") if kind.startswith("seven_day_") else None}
 
 
+def claude_windows(event):
+    """Prefer each native unified observation; preserve legacy limiting-window events."""
+    info = event.get("rate_limit_info") or event.get("rateLimitInfo") or {}
+    unified = info.get("unifiedWindows") or info.get("unified_windows") or {}
+    active = info.get("rateLimitType", info.get("rate_limit_type"))
+    result = []
+    if isinstance(unified, dict):
+        for kind, observation in unified.items():
+            if not isinstance(kind, str) or not isinstance(observation, dict):
+                continue
+            # A root rejection applies to its limiting window, not every other window.
+            inherited = {k: info[k] for k in ("utilization", "status", "resetsAt", "resets_at") if k in info} if kind == active else {}
+            window = claude_window({"rate_limit_info": {**inherited, **observation, "rateLimitType": kind}})
+            if window:
+                result.append(window)
+    legacy = claude_window(event)
+    if legacy and legacy["key"] not in {w["key"] for w in result} and (active or not result):
+        result.append(legacy)
+    return result
+
+
 def availability(windows, now, reserve=0, model=None, bucket=None):
     """All applicable windows must allow work; the latest exhausted reset wins."""
     blocked = []

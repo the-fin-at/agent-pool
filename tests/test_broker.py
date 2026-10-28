@@ -66,6 +66,37 @@ class QuotaTests(unittest.TestCase):
         self.assertEqual(timestamp("1970-01-01T01:00:01+01:00"), 1)
 
 
+class UnifiedClaudeLimitsTests(unittest.TestCase):
+    def test_live_event_exposes_both_windows_through_native_outcome(self):
+        event=json.loads((Path(__file__).parent/'fixtures/claude-unified-limits.json').read_text())
+        payload=json.dumps(event)+'\n'+json.dumps({'type':'result','subtype':'success','is_error':False,'result':'OK'})
+        outcome=parse_run('claude',payload,'',0)
+        self.assertEqual(outcome.kind,'success')
+        self.assertEqual([(w['key'],w['minutes'],w['used'],w['reset']) for w in outcome.windows],
+                         [('five_hour',300,0,1793221200),('seven_day',10080,2,1793757600)])
+
+    def outcome(self,info):
+        return parse_run('claude',json.dumps({'type':'rate_limit_event','rate_limit_info':info}), '', 1)
+
+    def test_rejected_limiting_window_does_not_exhaust_other_windows(self):
+        out=self.outcome({'status':'rejected','rateLimitType':'five_hour','unifiedWindows':{
+            'five_hour':{'status':'rejected','resetsAt':1000},
+            'seven_day':{'status':'allowed','utilization':.02,'resetsAt':2000},
+            'seven_day_opus':{'status':'allowed','utilization':.25,'resetsAt':2000},
+            'overage':{'status':'rejected'}}})
+        self.assertEqual([(w['key'],w['used'],w['model']) for w in out.windows],
+                         [('five_hour',100,None),('seven_day',2,None),('seven_day_opus',25,'opus')])
+
+    def test_legacy_event_without_unified_windows_remains_supported(self):
+        out=self.outcome({'status':'allowed','rateLimitType':'five_hour','utilization':.5,'resetsAt':1000})
+        self.assertEqual([(w['key'],w['used'],w['reset']) for w in out.windows],[('five_hour',50,1000)])
+
+    def test_partial_unified_payload_retains_distinct_legacy_window(self):
+        out=self.outcome({'status':'allowed','rateLimitType':'five_hour','utilization':.5,'resetsAt':1000,
+                          'unifiedWindows':{'seven_day':{'utilization':.02,'resetsAt':2000}}})
+        self.assertEqual([(w['key'],w['used']) for w in out.windows],[('seven_day',2),('five_hour',50)])
+
+
 class BrokerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

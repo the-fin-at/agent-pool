@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .store import file_lock, WorkerBusy
-from .quota import claude_window, codex_windows
+from .quota import claude_windows, codex_windows
 
 # Ambient keys/base URLs must not silently change the selected subscription or bill an API key.
 AUTH_ENV = {"OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN", "OPENAI_BASE_URL",
@@ -123,9 +123,7 @@ def parse_run(provider, stdout, stderr, code, final=""):
                 result = e["item"].get("text", "")
         else:
             if kind == "rate_limit_event":
-                w = claude_window(e)
-                if w:
-                    windows.append(w)
+                windows.extend(claude_windows(e))
             if kind == "result":
                 completed = e.get("subtype") == "success" and not e.get("is_error", False)
                 result = e.get("result", "")
