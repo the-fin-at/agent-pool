@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.agent-pool/
+*.spec
+.venv-desktop/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.sqlite3-*
+*.log
