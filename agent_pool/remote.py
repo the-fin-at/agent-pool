@@ -35,8 +35,10 @@ class RemoteConfig:
         return validate(data[name])
 
     def add(self, name, host, command="agent-fleet", home=None):
-        if not re.fullmatch(r"[a-z][a-z0-9-]{0,47}", name):
-            raise ValueError("Remote name: lowercase letters, digits and hyphens")
+        if not isinstance(name, str) or not name.strip() or name != name.strip() or len(name) > 64 or any(ord(c) < 32 for c in name):
+            raise ValueError("Verbindungsname: 1 bis 64 sichtbare Zeichen")
+        if name.casefold() in {"lokal", "local"}:
+            raise ValueError("Dieser Name ist für den lokalen Rechner reserviert")
         value = validate({"host": host, "command": command, "home": home})
         data = self.all()
         if name in data:
@@ -82,6 +84,31 @@ def validate(config):
     if command.startswith('-') or (home is not None and not home.startswith('/')):
         raise ValueError("Remote state path must be absolute; executable cannot be an option")
     return dict(config)
+
+
+def discover(host, timeout=20):
+    """Fixed probe, never interpolates user data into the remote shell."""
+    validate({"host": host, "command": "agent-fleet", "home": "/"})
+    script = ('if command -v agent-fleet >/dev/null 2>&1; then exec agent-fleet connection-info; '
+              'elif [ -x "$HOME/.local/bin/agent-fleet" ]; then exec "$HOME/.local/bin/agent-fleet" connection-info; '
+              'elif command -v agent-pool >/dev/null 2>&1; then exec agent-pool connection-info; '
+              'else echo "Agent Fleet is not installed on this server" >&2; exit 127; fi')
+    try:
+        done = subprocess.run(["ssh", "-T", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ForwardAgent=no",
+                               "-o", "ConnectTimeout=10", host, script], capture_output=True, text=True, encoding="utf-8", timeout=timeout,
+                              **spawn_options(hidden=True))
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("Der Server antwortet nicht. Prüfe Adresse und SSH-Zugang.") from exc
+    if done.returncode:
+        raise ValueError("Verbindung nicht möglich. Agent Fleet und SSH-Schlüsselzugang müssen auf dem Server eingerichtet sein. " + done.stderr.strip()[-400:])
+    try:
+        data = json.loads(done.stdout)
+        config = validate({"host": host, "command": data["command"], "home": data["home"]})
+        if "native-login-sessions" not in data.get("features", []):
+            raise ValueError("Bitte Agent Fleet auf dem Server aktualisieren")
+        return config
+    except (ValueError, KeyError, TypeError) as exc:
+        raise ValueError("Server benötigt die aktuelle Agent-Fleet-Version. Bei eingeschränkten SSH-Schlüsseln die erweiterten Einstellungen verwenden.") from exc
 
 
 class RemoteClient:
@@ -131,7 +158,10 @@ class RemoteClient:
         except ValueError as exc:
             raise ValueError("Invalid remote command response") from exc
         if result["code"] == 1:
-            raise ValueError(data.get("error", "Remote operation failed") if isinstance(data, dict) else "Remote operation failed")
+            error = data.get("error", "Remote operation failed") if isinstance(data, dict) else "Remote operation failed"
+            if argv and argv[0] == "auth" and error == "RPC operation not allowed":
+                error = "Bitte Agent Fleet auf dem Server aktualisieren, um Accounts direkt in der App anzumelden."
+            raise ValueError(error)
         return data
 
 
@@ -161,6 +191,20 @@ def dispatch_remote(args):
     if action == "desktop":
         from .cli import launch_desktop
         return launch_desktop(args.home, args.remote)
+    if action == "auth":
+        argv = ["auth", args.operation]
+        if args.operation == "start":
+            argv += [args.name, "--provider", args.provider, "--key", args.key]
+        else:
+            argv.append(args.id)
+        if args.operation == "input":
+            code = args.code
+            if args.code_file:
+                code = sys.stdin.read() if args.code_file == "-" else Path(args.code_file).read_text(encoding="utf-8")
+            argv += ["--code=" + code.strip()]
+        result = client.request(argv)
+        print(result["output"], end="")
+        return result["code"]
     if action == "login":
         extra = [args.name] + (["--device-auth"] if args.device_auth else [])
         return subprocess.call(client.command("login", interactive=True, extra=extra))

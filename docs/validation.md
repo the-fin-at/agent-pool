@@ -52,3 +52,8 @@ Das Release enthält deshalb die lokal geprüfte Apple-Silicon-App und das porta
 ## Agent Fleet 0.3 · THE-FIN-Desktop
 
 93 Tests mit Tk bestanden. Native macOS-App und portable `.pyzw` starten mit eingebetteter Albert Sans; beide haben drei verbundene Accounts ohne Abfragefehler gelesen. Die native App wurde bei 1280 × 840 geprüft, der visuelle Vergleich bei 1568 × 956 sowie 760 × 700. [Design-Abnahme](../design-qa.md) und [maschinenlesbarer Nachweis](desktop-redesign-validation.json). Windows-EXE und Windows-GUI bleiben unbestätigt; die bestehende GitHub-Abrechnungsblockade gilt weiter.
+
+
+## Agent Fleet 0.4 · Übersicht und integrierter Login
+
+118 Tests mit echtem Tk bestanden. Die neue Kontextnavigation und sechs native Fensterzustände sind visuell geprüft. Das gebaute Mac-App-Paket startet den neuen Login-Worker korrekt und zeigt drei bestehende Accounts ohne Abfragefehler. Die echte GUI-/SSH-/Linux-Kette mit kontrollierten nativen Provider-CLIs umfasst beide Login-Verfahren und die Rückkehr zur verbundenen Account-Ansicht. [Gesamtnachweis](overview-validation.json), [Ablauf und Grenzen](overview-login.md). Neue echte Provider-Browserzustimmung auf einem produktiven Host und Windows-UI-/EXE-Abnahme stehen aus.

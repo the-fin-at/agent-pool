@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "local-agent-fleet"
-version = "0.3.0"
+version = "0.4.0"
 description = "Durable local task broker for native Codex and Claude Code profiles"
 requires-python = ">=3.11"
 dependencies = []

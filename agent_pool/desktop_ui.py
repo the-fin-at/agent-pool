@@ -3,7 +3,7 @@ import math
 import sys
 import time
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import ttk
 
 from .desktop_theme import (Theme, BG, SURFACE, RAISED, INK, MUTED, LINE, BRAND,
                             ACCENT, SOFT, GREEN, WARNING, DANGER)
@@ -79,87 +79,86 @@ class FleetView:
                         bg=bg or parent.cget("bg"), anchor="w", bd=0, **kw)
 
     def _layout(self):
-        from .remote import RemoteConfig
         self.provider_filter = tk.StringVar(value="all")
         self.provider_filter.trace_add("write", lambda *_: self._provider_selected())
         self.target = tk.StringVar(value=self.remote or "Lokal")
-        self.root.grid_rowconfigure(0, weight=1)
+        self.scope = "remote" if self.remote else "local"
+        self.page = "accounts"
+        self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
+        self.topbar = tk.Frame(self.root, bg=BG)
+        self.topbar.grid(row=0, column=0, columnspan=2, sticky="ew")
+        top = tk.Frame(self.topbar, bg=BG)
+        top.pack(fill="x", padx=24, pady=(18, 16))
+        self.scope_button = ttk.Button(top, text="Remote" if self.remote else "Lokal",
+            image=self.theme.icon("chevron-down", "ink"), compound="right", style="Scope.TButton", command=self.toggle_scope_menu)
+        self.scope_button.pack(side="left")
+        self.scope_hint = self.text(top, "Verbundene Rechner" if self.remote else "Auf diesem Rechner", size=13, color=MUTED)
+        self.scope_hint.pack(side="left", padx=16)
+        self.text(top, "Agent Fleet", size=16, color=MUTED,
+                  image=self.theme.image("brand/compass-48.png"), compound="left").pack(side="right")
+        tk.Frame(self.topbar, bg=LINE, height=1).pack(fill="x")
+        self.scope_menu = None
+        self.root.bind("<Escape>", lambda _: self.close_scope_menu())
+        self.root.bind("<Button-1>", self._outside_scope_menu, add="+")
+
         self.sidebar = tk.Frame(self.root, bg=SURFACE, width=232)
-        self.sidebar.grid(row=0, column=0, sticky="ns")
+        self.sidebar.grid(row=1, column=0, sticky="ns")
         self.sidebar.grid_propagate(False)
         tk.Frame(self.sidebar, bg=LINE, width=1).pack(side="right", fill="y")
         side = tk.Frame(self.sidebar, bg=SURFACE)
-        side.pack(fill="both", expand=True, padx=20, pady=40)
-        self.text(side, "", image=self.theme.image("brand/compass-80.png")).pack(anchor="w", pady=(0, 10))
-        self.text(side, "Agent Fleet", size=25, bold=True).pack(anchor="w")
+        side.pack(fill="both", expand=True, padx=18, pady=26)
+        self.text(side, "Übersicht", size=12, color=MUTED).pack(anchor="w", padx=12, pady=(0, 14))
         self.nav_buttons = {}
         for key, icon in [("all", "people"), ("codex", "hdd-stack"), ("claude", "diagram-3")]:
             button = ttk.Radiobutton(side, text="  " + PROVIDERS[key], value=key,
-                                     variable=self.provider_filter, style="Nav.TRadiobutton",
-                                     image=self.theme.icon(icon, "accent" if key == "all" else "ink", 24), compound="left")
-            button.pack(fill="x", pady=(60 if key == "all" else 20, 0))
+                variable=self.provider_filter, style="Nav.TRadiobutton",
+                image=self.theme.icon(icon, "accent" if key == "all" else "ink", 24), compound="left")
+            button.pack(fill="x", pady=(0, 8))
             self.nav_buttons[key] = (button, icon)
-        ttk.Button(side, text="Aufträge", image=self.theme.icon("list-task"), compound="left",
-                   style="Soft.TButton", command=self.open_manager).pack(fill="x", pady=(30, 0))
+        self.connection_nav = tk.Frame(side, bg=SURFACE)
+        self.connection_nav.pack(fill="x", pady=(28, 0))
         side_bottom = tk.Frame(side, bg=SURFACE)
         side_bottom.pack(side="bottom", fill="x")
-        tk.Frame(side_bottom, bg=LINE, height=1).pack(fill="x", pady=(16, 16))
-        self.text(side_bottom, "Ausführen auf", size=12, color=MUTED).pack(anchor="w", pady=(0, 6))
-        self.target_picker = ttk.Combobox(side_bottom, textvariable=self.target,
-            values=["Lokal", *RemoteConfig(self.home).all()], state="readonly", width=17, font=self.theme.face(14))
-        self.target_picker.pack(fill="x")
-        self.target_picker.bind("<<ComboboxSelected>>", self._select_target)
-        ttk.Button(side_bottom, text="Server hinzufügen", style="Soft.TButton", command=self.add_server).pack(fill="x", pady=(8, 10))
-        ttk.Checkbutton(side_bottom, text="Alle 60 s abfragen", variable=self.auto,
-                        style="Side.TCheckbutton").pack(anchor="w", pady=(4, 0))
-        self.worker_text = self.text(side_bottom, "", size=11, color=MUTED, wraplength=165)
+        ttk.Checkbutton(side_bottom, text="Automatisch aktualisieren", variable=self.auto,
+                        style="Side.TCheckbutton").pack(anchor="w")
+        self.worker_text = self.text(side_bottom, "", size=11, color=MUTED, wraplength=180)
         self.worker_text.pack(anchor="w", pady=(4, 0))
 
         self.main = tk.Frame(self.root, bg=BG)
-        self.main.grid(row=0, column=1, sticky="nsew")
+        self.main.grid(row=1, column=1, sticky="nsew")
         self.compact_bar = tk.Frame(self.main, bg=BG)
-        compact_top = tk.Frame(self.compact_bar, bg=BG)
-        compact_top.pack(fill="x", padx=24, pady=(16, 8))
-        self.text(compact_top, "Agent Fleet", size=19, bold=True,
-                  image=self.theme.image("brand/compass-48.png"), compound="left").pack(side="left")
-        ttk.Button(compact_top, text="Aufträge", command=self.open_manager, style="Soft.TButton").pack(side="right")
         compact_nav = tk.Frame(self.compact_bar, bg=BG)
-        compact_nav.pack(fill="x", padx=24, pady=(0, 8))
+        compact_nav.pack(fill="x", padx=24, pady=(16, 4))
         for key in PROVIDERS:
-            ttk.Radiobutton(compact_nav, text=PROVIDERS[key], value=key, variable=self.provider_filter,
-                            style="Compact.TRadiobutton").pack(side="left", padx=(0, 12))
-        compact_connection = tk.Frame(self.compact_bar, bg=BG)
-        compact_connection.pack(fill="x", padx=24, pady=(0, 10))
-        self.text(compact_connection, "Ausführen auf", size=12, color=MUTED).pack(side="left", padx=(0, 8))
-        picker = ttk.Combobox(compact_connection, textvariable=self.target, values=self.target_picker.cget("values"),
-                              state="readonly", width=16, font=self.theme.face(14))
-        picker.pack(side="left")
-        picker.bind("<<ComboboxSelected>>", self._select_target)
-        self.target_pickers = [self.target_picker, picker]
-        ttk.Button(compact_connection, text="Server hinzufügen", style="Soft.TButton", command=self.add_server).pack(side="left", padx=8)
-        ttk.Checkbutton(compact_connection, text="Alle 60 s", variable=self.auto, style="Fleet.TCheckbutton").pack(side="right")
-
+            ttk.Radiobutton(compact_nav, text=PROVIDERS[key], value=key,
+                variable=self.provider_filter, style="Compact.TRadiobutton").pack(side="left", padx=(0, 12))
         self.header = tk.Frame(self.main, bg=BG)
-        self.header.pack(fill="x", padx=40, pady=(78, 0))
+        self.header.pack(fill="x", padx=36, pady=(32, 0))
+        self.breadcrumb = tk.Frame(self.header, bg=BG)
+        self.back_button = ttk.Button(self.breadcrumb, text=" Verbindungen", image=self.theme.icon("arrow-left"),
+            compound="left", style="Soft.TButton", command=self.go_back)
+        self.back_button.pack(side="left")
         title_row = tk.Frame(self.header, bg=BG)
         title_row.pack(fill="x")
-        self.page_title = self.text(title_row, "Alle Accounts", size=52)
+        self.page_title = self.text(title_row, "Alle Accounts", size=40)
         self.page_title.pack(side="left")
-        self.refresh_button = ttk.Button(title_row, text=" Aktualisieren", style="Fleet.TButton",
-            image=self.theme.icon("arrow-clockwise", "white"), compound="left", command=self.refresh)
-        self.refresh_button.pack(side="right")
-        self.subtitle = self.text(self.header, "", size=20, color=MUTED)
-        self.subtitle.pack(anchor="w", pady=(10, 0))
+        self.refresh_button = ttk.Button(title_row, text="", style="Soft.TButton",
+            image=self.theme.icon("arrow-clockwise"), compound="left", command=self.refresh)
+        self.refresh_button.pack(side="right", padx=(8, 0))
+        self.add_button = ttk.Button(title_row, text="Account hinzufügen", style="Fleet.TButton",
+            command=self.add_action)
+        self.add_button.pack(side="right")
+        self.subtitle = self.text(self.header, "", size=16, color=MUTED)
+        self.subtitle.pack(anchor="w", pady=(10, 16))
         toolbar = self.toolbar = tk.Frame(self.main, bg=BG)
-        toolbar.pack(fill="x", padx=40, pady=(10, 0))
+        toolbar.pack(fill="x", padx=36, pady=(0, 18))
         ttk.Checkbutton(toolbar, text="Alle Profile anzeigen", variable=self.show_all,
-                        command=self.render, style="Fleet.TCheckbutton").pack(side="left")
-        self.search_entry = ttk.Entry(toolbar, textvariable=self.search, width=26, style="Fleet.TEntry", font=self.theme.face(16))
+            command=self.render, style="Fleet.TCheckbutton").pack(side="left")
+        self.search_entry = ttk.Entry(toolbar, textvariable=self.search, width=24, style="Fleet.TEntry", font=self.theme.face(14))
         self.search_entry.pack(side="right")
-        self.text(toolbar, "Suchen", size=13, color=MUTED, image=self.theme.icon("search", "muted"),
-                  compound="left").pack(side="right", padx=(8, 10))
-
+        self.text(toolbar, "Suchen", size=12, color=MUTED,
+            image=self.theme.icon("search", "muted"), compound="left").pack(side="right", padx=10)
         self.content = tk.Frame(self.main, bg=BG)
         self.content.pack(fill="both", expand=True, padx=(16, 12))
         self.canvas = tk.Canvas(self.content, bg=BG, highlightthickness=0, bd=0)
@@ -175,18 +174,21 @@ class FleetView:
         self.root.bind("<Button-4>", lambda _: self.canvas.yview_scroll(-3, "units"))
         self.root.bind("<Button-5>", lambda _: self.canvas.yview_scroll(3, "units"))
         footer = tk.Frame(self.main, bg=BG)
-        footer.pack(fill="x", padx=32, pady=(14, 18))
-        tk.Frame(footer, bg=LINE, height=1).pack(fill="x", pady=(0, 12))
-        initial_status = "Gespeicherter Datenstand" if any(a.get("observed_at") for a in self.accounts) else "Noch keine Kontingentdaten"
-        self.status_text = self.text(footer, initial_status, size=12, color=MUTED, wraplength=650)
+        footer.pack(fill="x", padx=32, pady=(12, 16))
+        tk.Frame(footer, bg=LINE, height=1).pack(fill="x", pady=(0, 10))
+        self.status_text = self.text(footer, "Gespeicherter Datenstand" if any(a.get("observed_at") for a in self.accounts) else "Noch keine Kontingentdaten", size=11, color=MUTED, wraplength=650)
         self.status_text.pack(anchor="w")
         self._compact = False
         self._resize_job = None
         self.card_views = {}
         self._set_width(1280)
+        self.render_connection_nav()
 
     def _provider_selected(self):
         if hasattr(self, "page_title"):
+            if self.page not in {"accounts", "connections"}:
+                self.leave_login()
+                self.page = "accounts" if self.scope == "local" or self.remote else "connections"
             self.page_title.configure(text=PROVIDERS[self.provider_filter.get()])
             for key, (button, icon) in self.nav_buttons.items():
                 button.configure(image=self.theme.icon(icon, "accent" if key == self.provider_filter.get() else "ink", 24))
@@ -206,9 +208,9 @@ class FleetView:
     def _set_width(self, width):
         scaled = self.theme.set_scale(width)
         scale = self.theme.scale
-        self.sidebar.configure(width=round(232*scale))
-        self.header.pack_configure(padx=round(40*scale), pady=(round(78*scale), 0))
-        self.toolbar.pack_configure(padx=round(40*scale))
+        self.sidebar.configure(width=round(220*scale))
+        self.header.pack_configure(padx=round(32*scale), pady=(round(28*scale), 0))
+        self.toolbar.pack_configure(padx=round(32*scale))
         compact = width < 880
         columns = 1 if compact else 2 if width < 1180 else 3
         changed = scaled or columns != self.column_count or compact != self._compact
@@ -219,13 +221,9 @@ class FleetView:
                 self.sidebar.grid_remove()
                 self.compact_bar.pack(fill="x", before=self.header)
             else:
-                self.compact_bar.pack_forget()
                 self.sidebar.grid()
-        self.page_title.configure(font=self.theme.face(30 if compact else 52))
-        if compact:
-            self.header.pack_configure(pady=(12, 0), padx=24)
-            self.toolbar.pack_configure(padx=24)
-        if changed:
+                self.compact_bar.pack_forget()
+        if changed and hasattr(self, "cards"):
             self.render()
 
     def _resized(self, event):
@@ -244,6 +242,10 @@ class FleetView:
     def render(self):
         if self.closed:
             return
+        if self.page != "accounts":
+            self.render_panel()
+            return
+        self.sync_header()
         now = time.time()
         deadlines = [a["observed_at"]+150 for a in self.accounts if a.get("observed_at") and a["observed_at"]+150 > now]
         deadlines += [w["reset"] for a in self.accounts for w in a.get("windows", []) if w.get("reset") and w["reset"] > now]
@@ -270,8 +272,10 @@ class FleetView:
             heading = "Keine passenden Accounts" if query else "Noch keine verbundenen Accounts"
             self.text(empty, heading, size=23).pack(anchor="w", pady=(0, 12))
             hint = ("Ändere die Suche oder lösche den Suchtext." if query else
-                    "Zeige alle Profile an oder melde dich mit agent-fleet login <Profil> an.")
+                    "Verbinde einen Account, um seine Kontingente hier zu sehen.")
             self.text(empty, hint, color=MUTED, wraplength=530).pack(anchor="w")
+            if not query:
+                ttk.Button(empty, text="Account verbinden", style="Fleet.TButton", command=self.show_login).pack(anchor="w", pady=(20, 0))
         for index, account in enumerate(visible):
             self._card(account_view(account), index // self.column_count, index % self.column_count)
         if self.remote:
@@ -360,13 +364,15 @@ class FleetView:
         for raw, window in extra:
             self._limit(inner, raw, window)
         if not account.get("windows"):
-            notice = "Melde das Profil über die CLI an." if not account.get("connected") else "Noch keine Kontingentdaten aus der Claude-CLI." if account["provider"] == "claude" else "Für diesen Account fehlen Kontingentdaten."
+            notice = "Verbinde diesen Account direkt in der App." if not account.get("connected") else "Noch keine Kontingentdaten aus der Claude-CLI." if account["provider"] == "claude" else "Für diesen Account fehlen Kontingentdaten."
             self.text(inner, notice, size=12, color=MUTED, wraplength=270).pack(fill="x", pady=(8, 18))
         bottom = tk.Frame(inner, bg=BG)
         bottom.pack(fill="x", pady=(6, 0))
         self.text(bottom, account["updated_label"], size=11, color=WARNING if account["stale"] else MUTED).pack(side="left")
         details = ttk.Button(bottom, text="Details", style="Soft.TButton", command=lambda a=account: self.details(a))
         details.pack(side="right")
+        if account.get("managed") and not account.get("connected"):
+            ttk.Button(inner, text="Anmelden", style="Fleet.TButton", command=lambda a=account: self.show_login(a)).pack(anchor="w", pady=(12, 0))
         if account.get("error"):
             hint = "Abfrage fehlgeschlagen. Letzter gespeicherter Stand." if account.get("observed_at") else "Abfrage fehlgeschlagen. Noch keine Kontingentdaten."
             self.text(inner, hint, size=11, color=WARNING, wraplength=270).pack(fill="x", pady=(10, 0))
@@ -402,13 +408,6 @@ class FleetView:
                                fill=color, width=height-1, capstyle="round")
 
     def details(self, account):
-        lines = [account.get("email") or account["name"], "Profil: " + account["name"],
-                 "Tarif: " + account["plan_label"], account["role_label"], "", account["updated_label"]]
-        for window in account["windows_view"]:
-            value = "Nicht aktuell" if window["expired"] else "Kein Wert gemeldet" if window["remaining"] is None else f"{window['remaining']:g} % frei"
-            lines += ["", window["title"] + ": " + value, window["reset_label"]]
-            if window["reset_absolute"]:
-                lines.append(window["reset_absolute"])
-        if account.get("error"):
-            lines += ["", "Letzter Fehler:", account["error"][:1600]]
-        messagebox.showinfo("Account-Details", "\n".join(lines), parent=self.root)
+        self.detail_account = account
+        self.page = "details"
+        self.render()

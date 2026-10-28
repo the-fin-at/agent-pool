@@ -138,7 +138,7 @@ class Theme:
         style.element_create(element, "image", self.image(f"controls/{normal}.png"), *variants, border=10, sticky="nsew")
         style.layout(name, [(element, {"sticky": "nsew", "children": [("Button.focus", {"sticky": "nsew", "children": [("Button.padding", {"sticky": "nsew", "children": [("Button.label", {"sticky": "nsew"})]})]})]})])
         style.configure(name, font=self.face(16 if name == "Fleet.TButton" else 14, name == "Fleet.TButton"), foreground=foreground,
-                        background=BG, padding=padding, borderwidth=0, anchor="center",
+                        background=BG, padding=padding, borderwidth=0, anchor="center", width=0,
                         focuscolor=WHITE if name == "Fleet.TButton" else ACCENT, focusthickness=1)
         style.map(name, foreground=[("disabled", MUTED), ("selected", ACCENT)])
 
@@ -146,9 +146,21 @@ class Theme:
         s = self.style
         s.configure(".", background=BG, foreground=INK, font=self.face(), bordercolor=LINE)
         self._button("Fleet.TButton", "primary", "primary-hover", WHITE, (16, 11))
+        self._button("Scope.TButton", "soft", "soft-hover", INK, (18, 10))
+        s.configure("Scope.TButton", font=self.face(23, True))
+        self._button("Menu.TButton", "nav", "nav-hover", INK, (16, 14), "nav-selected")
+        s.configure("Menu.TButton", font=self.face(17), anchor="w")
+        s.layout("ScopeOption.TButton",[("Button.focus",{"sticky":"nsew","children":[("Button.padding",{"sticky":"nsew","children":[("Button.label",{"sticky":"nsew"})]})]})])
+        s.configure("ScopeOption.TButton",font=self.face(17),background=SURFACE,foreground=INK,padding=(12,8),anchor="w",width=0,borderwidth=0)
+        s.map("ScopeOption.TButton",background=[("selected",SOFT),("active",RAISED)],foreground=[("selected",ACCENT)])
         self._button("Soft.TButton", "soft", "soft-hover", INK, (12, 4))
         self._button("Nav.TRadiobutton", "nav", "nav-hover", INK, (16, 16), "nav-selected")
         s.configure("Nav.TRadiobutton", font=self.face(18), anchor="w", background=SURFACE)
+        for name, asset, padding in [("Popover.TFrame", "soft", (8, 8)), ("MenuRow.TFrame", "nav", (4, 6)), ("SelectedMenuRow.TFrame", "nav-selected", (4, 6))]:
+            element=name+".surface"
+            s.element_create(element,"image",self.image("controls/"+asset+".png"),border=10,sticky="nsew")
+            s.layout(name,[(element,{"sticky":"nsew"})])
+            s.configure(name,padding=padding,background=BG)
         s.configure("Compact.TRadiobutton", font=self.face(13), padding=(10, 10), indicatorrelief="flat")
         s.configure("Fleet.TCheckbutton", background=BG, foreground=MUTED, font=self.face(12), padding=(0, 5))
         s.map("Fleet.TCheckbutton", background=[("active", BG)])

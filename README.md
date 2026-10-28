@@ -4,7 +4,7 @@ Agent Fleet hieß bis Version 0.2 Agent Pool. Der bisherige Befehl `agent-pool` 
 
 **Ein persönlicher Auftragsverteiler für Codex und Claude Code – lokal oder zentral auf Linux, mit Desktop-Manager für Mac und Windows.**
 
-[Installation in 5 Schritten](docs/quickstart.md) · [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) · [Desktop](docs/desktop.md) · [Linux-Server & Remote](docs/remote.md) · [CLI & Betrieb](docs/cli.md) · [Agenten-Skill](skills/agent-fleet/SKILL.md)
+[Installation in 5 Schritten](docs/quickstart.md) · [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) · [Desktop](docs/desktop.md) · [Übersicht & Login](docs/overview-login.md) · [Linux-Server & Remote](docs/remote.md) · [CLI & Betrieb](docs/cli.md) · [Agenten-Skill](skills/agent-fleet/SKILL.md)
 
 Ein Agent vergibt einen Auftrag. Agent Fleet wählt ein verfügbares Profil, startet die offizielle Provider-CLI und speichert den Bericht. Sind die gemeldeten Kontingente ausgeschöpft, wartet die Queue auf den tatsächlichen Reset. Die Desktop-App zeigt parallel, welche Accounts verbunden sind und wie viel Kontingent noch frei ist.
 
@@ -24,11 +24,15 @@ Agent Fleet ist eine Auftragsschicht um die offiziellen CLIs. Es stellt keinen O
 
 ## Neuer Desktop
 
-Die Seitenleiste filtert nach Codex und Claude. Die Kreise zeigen den freien Anteil im 5-Stunden-Fenster, die Balken das Wochenkontingent. Serverauswahl und Aufträge sind direkt erreichbar. Schrift und Icons liegen im App-Paket.
+Die Seitenleiste filtert nach Codex und Claude. Die Kreise zeigen den freien Anteil im 5-Stunden-Fenster, die Balken das Wochenkontingent. Der obere Kontextwechsler trennt lokale Accounts und Remote-Verbindungen. Neue Accounts werden innerhalb der App angemeldet. Schrift und Icons liegen im App-Paket.
 
-![Agent Fleet Desktop mit Beispieldaten](design/2026-10-28/implementation-final-content.png)
+![Agent Fleet Desktop mit Beispieldaten](design/2026-10-28/overview/local.png)
 
 Der neue Desktop ist im Quellstand enthalten; veröffentlichte v0.2.0-Pakete zeigen noch die alte Oberfläche. Zum Bauen die [Desktop-Anleitung](docs/desktop.md) verwenden.
+
+## Neu in 0.4: Übersicht und Login
+
+Oben zwischen **Lokal** und **Remote** wechseln, einen Server öffnen und dort die verfügbaren Accounts sehen. Neue Verbindungen und native Codex-/Claude-Anmeldungen erfolgen innerhalb der App. Aufträge übernehmen Agenten über CLI und Skill. [Ablauf und Prüfstand](docs/overview-login.md).
 
 ## Neu: zentraler Server
 
@@ -40,7 +44,7 @@ agent-fleet --remote zentral desktop
 agent-fleet --remote zentral job submit --provider codex --workspace projekt --prompt-file auftrag.txt --key review-001
 ```
 
-Voraussetzung ist die einmalige Servereinrichtung einschließlich SSH-Schlüsselzugang und registriertem Workspace. Die [vollständige Anleitung](docs/remote.md) beschreibt Installation, Headless-Login, systemd und Windows. Server und Clients aus demselben Quellstand bauen; bestehende v0.2.0-Downloads enthalten die Remote-Erweiterung noch nicht.
+Voraussetzung ist die einmalige Servereinrichtung einschließlich SSH-Schlüsselzugang und registriertem Workspace. Die [vollständige Anleitung](docs/remote.md) beschreibt Installation, Headless-Login, systemd und Windows. Server und Clients aus demselben Quellstand bauen; ältere Release-Downloads enthalten die neue 0.4-Anmeldung noch nicht.
 
 ## Schnellstart · Mac
 
