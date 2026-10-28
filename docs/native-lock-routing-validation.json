@@ -96,12 +96,54 @@
         "existing_pool_routing": 7,
         "remote_cancellation": 26
       },
-      "notes": "Provider/pin/quota/hold/model priority and edit-review behavior preserved; busy alone permits same-tick retry."
+      "notes": "Provider/pin/quota/hold/model priority and edit-review behavior preserved; busy alone permits same-tick retry.",
+      "evidence_followup": {
+        "commit": "2bab771",
+        "open_findings": 0,
+        "verified": "All four log hashes/tails match; red commit retains baseline worker unchanged; contract evidence pointer resolves."
+      }
     }
   },
   "hosted_ci": {
-    "status": "pending_pr_inspection",
-    "meaning": "Local passing tests are separate from hosted CI. Known billing limitation must be confirmed from current annotations."
+    "status": "billing_blocked_not_passed",
+    "inspected_commit": "2bab771f6757012db3f0afc594d2215ef49b5785",
+    "checks": [
+      {
+        "check_run_id": 123116793203,
+        "name": "test (ubuntu-latest, 3.11)",
+        "details_url": "https://github.com/the-fin-at/agent-pool/actions/runs/40773544567/job/123116793203",
+        "failure_annotations": [
+          "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings"
+        ]
+      },
+      {
+        "check_run_id": 123116793179,
+        "name": "test (ubuntu-latest, 3.14)",
+        "details_url": "https://github.com/the-fin-at/agent-pool/actions/runs/40773544567/job/123116793179",
+        "failure_annotations": [
+          "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings"
+        ]
+      },
+      {
+        "check_run_id": 123116761637,
+        "name": "test (ubuntu-latest, 3.14)",
+        "details_url": "https://github.com/the-fin-at/agent-pool/actions/runs/40773535284/job/123116761637",
+        "failure_annotations": [
+          "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings"
+        ]
+      },
+      {
+        "check_run_id": 123116761633,
+        "name": "test (windows-latest, 3.11)",
+        "details_url": "https://github.com/the-fin-at/agent-pool/actions/runs/40773535284/job/123116761633",
+        "failure_annotations": [
+          "The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings"
+        ]
+      }
+    ],
+    "pending": [],
+    "meaning": "Every failed check was blocked before start by billing/spending limit; remaining matrix checks cancelled. Hosted tests did not run. Local Mac/Tk results remain separate evidence.",
+    "merge_authorization": "Prior human authorization allows reviewed merge under this known billing limitation."
   },
   "limitations": [
     "No new server installation or production deployment; installed runtimes retain previous behavior until separately updated.",
