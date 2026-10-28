@@ -19,3 +19,7 @@ Am 2026-10-28 wurde der Wiki-Ort `agent-pool/wiki/` von Johannes im Chief-of-Sta
 ## Verifizierter Integrationscheckpoint vom 2026-10-28
 
 [PR #15](https://github.com/the-fin-at/agent-pool/pull/15) schloss den Profilwahl-/Skill-Strang ab; die anschließend lokal geprüfte gemeinsame `main`/`origin/main`-Basis war `3c9d7faf53025a1271f6ad65e2ea4a0c25e9e548`. Abschlussbelege und der daraus folgende nächste Integrationsschritt ergänzen [Aufträge](auftraege.md), [Entscheidungen](entscheidungen.md) und [Releaseplan](release-1.0.md). Frühere offene Beobachtungen bleiben als Verlauf erhalten.
+
+## Nutzerkorrektur und Abnahmecheckpoint vom 2026-10-28
+
+Die [Zielauswahl pro Projekt](entscheidungen.md) ersetzt die frühere persönliche maschinenweite Standardziel-Empfehlung. [Zielauftrag](ziel.md), [Auftragsübersicht](auftraege.md) und [Releaseplan](release-1.0.md) enthalten den daraus folgenden Vertrag. Zusätzlich dokumentiert die Auftragsübersicht den Merge dieses Wikis über PR #16 und einen getrennten kontrollierten Python-Prozessnachweis; daraus folgt keine Rust-Abnahme.
