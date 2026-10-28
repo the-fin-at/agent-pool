@@ -1,0 +1,227 @@
+{
+  "date": "2026-10-28",
+  "issue": 17,
+  "reviewed_source": "5883258fd670c8a7dc52fcd1b307331a1ea0b785",
+  "baseline": "3c9d7faf53025a1271f6ad65e2ea4a0c25e9e548",
+  "runtime_changed": false,
+  "services_restarted": false,
+  "inference_submitted": false,
+  "target_contract": "Explicit current-task target wins, otherwise Chief-of-Staff project handoff or clearly established same-project target. Missing/ambiguous target requires clarification before submission; continue independent work. No cross-project inheritance, global target, sole-remote/account inference or implicit local fallback.",
+  "policy_retraction": {
+    "mac": {
+      "path": "/Users/johannesthurner/Library/Application Support/AgentPool/skill-policy.json",
+      "action": "removed_obsolete_file",
+      "backup": "/Users/johannesthurner/Library/Application Support/AgentPool/skill-policy.before-project-scope-1c4ca47982fd4e5b9f833816301f1d67.json",
+      "original_sha256": "15f8c8f4274a9966595db0355b7937a6d875e88bfca975693f7b80d3120ac0e7",
+      "retained_fields": []
+    },
+    "linux": {
+      "path": "/home/clawadmin/.local/share/agent-pool/skill-policy.json",
+      "action": "removed_obsolete_file",
+      "backup": "/home/clawadmin/.local/share/agent-pool/skill-policy.before-project-scope-f25b8cc558ae41a696de2aed58bc57e6.json",
+      "original_sha256": "3ff141b2bdb0774cdfdd7e3d7818ef70f97f78bca4166f7cc2a5a3de22462224",
+      "retained_fields": []
+    },
+    "verification": "Both original skill-policy.json files absent after retraction. Backups retain original bytes. Neither file had unrelated fields to preserve; connection/account data was outside the mutations."
+  },
+  "installed_skills": {
+    "mac": {
+      "skills": [
+        "agent-fleet",
+        "agent-pool"
+      ],
+      "roots": [
+        "/Users/johannesthurner/.agents/skills",
+        "/Users/johannesthurner/.claude/skills"
+      ],
+      "updated_files": 8,
+      "backup": "/Users/johannesthurner/.local/share/agent-fleet-skill-backups/b7f90ab90a804dfa8cac25e0eb1b0e76",
+      "verification": {
+        "checked_files": [
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-fleet/SKILL.md",
+            "sha256": "5332045953a730094dcf0b360423055c11faf684e173dbd9ae58899437761098"
+          },
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-fleet/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-fleet/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-pool/SKILL.md",
+            "sha256": "406943900ba65a5694b71f59da6c61f2f115439a5fbfc0863ec98276a9b8a61e"
+          },
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-pool/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/Users/johannesthurner/.agents/skills/agent-pool/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-fleet/SKILL.md",
+            "sha256": "5332045953a730094dcf0b360423055c11faf684e173dbd9ae58899437761098"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-fleet/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-fleet/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-pool/SKILL.md",
+            "sha256": "406943900ba65a5694b71f59da6c61f2f115439a5fbfc0863ec98276a9b8a61e"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-pool/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/Users/johannesthurner/.claude/skills/agent-pool/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          }
+        ],
+        "global_policy_absent": "/Users/johannesthurner/Library/Application Support/AgentPool/skill-policy.json"
+      },
+      "method": "Existing files compared against actual baseline Git content from 3c9d7fa or identical new content; customized files cause refusal. Only these two skills were in the manifest."
+    },
+    "linux": {
+      "skills": [
+        "agent-fleet",
+        "agent-pool"
+      ],
+      "roots": [
+        "/home/clawadmin/.agents/skills",
+        "/home/clawadmin/.claude/skills"
+      ],
+      "updated_files": 8,
+      "backup": "/home/clawadmin/.local/share/agent-fleet-skill-backups/408e982c952d47d6a85ed8608b223c20",
+      "verification": {
+        "checked_files": [
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-fleet/SKILL.md",
+            "sha256": "5332045953a730094dcf0b360423055c11faf684e173dbd9ae58899437761098"
+          },
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-fleet/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-fleet/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-pool/SKILL.md",
+            "sha256": "406943900ba65a5694b71f59da6c61f2f115439a5fbfc0863ec98276a9b8a61e"
+          },
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-pool/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/home/clawadmin/.agents/skills/agent-pool/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-fleet/SKILL.md",
+            "sha256": "5332045953a730094dcf0b360423055c11faf684e173dbd9ae58899437761098"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-fleet/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-fleet/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-pool/SKILL.md",
+            "sha256": "406943900ba65a5694b71f59da6c61f2f115439a5fbfc0863ec98276a9b8a61e"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-pool/references/project-target.md",
+            "sha256": "de5a188148e5c5c5e4a333a11d9cb6da831f84d2e52cc5df6203fea0e57bbcd2"
+          },
+          {
+            "path": "/home/clawadmin/.claude/skills/agent-pool/references/quota-routing.md",
+            "sha256": "2ee100ad99a578bb184c736961a01a52ecd61c8f336e95c03b4c0634154ed9b3"
+          }
+        ],
+        "global_policy_absent": "/home/clawadmin/.local/share/agent-pool/skill-policy.json"
+      },
+      "method": "Existing files compared against actual baseline Git content from 3c9d7fa or identical new content; customized files cause refusal. Only these two skills were in the manifest."
+    }
+  },
+  "checks": {
+    "routing": {
+      "command": "/private/tmp/agent-pool-desktop-build/bin/python -m unittest discover -s tests -p test_pool_routing.py -v",
+      "passed": 7,
+      "boundary": "isolated Store/tick with controlled provider; includes runtime same-job account failover"
+    },
+    "installation": {
+      "command": "/private/tmp/agent-pool-desktop-build/bin/python -m unittest discover -s tests -p test_installation.py -v",
+      "passed": 1,
+      "boundary": "temporary fresh install and repeat preserving customized skill"
+    },
+    "skill_syntax": {
+      "validator": "skill-creator/scripts/quick_validate.py",
+      "passed": [
+        "skills/agent-fleet",
+        "skills/agent-pool"
+      ]
+    },
+    "diff_check": "passed"
+  },
+  "independent_reviews": {
+    "standards": {
+      "reviewed_source": "5883258",
+      "open_findings": 0,
+      "scope": "AGENTS, glossary/domain, issue tracker, ADR-0001, writing-for-agents and skill mechanics"
+    },
+    "spec": {
+      "reviewed_source": "5883258",
+      "open_behavioral_findings": 0,
+      "evidence_pointer_pending_at_review": "This file supplies the formerly pending correction-evidence pointer."
+    }
+  },
+  "forward_scenarios": {
+    "method": "Independent reviewer reasoning from active instructions, not live model inference or actual job submission. Runtime account behavior separately tested above.",
+    "results": [
+      {
+        "context": "Project A remote, then project B without target",
+        "decision": "Ask for B target before submitting; continue independent work."
+      },
+      {
+        "context": "Project B explicitly local with a sole configured remote",
+        "decision": "Confirm B directory, inspect local status/quota, submit locally without profile pin."
+      },
+      {
+        "context": "Project C remote handoff includes named connection and workspace/server path",
+        "decision": "Validate connection and workspace/path, inspect chosen target capacity, submit with --remote and server --workspace."
+      },
+      {
+        "context": "Same-project continuation",
+        "decision": "Reuse unambiguous same-project target/workspace unless explicit current task overrides."
+      },
+      {
+        "context": "Conflicting/missing project identity or unresolved server workspace/path",
+        "decision": "Clarify missing decision before submission; no client-path substitution or local fallback."
+      }
+    ]
+  },
+  "historical_proof": "agent-routing-validation.json remains the earlier true live-job record; its machine-global target decision is explicitly marked superseded.",
+  "hosted_ci": {
+    "status": "pending_pr_check_inspection",
+    "note": "Known billing limit is not green CI; inspect current PR annotations before merge."
+  },
+  "limitations": [
+    "Agent target selection is an instruction contract; no runtime project-target schema was added.",
+    "Forward project scenarios were independently evaluated as agent decisions, not exercised through paid inference."
+  ]
+}

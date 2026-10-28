@@ -14,7 +14,7 @@ The shared skills remain portable; actual project targets are supplied with proj
 
 The earlier acceptance used machine-local `skill-policy.json` files (Mac: remote `claw-remote`; Linux: local pool). The user corrected that decision: targets are project-scoped and supplied to Chief of Staff as project information. The skills no longer consult a machine-global target. Both previously introduced files were backed up and their `default_target` removed; because only `version` remained, the obsolete files were removed. Connection/account data stays intact.
 
-The earlier live job below remains historical evidence of automatic account selection. Its target-from-policy step is superseded and is not a current routing instruction.
+The earlier live job below remains historical evidence of automatic account selection. Its target-from-policy step is superseded and is not a current routing instruction. [Correction checks, policy backups and installed skill hashes](project-target-validation.json) record the project-scoped follow-up.
 
 ## Required scheduler behavior
 
