@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Fleet einrichten"
+  short_description: "Agent Fleet installieren und Accounts anmelden"
+  default_prompt: "Nutze $setup-agents-fleet, um Agent Fleet auf diesem Rechner einzurichten und mich durch die Account-Anmeldung zu führen."
