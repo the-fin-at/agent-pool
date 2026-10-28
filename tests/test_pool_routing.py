@@ -83,3 +83,25 @@ class PoolRoutingTests(unittest.TestCase):
         self.assertEqual(self.store.job(first['id'])['status'],'waiting')
         self.assertEqual(self.store.job(first['id'])['attempts'],0)
         self.assertEqual(self.store.job(second['id'])['status'],'succeeded')
+
+    def test_explicit_pin_to_full_profile_waits_despite_other_free_account(self):
+        self.windows('a',five=100);self.windows('b')
+        job=self.submit(profile='a');chosen=[]
+        self.assertFalse(self.run_tick(lambda p,*a:chosen.append(p['name']) or Outcome('success','unexpected')))
+        self.assertEqual(chosen,[])
+        self.assertEqual(self.store.job(job['id'])['status'],'waiting')
+        self.assertEqual(self.store.job(job['id'])['attempts'],0)
+
+    def test_model_specific_limit_blocks_only_requested_family_without_provider_change(self):
+        self.store.add_profile('claude','claude','claude');self.store.update_profile('claude',enabled=True)
+        self.store.set_windows('claude',[
+            {'key':'five_hour','bucket':'claude','minutes':300,'used':10,'reset':self.now+300},
+            {'key':'seven_day_opus','bucket':'claude','minutes':10080,'used':100,'reset':self.now+600,'model':'opus'}])
+        sonnet=self.store.submit('Read',self.root,'claude',model='sonnet',key='sonnet')
+        opus=self.store.submit('Read',self.root,'claude',model='opus',key='opus')
+        chosen=[];runner=lambda p,j,*a:chosen.append((p['name'],j['model'])) or Outcome('success','done')
+        self.run_tick(runner);self.run_tick(runner)
+        self.assertEqual(chosen,[('claude','sonnet')])
+        self.assertEqual(self.store.job(sonnet['id'])['status'],'succeeded')
+        self.assertEqual(self.store.job(opus['id'])['status'],'waiting')
+        self.assertEqual(self.store.job(opus['id'])['provider'],'claude')
