@@ -39,3 +39,7 @@ Ein unabhängiges Review identifizierte einen gemeinsamen Python-/Rust-Schedulin
 ## Wiederaufnahme-Checkpoint vom 2026-10-28: native Abnahme weiterhin offen
 
 Der zusätzliche Python-Gegencheck am gemergten `ddbc859` bestand. Die [Auftragsübersicht](auftraege.md) hält außerdem begrenzte Rust-Busy-Quell-/Testbelege fest. Eine später wiederholte native Mac-WebView-Prüfung lief jedoch in ein Timeout; Build und frühere Teilprüfungen sind dadurch keine finale Abnahme. [Entscheidungen](entscheidungen.md) und [Releaseplan](release-1.0.md) dokumentieren die lokale Diagnose sowie die offene direkte Nutzerzustimmung für einen zuvor automatisch abgelehnten isolierten Linux-Quelltransfer. Eine Veröffentlichung oder Produktionsaktualisierung wurde nicht daraus abgeleitet.
+
+## Linux-Nachweis und begrenzte native UI-Auflösung: Checkpoint vom 2026-10-28
+
+Direkte Nutzerzustimmung ermöglichte die isolierten Linux-Tests; 22 native Fälle und 100 eindeutige kontrollierte Ausführungen bestanden auf dem echten Host. Die [Auftragsübersicht](auftraege.md) und [Entscheidungen](entscheidungen.md) grenzen diese Belege sowie einen historisch bestätigten 23-Schritt-Mac-Nachweis vom weiterhin nicht akzeptierten finalen Kandidaten ab. Zwei spätere Reviewfälle benötigen Korrektur, betroffene Wiederholungsprüfungen und erneutes Review; siehe [Releaseplan](release-1.0.md).

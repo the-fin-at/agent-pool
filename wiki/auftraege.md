@@ -86,3 +86,17 @@ Der zusätzliche Python-Befundreview ist am gemergten `ddbc859` abgeschlossen: v
 | Gemeinsame finale Integration | Rust-Busy-Quell-/Testdesign geprüft, eigene Läufe grün gemeldet; kein eingefrorener finaler Commit mit sämtlichen Belegen | Rust-Verantwortlicher schließt lokale Diagnose und erforderliche Kandidatenprüfungen ab; Chief of Staff koordiniert Gegenprüfung auf genau diesem Commit |
 
 Die automatische Ablehnung akzeptierte eine aus Toolausgaben abgeleitete frühere Transferfreigabe nicht als ausreichende direkte Zustimmung. Der Migrationsverantwortliche hat die Frage im ursprünglichen Chat gestellt und setzt unabhängige lokale Arbeit fort. Es wird kein alternativer Uploadpfad zur Umgehung benutzt. Kein produktiver Serverruntime wurde aktualisiert. Quelle: jüngste Kommentierungen im Migrationschat `01a18220-ca9a-7490-a64f-6cebc721d916` und Übergabe im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` am 2026-10-28. Dieser Wiki-Checkpoint bleibt ausschließlich lokal und ändert weder Quellcode noch gemeinsame Arbeitskopie.
+
+## Freigegebene Linux-Prüfung und weitere Reviewkorrekturen: 2026-10-28
+
+Die direkte Nutzerfreigabe im Chief-of-Staff-Chat löste die vorherige konkrete Linux-Transferfrage. Der tatsächliche Linux-Host bestand 22 native Kompatibilitätsfälle und die kontrollierte Last mit 100 eindeutigen Ausführungen. Ein unabhängiger echter SSH-Antwortverlust-/Retry-Nachweis bestätigte einen Job bei identischer Wiederholung, ohne Modellworker oder echte Inferenz. Binärhash, lokale Buildumgebung, echte Hostausführung und nicht final eingefrorene Quellbasis sind in [Entscheidungen](entscheidungen.md) getrennt erfasst. Produktiver Dienst und Auth-Daten blieben erhalten.
+
+Die Nutzerinformation über den entsperrten Mac führte zur Diagnose des falschen CoreGraphics-Console-Schlüssels im Vorprüfhelfer. Der Fehler wurde im bereits vorhandenen Kandidatencommit `131278bf7266a05c9fb580c7a01559c91ee98d7a` korrigiert. Ein historischer 23-Schritt-Nativnachweis wurde anhand der tatsächlichen Artefakte und Quellhashes aufgelöst; es wurde dabei kein neuer UI-Lauf behauptet. Damit sind die pauschalen bisherigen Grenzen „Linux-Transferzustimmung offen“ und „späteres Console-Preflight meldet nicht verfügbar“ für diesen Checkpoint überholt, nicht aber die Anforderung betroffener neuer Kandidatenprüfungen.
+
+| Nächster Übergabepunkt | Verantwortlicher und offene Grenze |
+| --- | --- |
+| Connection-Dialog gegen verspätete Save-Antwort schützen | Migrationsverantwortlicher korrigiert den neu gefundenen Fall mit Regression; danach betroffene UI-Prüfung und erneutes Review |
+| Dateisystem-Lockfehler von tatsächlicher Belegung trennen | Migrationsverantwortlicher korrigiert Fehlerklassifikation mit Regression; Busy darf echte Dateisystemfehler nicht verschleiern |
+| Gemeinsamen endgültigen Kandidaten abnehmen | Konkreter Folgecommit nach den Fixes, passende wiederholte native Prüfungen und zwei Reviewachsen vor Push/Merge; Chief of Staff koordiniert die belegte Zusammenführung |
+
+Quelle: direkte Nutzernachrichten und lokale Ausführungsnachweise im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` sowie jüngste Prüf-/Reviewmeldungen im Migrationschat `01a18220-ca9a-7490-a64f-6cebc721d916` am 2026-10-28. Der Kandidat war weiterhin nicht final akzeptiert. Eine Produktionsumstellung, ein bestandenes Windows-Gate oder ein erfolgreicher DMG-Abschluss wurden dadurch nicht belegt.
