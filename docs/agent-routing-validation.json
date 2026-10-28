@@ -44,5 +44,12 @@
   "review": {
     "standards_open": 0,
     "spec_open": 0
+  },
+  "historical_target_policy": {
+    "status": "superseded",
+    "date": "2026-10-28",
+    "reason": "User requires project-scoped targets supplied through explicit task, Chief-of-Staff project handoff, or same-project established context.",
+    "earlier_policy_and_live_job_fields": "Retained as historical evidence; not current target-selection instructions.",
+    "correction_evidence": "project-target-validation.json"
   }
 }
