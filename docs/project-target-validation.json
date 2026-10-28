@@ -182,12 +182,21 @@
     "standards": {
       "reviewed_source": "5883258",
       "open_findings": 0,
-      "scope": "AGENTS, glossary/domain, issue tracker, ADR-0001, writing-for-agents and skill mechanics"
+      "scope": "AGENTS, glossary/domain, issue tracker, ADR-0001, writing-for-agents and skill mechanics",
+      "evidence_followup": {
+        "reviewed_commit": "9165251",
+        "open_findings": 0,
+        "verified": "All 24 installed-file hashes match tracked source; correction/history pointers resolve."
+      }
     },
     "spec": {
       "reviewed_source": "5883258",
       "open_behavioral_findings": 0,
-      "evidence_pointer_pending_at_review": "This file supplies the formerly pending correction-evidence pointer."
+      "evidence_followup": {
+        "reviewed_commit": "9165251",
+        "open_findings": 0,
+        "verified": "Policy/install artifacts match; Mac originals/backups/installed hashes checked independently; remote artifact matches same source."
+      }
     }
   },
   "forward_scenarios": {
@@ -217,8 +226,20 @@
   },
   "historical_proof": "agent-routing-validation.json remains the earlier true live-job record; its machine-global target decision is explicitly marked superseded.",
   "hosted_ci": {
-    "status": "pending_pr_check_inspection",
-    "note": "Known billing limit is not green CI; inspect current PR annotations before merge."
+    "status": "blocked_billing_not_passed",
+    "inspected_commit": "91652515b7787a955a68719a7c0d4cfb333da94d",
+    "runs": [
+      40771493034,
+      40771503600
+    ],
+    "failure_check_runs": [
+      123109573863,
+      123109611281
+    ],
+    "annotation": "The job was not started because recent account payments have failed or your spending limit needs to be increased.",
+    "other_matrix_jobs": "cancelled",
+    "meaning": "Hosted matrix did not run; local checks and independent review are separate evidence.",
+    "merge_authorization": "Prior human authorization allows reviewed merge with this known billing limitation."
   },
   "limitations": [
     "Agent target selection is an instruction contract; no runtime project-target schema was added.",
