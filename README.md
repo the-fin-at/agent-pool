@@ -63,6 +63,8 @@ py -3 dist/agent-pool.pyz quota refresh codex-1
 py -3 dist/agent-pool.pyz doctor
 ```
 
+**Aktueller Download:** Das portable Windows-Paket (`.pyzw`, Python mit Tk erforderlich). Eine native Windows-EXE ist noch nicht veröffentlicht, weil der GitHub-Runner wegen Kontoabrechnung/Ausgabenlimit nicht gestartet wurde. [Details zum Prüfstand](docs/validation.md).
+
 **Desktop:** Das Windows-Desktop-Paket vollständig entpacken. Bei einem nativen Build `Agent Pool.exe` zusammen mit seinem `_internal`-Ordner behalten. Das portable `Agent Pool.pyzw` benötigt Python mit Tk und startet alternativ mit `pyw -3 '.\Agent Pool.pyzw'`.
 
 Für die CLI kann unter Windows jeder folgende Aufruf von `agent-pool` durch `py -3 dist/agent-pool.pyz` ersetzt werden. Native Provider-`.exe` verwenden; npm-`.cmd`-/`.bat`-Shims werden nicht unterstützt. [Windows-Schritte und Builds](docs/quickstart.md#windows).

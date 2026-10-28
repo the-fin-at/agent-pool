@@ -20,6 +20,8 @@ Das Mac-Paket enthält Python und Tk; dafür ist kein Python-Setup nötig. Für 
 
 ## Windows
 
+Aktuell steht das portable `.pyzw`-Paket zur Verfügung. Der native EXE-Build wurde von GitHub vor Runner-Start wegen Kontoabrechnung/Ausgabenlimit blockiert; es wird kein erfolgreicher Windows-Build behauptet. [CI-Nachweis](validation.md#ci-und-builds).
+
 Das portable Paket `dist/Agent-Pool-Windows-Portable.zip` enthält `Agent Pool.pyzw`, das CLI-Paket und diese Anleitung. Voraussetzung ist Python 3.11+ **mit Tcl/Tk**, wie im regulären Python-Windows-Installer angeboten, sowie die native Codex-CLI für Live-Quoten.
 
 Nach dem Entpacken `Agent Pool.pyzw` doppelklicken. Falls die Dateizuordnung fehlt, aus PowerShell starten:

@@ -31,7 +31,14 @@ Die mit PyInstaller gebaute Apple-Silicon-App wurde als eigener Prozess gestarte
 
 Die Testmatrix in `.github/workflows/test.yml` umfasst macOS, Windows und Linux mit Python 3.11/3.14. Der manuell startbare Workflow `desktop-build` baut native Desktop-Pakete mit Python 3.12 auf Mac und Windows.
 
-CI-Ergebnisse werden nach dem ersten Repository-Lauf ergänzt. Ein Workflow im Repository allein ist noch kein Nachweis eines erfolgreichen Laufs.
+Die ersten Läufe am 28. Oktober 2026 wurden **vor dem Start der eigentlichen Jobs durch GitHub blockiert**:
+
+- [Testmatrix](https://github.com/the-fin-at/agent-pool/actions/runs/40681076817)
+- [Native Desktop-Builds](https://github.com/the-fin-at/agent-pool/actions/runs/40681071080)
+
+Die Windows-Build- und Test-Annotations melden denselben Grund: fehlgeschlagene Kontozahlungen oder ein zu niedriges Ausgabenlimit. Es wurden keine Build-/Test-Schritte ausgeführt. Daraus folgt kein Code-Testergebnis; die CI ist aktuell nicht erfolgreich verifiziert. Kontoabrechnung und Limits wurden nicht verändert.
+
+Das Release enthält deshalb die lokal geprüfte Apple-Silicon-App und das portable Windows-Archiv mit Python-/Tk-Voraussetzung. Eine native Windows-EXE wurde nicht erzeugt. Nach Freigabe der GitHub-Abrechnung können die Workflows erneut gestartet werden.
 
 ## Offene Live-Prüfungen
 
