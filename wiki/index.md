@@ -35,3 +35,7 @@ Ein unabhängiges Review identifizierte einen gemeinsamen Python-/Rust-Schedulin
 ## Python-Lock-Fix abgeschlossen: Checkpoint vom 2026-10-28
 
 [PR #21](https://github.com/the-fin-at/agent-pool/pull/21) liefert den Python-Referenzfix gegen den belegten Accountlock-Fall auf `ddbc859cbecb7c7af80fc2be918574d34d0099d7`. [Entscheidungen](entscheidungen.md), [Aufträge](auftraege.md) und [Releaseplan](release-1.0.md) trennen die gemergten 145-Test-/Lock-Belege vom noch ausstehenden finalen Rust-Kandidaten. Die produktive Serverruntime wurde dadurch nicht aktualisiert.
+
+## Wiederaufnahme-Checkpoint vom 2026-10-28: native Abnahme weiterhin offen
+
+Der zusätzliche Python-Gegencheck am gemergten `ddbc859` bestand. Die [Auftragsübersicht](auftraege.md) hält außerdem begrenzte Rust-Busy-Quell-/Testbelege fest. Eine später wiederholte native Mac-WebView-Prüfung lief jedoch in ein Timeout; Build und frühere Teilprüfungen sind dadurch keine finale Abnahme. [Entscheidungen](entscheidungen.md) und [Releaseplan](release-1.0.md) dokumentieren die lokale Diagnose sowie die offene direkte Nutzerzustimmung für einen zuvor automatisch abgelehnten isolierten Linux-Quelltransfer. Eine Veröffentlichung oder Produktionsaktualisierung wurde nicht daraus abgeleitet.
