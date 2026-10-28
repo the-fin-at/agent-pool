@@ -28,3 +28,13 @@ Current candidate preference after eligibility filtering: earliest available wee
 `python -m unittest discover -s tests -p test_pool_routing.py -v` proves seven scenarios against the public Store/tick boundary: full5h skip, full-week skip, runtime same-job failover/unknown reset hold, earliest jointly eligible reset, other-provider queue progress, explicit full-profile pin, and model-family isolation without provider substitution. The test provider runner is controlled and isolated; real account quotas are never overwritten or deliberately exhausted.
 
 Existing broker/quota tests additionally cover unknown utilization, model-specific applicability, provider/pin boundaries, edit-review semantics and earliest-weekly preference. These behaviors must remain equivalent when migrating from Python to another backend; a new implementation need not preserve module names, but should run equivalent public CLI/queue scenarios.
+
+## Delivered proof
+
+Reviewed source: `003ccfd`, against main `50e4297`. Standards: 0 open findings; Spec: 0 open findings. The read-only forward review covered full5h/free alternative, all blocked with an existing job, explicit pin, required Opus vs free Sonnet, unknown utilization, and an authorized provider switch with cancellation confirmation.
+
+The complete Mac/Tk suite passes **141 tests**. The seven isolated routing cases also pass on the real Linux host. A real Codex submission resolved its target from the owner's machine-local policy, omitted `--profile` and used the normal six-attempt budget. Job `07d24f30aad04f9486286554f0de992e` had `profile: null`, was automatically assigned to `server-codex`, succeeded in one attempt and returned the verified result `{"routing_check":"OK","sum":42}`.
+
+The real pool had usable capacity, so the live job proves unpinned routing, not an actually exhausted account. Exhaustion and failover were proved in isolated tests; real account limits were not falsified or deliberately consumed. Updated Codex/Claude skill files are installed on Mac and server with previous owned versions backed up. No service restart or executable update was necessary.
+
+[Normalized evidence](agent-routing-validation.json). Hosted CI is a separate gate; the known billing block is not a passing matrix run. Personal policy files stay on their respective machines.

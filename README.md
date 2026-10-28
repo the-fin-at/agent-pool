@@ -183,3 +183,5 @@ Der lokale Mac-Lauf besteht aus **55 erfolgreichen Tests**, einschließlich nati
 Realer Linux-Betrieb und drei Prüfschleifen auf `claw-remote`: [Einrichtung, Fehlerfälle und Messwerte](docs/claw-remote-validation.md).
 
 0.4.2 liest Claudes native `unifiedWindows` für 5-Stunden- und Wochenlimits. [Vier echte Account-Aufträge und geprüfte Kontingentanzeige](docs/live-account-validation.md).
+
+Der Agenten-Skill verwendet bei normalen Aufträgen automatische Profilwahl ohne `--profile`: volle 5-Stunden-/Wochenfenster werden berücksichtigt, alternative passende Accounts genutzt und nur bei fehlender Kapazität wartet der bestehende Auftrag. [Verhaltensvertrag und Tests](docs/agent-routing-contract.md). Persönliche Standardziele liegen maschinenlokal unter `<connection-info.home>/skill-policy.json`; die CLI benötigt weiterhin explizit `--remote`.

@@ -1,0 +1,48 @@
+{
+  "reviewed_commit": "003ccfd",
+  "runtime_changed": false,
+  "local_suite": {
+    "tests": 141,
+    "passed": true
+  },
+  "real_linux_routing_tests": {
+    "tests": 7,
+    "passed": true,
+    "isolated": true,
+    "controlled_runner": true
+  },
+  "real_unpinned_job": {
+    "target_from_policy": "claw-remote",
+    "job_id": "07d24f30aad04f9486286554f0de992e",
+    "profile_pin": null,
+    "max_attempts": 6,
+    "job": {
+      "id": "07d24f30aad04f9486286554f0de992e",
+      "profile": null,
+      "chosen_profile": "server-codex",
+      "status": "succeeded",
+      "attempts": 1,
+      "max_attempts": 6,
+      "result": "{\"routing_check\":\"OK\",\"sum\":42}"
+    },
+    "result_verified": true
+  },
+  "skills_installed": {
+    "mac": [
+      "codex",
+      "claude"
+    ],
+    "linux": [
+      "codex",
+      "claude"
+    ]
+  },
+  "personal_policy": {
+    "mac": "remote connection, outside repository",
+    "linux": "local pool, outside repository"
+  },
+  "review": {
+    "standards_open": 0,
+    "spec_open": 0
+  }
+}
