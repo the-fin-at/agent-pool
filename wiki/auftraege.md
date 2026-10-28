@@ -100,3 +100,19 @@ Die Nutzerinformation über den entsperrten Mac führte zur Diagnose des falsche
 | Gemeinsamen endgültigen Kandidaten abnehmen | Konkreter Folgecommit nach den Fixes, passende wiederholte native Prüfungen und zwei Reviewachsen vor Push/Merge; Chief of Staff koordiniert die belegte Zusammenführung |
 
 Quelle: direkte Nutzernachrichten und lokale Ausführungsnachweise im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` sowie jüngste Prüf-/Reviewmeldungen im Migrationschat `01a18220-ca9a-7490-a64f-6cebc721d916` am 2026-10-28. Der Kandidat war weiterhin nicht final akzeptiert. Eine Produktionsumstellung, ein bestandenes Windows-Gate oder ein erfolgreicher DMG-Abschluss wurden dadurch nicht belegt.
+
+## Gemeinsame Integration abgeschlossen: 2026-10-28, 23:18 Uhr Wien
+
+Der Root-Koordinator und eine unabhängige Bestandsaufnahme verifizierten [PR #22](https://github.com/the-fin-at/agent-pool/pull/22) als gemergt bei `9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7`. Der finale geprüfte Code ist `c47144087d3d7f665600ef0183af1c94dcd5180d`; PR-Head `a277c5525b9371017e65ca1b43c1fcd863424996` ergänzt nur Belege und das finale Fensterbild. Die erforderlichen Vorgänger PR #13/#15/#18/#21 wurden als Vorfahren geprüft. Der Integrationsauftrag an den Rust-Chat ist dadurch abgeschlossen; die früheren offenen Fix-/Kandidatenmeldungen sind überholt.
+
+Die direkt gelesenen [finalen Abnahmequellen](../docs/rust-tauri-validation.json), [Migrationsdokumentation](../docs/rust-migration.md) und [Reviews](../docs/reviews/rust-tauri-review.md) belegen die korrigierten beiden P2-Fälle, null offene Standards-/Spec-Befunde und die vollständigen Mac-/isolierten Linux-Nachweise. Die unabhängige finale Mac-Artefaktprüfung `fleet-cos-ui-c471-z697abcj/verification.json` bindet 23 native UI-Schritte an den sauberen Code-/Binary-/Assetstand; sie ist keine neu erfundene Wiederholung. Frühere nicht eingefrorene Snapshots und deren frühere Hashes bleiben historische Zwischenstände, nicht die finalen Paketidentitäten.
+
+| Strang | Abschlussbeleg und verbleibende Grenze am 2026-10-28 |
+| --- | --- |
+| Claude-/Profilwahl-/Projektziel-/Busy-Verträge | Auf gemeinsamer Basis in Rust übernommen; 145 Python-, 85 Rust-Kern-, zwei Bridge-, 22 React-Tests; endgültige Reviews abgeschlossen |
+| Daten/Prozesse/SSH | Je 23 Kompatibilitätsfälle und 100 eindeutige kontrollierte Ausführungen auf Mac, Container und echtem isoliertem Linux; echter SSH-Lost-ACK-Retry; sieben alte Remote-IDs/Bericht erhalten |
+| Mac | Finale 23-Schritt-Nativprüfung; CLI und `.app` 0.5.0 installiert und Releasehashes unabhängig verglichen; Rücknahmesicherungen erhalten, Ad-hoc-Signierung ohne öffentliche Notarisierung |
+| Produktiver Server | Weiterhin Python 0.4.2 und Dienst/Accounts unverändert; Rust 0.5 nur im isolierten Testbereich ausgeführt |
+| 1.0 | Windows, gehostete CI, messbare Performance sowie gezielter Upgrade-/Rollback-/Vertriebsnachweis bleiben geplante gesonderte Arbeit |
+
+Der gemeinsame Checkout wurde anschließend unmittelbar auf erwarteten Branch `fix/native-lock-queue-progress@b27267e`, sauberen Bestand, lokalen `main@c5c141e` und `origin/main@9f018a1` geprüft. Nach erneuter Prüfung wurde ausschließlich auf `main` gewechselt und per Fast-forward auf `9f018a1` aktualisiert; der Checkout war danach sauber. Keine Reset-/Clean-/Stash-Aktion, keine Branchlöschung und keine Änderung an der separaten Migrationsarbeitskopie erfolgte. Die frühere Wiki-Sicherung blieb erhalten. Quelle: direkte Ausführungs-/Verifikationsnachweise im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` und Abschluss des Migrationschats `01a18220-ca9a-7490-a64f-6cebc721d916`.

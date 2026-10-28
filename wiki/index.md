@@ -43,3 +43,9 @@ Der zusätzliche Python-Gegencheck am gemergten `ddbc859` bestand. Die [Auftrags
 ## Linux-Nachweis und begrenzte native UI-Auflösung: Checkpoint vom 2026-10-28
 
 Direkte Nutzerzustimmung ermöglichte die isolierten Linux-Tests; 22 native Fälle und 100 eindeutige kontrollierte Ausführungen bestanden auf dem echten Host. Die [Auftragsübersicht](auftraege.md) und [Entscheidungen](entscheidungen.md) grenzen diese Belege sowie einen historisch bestätigten 23-Schritt-Mac-Nachweis vom weiterhin nicht akzeptierten finalen Kandidaten ab. Zwei spätere Reviewfälle benötigen Korrektur, betroffene Wiederholungsprüfungen und erneutes Review; siehe [Releaseplan](release-1.0.md).
+
+## Abgeschlossene 0.5-Integration vom 2026-10-28, 23:18 Uhr Wien
+
+[PR #22](https://github.com/the-fin-at/agent-pool/pull/22) ist gemergt; `main` wurde bei `9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7` geprüft. Rust/Tauri, Claude-Fensterkorrektur, automatische Profilwahl, projektbezogene Zielwahl und native Lock-Fortschritte sind auf gemeinsamer Basis zusammengeführt. Der endgültige Code-/Reviewstand ist `c47144087d3d7f665600ef0183af1c94dcd5180d`; der PR-Head `a277c5525b9371017e65ca1b43c1fcd863424996` ergänzt anschließend nur Belege und die native Fensteraufnahme.
+
+[Zielauftrag](ziel.md), [Entscheidungen](entscheidungen.md) und [Auftragsübersicht](auftraege.md) führen Abschluss, tatsächliche Nachweise und Installationsgrenzen. Der [Releaseplan](release-1.0.md) priorisiert die noch offenen 1.0-Gates. Version 0.5 ist kein behaupteter 1.0-Release: Windows, gehostete CI, gezielte Performance-/Upgrade-/Rollback- und Vertriebsnachweise bleiben gesondert zu liefern. Frühere offene Integrationsmeldungen sind durch diesen datierten Abschluss überholt, bleiben aber als Verlauf erhalten.

@@ -46,3 +46,9 @@ Native Accounts, SSH-Verbindungen und lokale Hostkonfiguration bleiben maschinen
 ## Umgesetzter Zielvertrag: Checkpoint vom 2026-10-28
 
 Die zuvor geforderte ausdrückliche Projektzuordnung wurde mit [PR #18](https://github.com/the-fin-at/agent-pool/pull/18), `the-fin-at/agent-pool@2d7774cad132a542cdf99c8eaf7b3b4567794d90`, als Skill-/Übergabevertrag geliefert. Die [Projektziel-Anleitung](../skills/agent-fleet/references/project-target.md) legt Identität, lokale Arbeitskopie bzw. Remote-Verbindung und Serverworkspace/-pfad fest. Sie gewährt keine zusätzliche Bearbeitungs-, Merge-, Deployment- oder Nachrichtenbefugnis. Es wurde kein neues Runtime-Konfigurationsschema eingeführt. Die gemeinsame Rust-Abnahme bleibt ein eigener, noch zu belegender Schritt.
+
+## Gemeinsames Integrationsergebnis vom 2026-10-28
+
+Der unmittelbar beauftragte Integrationsumfang wurde mit [PR #22](https://github.com/the-fin-at/agent-pool/pull/22) auf `the-fin-at/agent-pool@9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7` zusammengeführt. Der endgültige geprüfte Code `c47144087d3d7f665600ef0183af1c94dcd5180d` enthält die Claude-, Profilwahl-, Projektziel- und Busy-Fortschrittsverträge samt beider späterer Reviewkorrekturen. Die [Abnahmequellen](../docs/rust-migration.md) und [Reviewbelege](../docs/reviews/rust-tauri-review.md) grenzen tatsächliche Mac-/Linux-Prüfungen, kontrollierte Provider und Paketmetadaten voneinander ab.
+
+Mac-CLI und App wurden als 0.5.0 mit den gemergten Releasehashes geprüft. Der produktive Linux-Worker blieb auf Python 0.4.2; Rust 0.5 wurde dort isoliert getestet. Die Planung bis 1.0 bleibt ein eigener, priorisierter Arbeitsauftrag im [Releaseplan](release-1.0.md). Der Abschluss dieser Integration behauptet weder einen vollständig abgenommenen Windows-Support noch eine grüne GitHub-CI oder einen öffentlichen notarisierten Release.
