@@ -36,3 +36,13 @@ Wiederholung unklar ausgeführter Arbeit; fehlende Nachweise bleiben offen.
 ## Wiederaufnahme
 
 Vor einer neuen Beauftragung: [Auftragsübersicht](auftraege.md) und Quellchat prüfen, dann den tatsächlichen Branch/Commit und die dortigen Prüfbelege lesen. Wiki-Status ist eine datierte Beobachtung. Ein offener Auftrag darf nach Kontextverlust nicht mit neuem Schlüssel dupliziert werden.
+
+## Nutzerkorrektur vom 2026-10-28: Ausführungsziel pro Projekt
+
+Johannes legte später ausdrücklich fest, dass das Ausführungsziel projektabhängig ist und er es dem Chief of Staff mitteilt. Die genaue Korrektur und Quelle stehen in [Entscheidungen](entscheidungen.md). Ein maschinenweites Ausführungsstandardziel, insbesondere `claw-remote`, wird dadurch nicht aus der persönlichen Präferenz abgeleitet. Vor einem neuen Fleet-Auftrag muss das Ziel für das jeweilige Projekt aus dem autorisierten Projektauftrag bekannt sein; fehlt es, wird kein neues Ziel geraten und kein Auftrag eingereicht.
+
+Native Accounts, SSH-Verbindungen und lokale Hostkonfiguration bleiben maschinenlokal. Der Projektauftrag benennt dagegen das gewählte Ausführungsziel und gegebenenfalls den registrierten Workspace. Die Korrektur ändert die laufende Integration nicht in eine neue Remote-Beauftragung.
+
+## Umgesetzter Zielvertrag: Checkpoint vom 2026-10-28
+
+Die zuvor geforderte ausdrückliche Projektzuordnung wurde mit [PR #18](https://github.com/the-fin-at/agent-pool/pull/18), `the-fin-at/agent-pool@2d7774cad132a542cdf99c8eaf7b3b4567794d90`, als Skill-/Übergabevertrag geliefert. Die [Projektziel-Anleitung](../skills/agent-fleet/references/project-target.md) legt Identität, lokale Arbeitskopie bzw. Remote-Verbindung und Serverworkspace/-pfad fest. Sie gewährt keine zusätzliche Bearbeitungs-, Merge-, Deployment- oder Nachrichtenbefugnis. Es wurde kein neues Runtime-Konfigurationsschema eingeführt. Die gemeinsame Rust-Abnahme bleibt ein eigener, noch zu belegender Schritt.
