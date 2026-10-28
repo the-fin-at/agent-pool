@@ -28,12 +28,15 @@ The earlier live job below remains historical evidence of automatic account sele
 8. Editing failures/timeouts/interruption may leave partial work; `needs_review` is not automatically replayed across accounts. Explicit inspection/acknowledgment rules remain.
 9. The skill submits once, polls in bounded waits, retains job ID/key and keeps an independent worker alive. It does not sleep the client for an entire five-hour window or call `work --drain` as a persistent service.
 10. Explicitly permitted provider fallback creates a distinct task specification; cancel/confirm a queued old copy before the alternative to avoid duplicate execution. Never fork a possibly-running objective blindly.
+11. A busy native account lock starts no inference: restore the job's prior attempt count and leave profile usage/quota/holds unchanged. Skip that profile for the rest of this tick; an unpinned job may try the next eligible same-provider profile, while a pinned job waits and independent later jobs may run. Each busy profile is tried at most once per tick. If none can run, return idle; later ticks may retry after lock release. Preserve selection priority among eligible nonbusy profiles and never terminate a lock holder. Real edit failures still require review.
 
 Current candidate preference after eligibility filtering: earliest available weekly reset, then least recently used, then stable profile name. That ordering is secondary to the safety/eligibility contract.
 
 ## Tests
 
 `python -m unittest discover -s tests -p test_pool_routing.py -v` proves seven scenarios against the public Store/tick boundary: full5h skip, full-week skip, runtime same-job failover/unknown reset hold, earliest jointly eligible reset, other-provider queue progress, explicit full-profile pin, and model-family isolation without provider substitution. The test provider runner is controlled and isolated; real account quotas are never overwritten or deliberately exhausted.
+
+`python -m unittest discover -s tests -p test_native_lock_routing.py -v` exercises actual native locks and `run_native` with a controlled subprocess: pinned-busy queue progress, unpinned same-provider alternative, bounded all-busy idle/recovery, and explicit-pin isolation. These isolated checks use temporary pools without real account data. [Red/green evidence and exact source revision](native-lock-routing-validation.json).
 
 Existing broker/quota tests additionally cover unknown utilization, model-specific applicability, provider/pin boundaries, edit-review semantics and earliest-weekly preference. These behaviors must remain equivalent when migrating from Python to another backend; a new implementation need not preserve module names, but should run equivalent public CLI/queue scenarios.
 
