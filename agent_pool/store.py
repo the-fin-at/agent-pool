@@ -11,6 +11,9 @@ from contextlib import contextmanager
 from pathlib import Path
 
 
+ATTACHED_PROFILE_UNAVAILABLE = "Attached native profile is missing or changed; restore its original directory"
+
+
 def default_home():
     if os.environ.get("AGENT_POOL_HOME"):
         return Path(os.environ["AGENT_POOL_HOME"]).expanduser().resolve()
@@ -135,7 +138,7 @@ class Store:
         if profile.get("auth_home"):
             path = Path(profile["auth_home"])
             if not path.is_dir() or str(path.resolve()) != profile["auth_home"]:
-                raise ValueError("Attached native profile is missing or changed; register it again")
+                raise ValueError(ATTACHED_PROFILE_UNAVAILABLE)
             return path
         path = self.home / "profiles" / name
         private_dir(path)

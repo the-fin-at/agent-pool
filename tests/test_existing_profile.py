@@ -71,3 +71,19 @@ class ExistingNativeProfileTests(unittest.TestCase):
             store.close();native.rmdir()
             account=collect(root/'pool',include_default=False)[0]
             self.assertIn('missing',account.get('error') or '')
+
+    def test_restoring_claude_directory_clears_only_its_registration_failure(self):
+        from agent_pool.monitor import collect
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);native=root/'native';native.mkdir();store=Store(root/'pool')
+            store.add_profile('claude','claude','claude',auth_home=str(native))
+            store.cache_monitor('claude',{'connected':True,'windows':[]})
+            native.rename(root/'temporarily-away')
+            self.assertIn('missing',collect(root/'pool',include_default=False)[0]['error'])
+            (root/'temporarily-away').rename(native)
+            account=collect(root/'pool',include_default=False)[0]
+            self.assertIsNone(account.get('error'))
+            self.assertTrue(account['connected'])
+            store.cache_monitor('claude',{'connected':False,'windows':[],'error':'An unrelated provider error'})
+            self.assertEqual(collect(root/'pool',include_default=False)[0]['error'],'An unrelated provider error')
+            store.close()

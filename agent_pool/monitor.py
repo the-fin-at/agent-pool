@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .providers import read_codex_status, redact
 from .quota import availability
-from .store import Store
+from .store import Store, ATTACHED_PROFILE_UNAVAILABLE
 
 DEFAULT_SOURCE = "@codex-default"
 
@@ -30,7 +30,10 @@ def read_source(home, source, probe=read_codex_status):
         try:
             authdir = store.authdir(source["name"]) if source["managed"] else Path(source["authdir"])
             if source["provider"] == "claude":
-                # Validate registration even when Claude only has cached observations.
+                # A restored directory retires only its own registration error.
+                if old.get("error") == ATTACHED_PROFILE_UNAVAILABLE:
+                    old = {**old, "error": None}
+                    store.cache_monitor(source["name"], old)
                 return old
             data = probe(source, authdir)
             windows = data.get("windows")
