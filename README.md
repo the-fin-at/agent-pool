@@ -181,3 +181,5 @@ Der lokale Mac-Lauf besteht aus **55 erfolgreichen Tests**, einschließlich nati
 - [Prüfnachweis](docs/validation.md)
 
 Realer Linux-Betrieb und drei Prüfschleifen auf `claw-remote`: [Einrichtung, Fehlerfälle und Messwerte](docs/claw-remote-validation.md).
+
+0.4.2 liest Claudes native `unifiedWindows` für 5-Stunden- und Wochenlimits. [Vier echte Account-Aufträge und geprüfte Kontingentanzeige](docs/live-account-validation.md).

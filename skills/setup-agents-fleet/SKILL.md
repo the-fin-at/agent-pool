@@ -13,7 +13,7 @@ Prüfe zuerst Betriebssystem, vorhandene `agent-fleet`-/`agent-pool`-Binaries bz
 
 Wähle einen Pfad: lokaler Pool, reiner Remote-Client oder Linux-Server samt Client. Ein Remote-Client benötigt keine lokalen Provider-CLIs oder Provider-Logins. Lies für Installation und Updates [references/install.md](references/install.md), einschließlich des zur Plattform passenden Zweigs. Für Server zuerst Zugang, Installation, Pool, Workspace und unabhängigen Worker einrichten; anschließend den Client verbinden.
 
-Installiere die aktuelle kompatible Version aus dem berechtigten Repository `the-fin-at/agent-pool`. Für die korrigierte Remote-Anmeldung und CLI-Exitcodes mindestens 0.4.1 verwenden. Vergleiche Downloads tatsächlich mit diesem Stand; ein als „latest“ bezeichnetes älteres Release genügt nicht. Erhalte bestehende Pools, Logins und fremde Dienste. Der Repository-Installer überschreibt vorhandene Ziele absichtlich nicht.
+Installiere die aktuelle kompatible Version aus dem berechtigten Repository `the-fin-at/agent-pool`. Für Remote-Anmeldung, CLI-Exitcodes und die vollständigen nativen Claude-Kontingentfenster mindestens 0.4.2 verwenden. Vergleiche Downloads tatsächlich mit diesem Stand; ein als „latest“ bezeichnetes älteres Release genügt nicht. Erhalte bestehende Pools, Logins und fremde Dienste. Der Repository-Installer überschreibt vorhandene Ziele absichtlich nicht.
 
 ## Anmeldung begleiten
 
