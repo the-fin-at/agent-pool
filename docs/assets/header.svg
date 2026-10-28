@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="270" viewBox="0 0 1200 270" role="img" aria-labelledby="title description">
-  <title id="title">Agent Pool</title>
+  <title id="title">Agent Fleet</title>
   <desc id="description">Lokale Aufträge, mehrere Accounts und ein Überblick über die Limits.</desc>
   <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#111d2b"/><stop offset="1" stop-color="#22384b"/></linearGradient></defs>
   <rect width="1200" height="270" rx="22" fill="url(#bg)"/>
   <circle cx="1090" cy="80" r="180" fill="#89e2c0" opacity=".04"/>
   <rect x="54" y="66" width="90" height="90" rx="20" fill="#89e2c0" opacity=".12"/>
   <g stroke="#89e2c0" stroke-width="8" stroke-linecap="round"><path d="M77 91h43"/><path d="M77 111h27"/><path d="M77 131h49"/></g>
-  <g font-family="Arial, Helvetica, sans-serif"><text x="174" y="112" fill="#ffffff" font-size="47" font-weight="700">Agent Pool</text><text x="177" y="149" fill="#bccbd8" font-size="21">Codex + Claude. Lokale Aufträge. Klare Limits.</text><text x="56" y="223" fill="#89e2c0" font-size="15" letter-spacing="2">CLI  /  DESKTOP  /  macOS + WINDOWS</text></g>
+  <g font-family="Arial, Helvetica, sans-serif"><text x="174" y="112" fill="#ffffff" font-size="47" font-weight="700">Agent Fleet</text><text x="177" y="149" fill="#bccbd8" font-size="21">Codex + Claude. Lokale Aufträge. Klare Limits.</text><text x="56" y="223" fill="#89e2c0" font-size="15" letter-spacing="2">CLI  /  DESKTOP  /  macOS + WINDOWS</text></g>
 </svg>

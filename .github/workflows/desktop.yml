@@ -17,7 +17,7 @@ jobs:
       - run: python scripts/build_desktop.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Agent-Pool-${{ runner.os }}
+          name: Agent-Fleet-${{ runner.os }}
           path: |
-            dist/Agent-Pool-*.zip
-            dist/Agent Pool.pyzw
+            dist/Agent-Fleet-*.zip
+            dist/Agent Fleet.pyzw

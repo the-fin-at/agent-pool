@@ -109,7 +109,7 @@ def relative_time(seconds):
     if hours < 24:
         return f"{hours} Std." + (f" {minutes} Min." if minutes else "")
     days, hours = divmod(hours, 24)
-    return f"{days} Tage" + (f" {hours} Std." if hours else "")
+    return f"{days} {'Tag' if days == 1 else 'Tage'}" + (f" {hours} Std." if hours else "")
 
 
 def window_view(window, now=None):
@@ -126,7 +126,7 @@ def window_view(window, now=None):
     # Passing a predicted reset is not proof of a replenished balance.
     return {"title": title, "used": float(used) if valid and not expired else None,
             "remaining": 100 - used if valid and not expired else None,
-            "reset_label": "Reset erreicht · Aktualisierung nötig" if expired else
+            "reset_label": "Reset-Zeit erreicht. Bitte aktualisieren." if expired else
                 "Reset-Zeit unbekannt" if reset is None else "Reset in " + relative_time(reset - now),
             "reset_absolute": datetime.fromtimestamp(reset).astimezone().strftime("%d.%m.%Y, %H:%M %Z") if reset else "",
             "expired": expired}
@@ -143,17 +143,17 @@ def account_view(account, now=None):
     if not account.get("connected"):
         label, tone = ("Verbindung prüfen", "warning") if account.get("error") else ("Nicht verbunden", "muted")
     elif stale:
-        label, tone = "Stand prüfen", "warning"
+        label, tone = "Daten nicht aktuell", "warning"
     elif held or not state["ready"]:
         label, tone = "Limit erreicht", "warning"
     elif not windows or all(w["used"] is None for w in windows):
-        label, tone = "Quote unbekannt", "muted"
+        label, tone = "Kontingent unbekannt", "muted"
     else:
         label, tone = "Verbunden", "success"
     plan = {"team": "Business / Team", "prolite": "Pro", "pro": "Pro", "plus": "Plus",
             "enterprise": "Enterprise", "free": "Free"}.get(account.get("plan"), account.get("plan") or "Tarif unbekannt")
     return {**account, "windows_view": windows, "status_label": label, "tone": tone, "plan_label": plan,
-            "stale": stale, "updated_label": "Noch keine Quotenabfrage" if not observed else
+            "stale": stale, "updated_label": "Noch keine Kontingentdaten" if not observed else
                 "Stand " + datetime.fromtimestamp(observed).astimezone().strftime("%H:%M:%S"),
             "role_label": "Für Aufträge aktiv" if account.get("enabled") else
-                "CLI-Hauptaccount · nur Anzeige" if not account.get("managed") else "Profil pausiert"}
+                "Codex-CLI, nur Anzeige" if not account.get("managed") else "Für Aufträge deaktiviert"}

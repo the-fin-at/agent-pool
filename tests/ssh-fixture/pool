@@ -1,0 +1,12 @@
+#!/usr/local/bin/python3
+"""Test-only response delay makes lost-acknowledgement failures reproducible."""
+import os,subprocess,sys,time
+os.environ['PYTHONPATH']='/opt/agent-pool'
+args=[sys.executable,'-m','agent_pool',*sys.argv[1:]]
+if sys.argv[-1]=='rpc':
+    run=subprocess.run(args,input=sys.stdin.buffer.read(),capture_output=True)
+    time.sleep(2)
+    sys.stdout.buffer.write(run.stdout)
+    sys.stderr.buffer.write(run.stderr)
+    sys.exit(run.returncode)
+os.execv(sys.executable,args)

@@ -1,5 +1,6 @@
 """One local worker per queue; submitters may run concurrently."""
 import time
+from pathlib import Path
 
 from .providers import read_codex_quota, run_native
 from .quota import availability
@@ -55,16 +56,20 @@ def tick(store, runner=run_native, probe=read_codex_quota, now=None):
             if p["checked_at"] is None or now - p["checked_at"] >= 60:
                 refresh(store, p, probe)
     for job in jobs:
+        cwd = Path(job["cwd"])
+        if not cwd.is_dir() or str(cwd.resolve()) != job["cwd"]:
+            store.transition_job(job["id"], ("queued", "waiting"), status="needs_review", error="Working directory disappeared or its symlink target changed")
+            continue
         if job["attempts"] >= job["max_attempts"]:
-            store.update_job(job["id"], status="failed", error="Maximum attempts reached")
+            store.transition_job(job["id"], ("queued", "waiting"), status="failed", error="Maximum attempts reached")
             continue
         profile, reason = choose(store, job, now)
         if profile is None:
-            store.update_job(job["id"], status="waiting", error=reason)
+            store.transition_job(job["id"], ("queued", "waiting"), status="waiting", error=reason)
             continue
         name = profile["name"]
-        store.update_job(job["id"], status="running", chosen_profile=name,
-                         attempts=job["attempts"] + 1, error=None)
+        if not store.claim_job(job["id"], name):
+            continue
         store.update_profile(name, last_used=now)
         try:
             result = runner(profile, job, store.authdir(name))
@@ -76,7 +81,10 @@ def tick(store, runner=run_native, probe=read_codex_quota, now=None):
             raise
         if result.windows:
             store.set_windows(name, result.windows)
-        if result.kind == "success":
+        if result.kind == "busy":
+            store.update_job(job["id"], status="waiting", attempts=job["attempts"], error=result.error)
+            return False
+        elif result.kind == "success":
             store.update_job(job["id"], status="succeeded", result=result.result, error=None)
         elif result.kind == "quota":
             if profile["provider"] == "codex":

@@ -21,30 +21,30 @@ Du brauchst Zugriff auf das private Repository `the-fin-at/agent-pool`, Python 3
 2. Profile vorbereiten und deinen ersten Account verbinden:
 
    ```sh
-   agent-pool init
-   agent-pool login codex-1
-   agent-pool quota refresh codex-1
-   agent-pool doctor
+   agent-fleet init
+   agent-fleet login codex-1
+   agent-fleet quota refresh codex-1
+   agent-fleet doctor
    ```
 
 3. Weitere eigene Accounts verbinden. Für jeden Browser-Login den gewünschten Account wählen:
 
    ```sh
-   agent-pool login codex-2
-   agent-pool login codex-3
+   agent-fleet login codex-2
+   agent-fleet login codex-3
    # Optional, wenn Claude verwendet wird:
-   agent-pool login claude-1
+   agent-fleet login claude-1
    ```
 
 4. Einen ersten Leseauftrag in einem vorhandenen Projektordner ausführen:
 
    ```sh
-   agent-pool run --provider codex --cwd /pfad/zum/projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
+   agent-fleet run --provider codex --cwd /pfad/zum/projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
    ```
 
    Erfolg: Ausgabe mit `status: succeeded` und einem Bericht in `result`. `waiting` ist ein noch offener Auftrag; `failed` oder `needs_review` ist kein erfolgreicher Abschluss.
 
-5. Optional den Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) installieren: Mac-ZIP entpacken, `Agent Pool.app` nach `~/Applications` kopieren und öffnen. Die App zeigt die Accounts und aktualisiert alle 60 Sekunden. Die lokale `.app` ist ad hoc signiert; eine öffentliche Apple-Notarisierung ist nicht enthalten.
+5. Optional den Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) installieren: Mac-ZIP entpacken, `Agent Fleet.app` nach `~/Applications` kopieren und öffnen. Die App zeigt die Accounts und aktualisiert alle 60 Sekunden. Die lokale `.app` ist ad hoc signiert; eine öffentliche Apple-Notarisierung ist nicht enthalten.
 
 ## Windows
 
@@ -59,10 +59,10 @@ Du brauchst Zugriff auf das private Repository `the-fin-at/agent-pool`, Python 3
 2. Profile vorbereiten und einen eigenen Account verbinden:
 
    ```powershell
-   py -3 dist/agent-pool.pyz init
-   py -3 dist/agent-pool.pyz login codex-1
-   py -3 dist/agent-pool.pyz quota refresh codex-1
-   py -3 dist/agent-pool.pyz doctor
+   py -3 dist/agent-fleet.pyz init
+   py -3 dist/agent-fleet.pyz login codex-1
+   py -3 dist/agent-fleet.pyz quota refresh codex-1
+   py -3 dist/agent-fleet.pyz doctor
    ```
 
    Weitere Profile mit `login codex-2` und `login codex-3` anmelden. Für Claude optional `login claude-1`. Native Provider-EXEs verwenden; npm-CMD-/BAT-Shims funktionieren nicht. Alternativ CLI, Broker und Projekte gemeinsam unter WSL betreiben; der native Desktop läuft getrennt unter Windows.
@@ -70,13 +70,13 @@ Du brauchst Zugriff auf das private Repository `the-fin-at/agent-pool`, Python 3
 3. Ersten Leseauftrag ausführen:
 
    ```powershell
-   py -3 dist/agent-pool.pyz run --provider codex --cwd C:\work\projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
+   py -3 dist/agent-fleet.pyz run --provider codex --cwd C:\work\projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
    ```
 
-4. Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) vollständig entpacken. Bei einem nativen Paket `Agent Pool.exe` starten und den `_internal`-Ordner daneben behalten. Alternativ das portable Paket nutzen:
+4. Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) vollständig entpacken. Bei einem nativen Paket `Agent Fleet.exe` starten und den `_internal`-Ordner daneben behalten. Alternativ das portable Paket nutzen:
 
    ```powershell
-   pyw -3 '.\Agent Pool.pyzw'
+   pyw -3 '.\Agent Fleet.pyzw'
    ```
 
    Die portable Variante benötigt Python mit Tcl/Tk. Bei fehlender `pyw`-Dateizuordnung funktioniert auch `py -3`, dann mit sichtbarem Terminal.
@@ -87,24 +87,24 @@ Du brauchst Zugriff auf das private Repository `the-fin-at/agent-pool`, Python 3
    py -3 scripts/install_local.py
    ```
 
-   Der Installer legt das Paket unter `%USERPROFILE%\.local\bin\agent-pool.pyz` ab und kopiert den Skill in die persönlichen Verzeichnisse. Im Skill bzw. Agentenaufruf die tatsächlich vorhandene `.pyz` verwenden, beispielsweise `py -3 C:\pfad\zu\agent-pool.pyz`.
+   Der Installer legt das Paket unter `%USERPROFILE%\.local\bin\agent-fleet.pyz` ab und kopiert den Skill in die persönlichen Verzeichnisse. Im Skill bzw. Agentenaufruf die tatsächlich vorhandene `.pyz` verwenden, beispielsweise `py -3 C:\pfad\zu\agent-fleet.pyz`.
 
 ## Längere Aufgaben über einen Worker
 
 Ein Terminal offenlassen:
 
 ```sh
-agent-pool work
+agent-fleet work
 ```
 
 In einem zweiten Terminal die Aufgabe einreichen:
 
 ```sh
-agent-pool job submit --provider codex --cwd /pfad/zum/projekt --prompt-file task.txt --key erster-test-001
-agent-pool job get <job-id>
+agent-fleet job submit --provider codex --cwd /pfad/zum/projekt --prompt-file task.txt --key erster-test-001
+agent-fleet job get <job-id>
 ```
 
-Unter Windows stattdessen `py -3 dist/agent-pool.pyz work` bzw. `py -3 dist/agent-pool.pyz job ...` verwenden.
+Unter Windows stattdessen `py -3 dist/agent-fleet.pyz work` bzw. `py -3 dist/agent-fleet.pyz job ...` verwenden.
 
 Schreibe in `task.txt`: Ziel, betroffene Dateien, Abnahmekriterien und das gewünschte Berichtsformat. Bei Dateiänderungen ausdrücklich `--allow-edits` ergänzen. Änderungen prüfen, bevor sie übernommen werden. Der Desktop ist ein Monitor; für Warteschlange und automatische Wiederaufnahme muss `work` laufen.
 

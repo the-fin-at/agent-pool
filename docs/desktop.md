@@ -1,19 +1,29 @@
-# Agent Pool Desktop — 0.2.0
+# Agent Fleet Desktop · 0.3.0
 
-Ein lokales Fenster für alle verbundenen Accounts und ihre gemeldeten Nutzungslimits.
+Ein Fenster für alle verbundenen Accounts: im THE-FIN-Design mit Seitenleiste, Kontingentkreisen und Wochenbalken. Lokal und für konfigurierte Linux-Server.
+
+Die 0.3-Ansicht wird aus dem aktuellen Quellstand gebaut. Die bisherigen v0.2.0-Release-Pakete heißen noch Agent Pool und enthalten weder das neue Layout noch den Remote-Manager.
 
 ## Mac
 
-Das Mac-Paket aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) entpacken und `Agent Pool.app` in den persönlichen Programme-Ordner kopieren:
+Den aktuellen Quellstand mit einem Tk-fähigen Python 3.11+ bauen und das Ergebnis in den persönlichen Programme-Ordner kopieren:
 
 ```sh
-open "$HOME/Applications/Agent Pool.app"
+python3 -m pip install -r requirements-desktop-build.txt
+python3 scripts/build_desktop.py
+# Ergebnis: dist/macos/Agent Fleet.app
+```
+
+Anschließend starten:
+
+```sh
+open "$HOME/Applications/Agent Fleet.app"
 ```
 
 Alternativ mit dem aktualisierten CLI-Befehl:
 
 ```sh
-agent-pool desktop
+agent-fleet desktop
 ```
 
 Das Mac-Paket enthält Python und Tk; dafür ist kein Python-Setup nötig. Für echte Account-Abfragen muss die native Codex-CLI auf dem Rechner vorhanden sein. Die App findet persönliche CLI-Installationen auch beim Start aus dem Finder. Die gebaute Version ist für Apple Silicon; andere Architekturen benötigen einen eigenen Build. Der lokale Build ist ad hoc signiert, nicht als öffentliche Veröffentlichung notarisiert.
@@ -22,20 +32,20 @@ Das Mac-Paket enthält Python und Tk; dafür ist kein Python-Setup nötig. Für 
 
 Aktuell steht das portable `.pyzw`-Paket zur Verfügung. Der native EXE-Build wurde von GitHub vor Runner-Start wegen Kontoabrechnung/Ausgabenlimit blockiert; es wird kein erfolgreicher Windows-Build behauptet. [CI-Nachweis](validation.md#ci-und-builds).
 
-Das portable Paket `dist/Agent-Pool-Windows-Portable.zip` enthält `Agent Pool.pyzw`, das CLI-Paket und diese Anleitung. Voraussetzung ist Python 3.11+ **mit Tcl/Tk**, wie im regulären Python-Windows-Installer angeboten, sowie die native Codex-CLI für Live-Quoten.
+Das portable Paket `dist/Agent-Fleet-Windows-Portable.zip` enthält `Agent Fleet.pyzw`, das CLI-Paket und diese Anleitung. Voraussetzung ist Python 3.11+ **mit Tcl/Tk**, wie im regulären Python-Windows-Installer angeboten, sowie die native Codex-CLI für Live-Quoten.
 
-Nach dem Entpacken `Agent Pool.pyzw` doppelklicken. Falls die Dateizuordnung fehlt, aus PowerShell starten:
+Nach dem Entpacken `Agent Fleet.pyzw` doppelklicken. Falls die Dateizuordnung fehlt, aus PowerShell starten:
 
 ```powershell
-pyw -3 '.\Agent Pool.pyzw'
+pyw -3 '.\Agent Fleet.pyzw'
 ```
 
-Bei fehlendem `pyw` funktioniert auch `py -3 '.\Agent Pool.pyzw'`; dann bleibt zusätzlich das Terminal sichtbar. Die Account-Logins sind je Maschine lokal; Tokens werden nicht über den gemeinsamen Projektordner übertragen. Für die zusätzlichen Profile auf dem Windows-Rechner einmalig:
+Bei fehlendem `pyw` funktioniert auch `py -3 '.\Agent Fleet.pyzw'`; dann bleibt zusätzlich das Terminal sichtbar. Die Account-Logins sind je Maschine lokal; Tokens werden nicht über den gemeinsamen Projektordner übertragen. Für die zusätzlichen Profile auf dem Windows-Rechner einmalig:
 
 ```powershell
-py -3 '.\agent-pool.pyz' init
-py -3 '.\agent-pool.pyz' login codex-2
-py -3 '.\agent-pool.pyz' login codex-3
+py -3 '.\agent-fleet.pyz' init
+py -3 '.\agent-fleet.pyz' login codex-2
+py -3 '.\agent-fleet.pyz' login codex-3
 ```
 
 Ein eigenständiges Windows-`.exe`-Paket lässt sich **auf Windows** mit dem beiliegenden Projekt bauen. [PyInstaller baut native Pakete jeweils auf dem Zielbetriebssystem](https://www.pyinstaller.org/en/stable/):
@@ -46,18 +56,21 @@ py -3 -m venv .venv-desktop
 .\.venv-desktop\Scripts\python scripts/build_desktop.py
 ```
 
-Ergebnis: `dist\windows\Agent Pool\Agent Pool.exe` zusammen mit dem `_internal`-Ordner. Den ganzen Ordner weitergeben, nicht nur die EXE. Die manuell startbare GitHub-Actions-Datei `.github/workflows/desktop.yml` bereitet native Builds für Mac und Windows vor, sobald dieses Projekt in einem Repository mit Actions liegt. Der aktuelle Build- und Plattform-Prüfstand steht im [Prüfnachweis](validation.md). Windows-Pakete werden auf einem Windows-Runner gebaut.
+Ergebnis: `dist\windows\Agent Fleet\Agent Fleet.exe` zusammen mit dem `_internal`-Ordner. Den ganzen Ordner weitergeben, nicht nur die EXE. Die manuell startbare GitHub-Actions-Datei `.github/workflows/desktop.yml` bereitet native Builds für Mac und Windows vor, sobald dieses Projekt in einem Repository mit Actions liegt. Der aktuelle Build- und Plattform-Prüfstand steht im [Prüfnachweis](validation.md). Windows-Pakete werden auf einem Windows-Runner gebaut.
 
 ## Was angezeigt wird
 
 - E-Mail, Provider und der vom Anbieter gemeldete Tarif.
-- Restkontingent in Prozent, Verbrauchsbalken und lokale Reset-Zeitpunkte.
+- Große Kreise für das freie Kontingent im 5-Stunden-Fenster; die Wochenbalken zeigen ebenfalls den freien Anteil. Das Fenster ist keine verbleibende Rechenzeit.
+- Filter für alle Accounts, Codex oder Claude. Die Suche ergänzt den gewählten Anbieterfilter.
+- Drei, zwei oder eine Spalte je Fensterbreite; unter 880 px wandert die Navigation nach oben.
+- Eingebettete Albert-Sans-Schriften und originale THE-FIN-Markenassets. Es sind keine separat installierten Fonts oder persönlichen Asset-Pfade nötig.
 - Alle tatsächlich gemeldeten Quotenfenster, einschließlich zusätzlicher Modell-Buckets. Ein fehlendes Fünf-Stunden-Fenster wird nicht erfunden.
-- Den bestehenden nativen Codex-Hauptaccount als Anzeigequelle sowie alle lokal eingerichteten Pool-Profile.
-- Der bestehende Hauptaccount dient in der App als Anzeigequelle. Damit wird er nicht automatisch für Pool-Aufträge freigeschaltet.
-- Auch pausierte oder nicht angemeldete Profile sind über „Auch unverbundene Profile“ sichtbar. Die Suche filtert nach E-Mail, Profil, Provider und Tarif.
+- Den bestehenden nativen Codex-Hauptaccount als Anzeigequelle sowie alle lokal eingerichteten Profile.
+- Der bestehende Hauptaccount dient in der App als Anzeigequelle. Damit wird er nicht automatisch für Aufträge freigeschaltet.
+- Auch pausierte oder nicht angemeldete Profile sind über „Alle Profile anzeigen“ sichtbar. Die Suche filtert nach E-Mail, Profil, Provider und Tarif.
 
-Die App lädt zunächst den letzten lokalen Stand und aktualisiert dann im Hintergrund, automatisch alle 60 Sekunden oder per „Jetzt aktualisieren“ / Cmd-R / Ctrl-R. Sie startet keine Modellaufträge und arbeitet keine Jobs ab. Die Job-Queue wird weiterhin von `agent-pool work` bedient.
+Die App lädt zunächst den letzten lokalen Stand und aktualisiert dann im Hintergrund, automatisch alle 60 Sekunden oder per „Aktualisieren“ / Cmd-R / Ctrl-R. Über „Ausführen auf“ zwischen dem lokalen Rechner und eingerichteten SSH-Servern wechseln. „Server hinzufügen“ speichert eine neue Verbindung; der SSH-Schlüsselzugang wird vorher eingerichtet. Über „Aufträge“ öffnet sich der vorhandene Manager für Einreichung und Ergebnisse. Die Job-Queue wird von einem separaten `agent-fleet work` bedient; das Schließen des Fensters beendet keinen Remote-Worker.
 
 Bei fehlgeschlagenen Abfragen bleiben vorherige Werte als letzter bekannter Stand sichtbar. Nach Überschreiten eines gemeldeten Resets zeigt die App „Nicht aktuell“, bis eine neue Beobachtung vorliegt. Ein abgelaufener Timer gilt nicht automatisch als Nachweis für 100 % freies Kontingent. Der Datenstand und Fehler sind je Account erkennbar.
 
@@ -73,4 +86,4 @@ Lokale Tests mit Tk-fähigem Python:
 python -m unittest discover -s tests -v
 ```
 
-55 Tests bestehen auf dem Mac, einschließlich eines Tests in einem frischen nativen Prozess für die erste Fensterdarstellung. Python-Installationen ohne Tk überspringen die vier GUI-Tests; auf einem System ohne Bildschirm können GUI-Tests ebenfalls übersprungen werden. Die finale Mac-App wird zusätzlich mit echten Account-Metadaten geprüft. Windows bleibt als echte Plattformprüfung offen.
+Die Tests prüfen unter anderem die erste Fensterdarstellung in einem frischen nativen Prozess. Python-Installationen ohne Tk überspringen GUI-Tests; auf einem System ohne Bildschirm können GUI-Tests ebenfalls übersprungen werden. Die finale Mac-App wird zusätzlich mit echten Account-Metadaten geprüft. Windows bleibt als echte Plattformprüfung offen.

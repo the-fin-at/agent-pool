@@ -42,7 +42,7 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(result["windows"][0]["used"], 25)
         self.assertEqual(result["error"], "Offline")
         model = account_view(snapshot(self.home, include_default=False)[0], now=1000)
-        self.assertEqual(model["status_label"], "Stand prüfen")
+        self.assertEqual(model["status_label"], "Daten nicht aktuell")
 
     def test_changed_identity_never_inherits_old_quota_if_read_fails(self):
         read_source(self.home, self.source, probe=lambda *a: {

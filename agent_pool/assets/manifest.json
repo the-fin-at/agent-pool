@@ -1,0 +1,29 @@
+{
+  "brand": "THE-FIN original compass signet; unchanged source paths",
+  "font": "Albert Sans, SIL Open Font License; registered for this process only",
+  "icons": {
+    "source": "https://raw.githubusercontent.com/twbs/icons/v1.11.3",
+    "license": "MIT",
+    "names": [
+      "people",
+      "hdd-stack",
+      "diagram-3",
+      "person",
+      "arrow-clockwise",
+      "search",
+      "server",
+      "list-task",
+      "exclamation-circle"
+    ]
+  },
+  "colors": {
+    "background": "#F9F6F2",
+    "surface": "#F4EFE9",
+    "raised": "#F0E8E0",
+    "text": "#1B1612",
+    "muted": "#6D6863",
+    "brand": "#BD775F",
+    "accent": "#9D5035",
+    "line": "#DCD6D1"
+  }
+}

@@ -1,47 +1,45 @@
 """Small native Mac/Windows quota monitor. Provider reads run off the UI thread."""
 import argparse
 import json
-import os
 import queue
-import sys
 import threading
 import time
 import tkinter as tk
 from pathlib import Path
-from tkinter import messagebox, ttk
+from tkinter import messagebox
 
 from . import __version__
-from .monitor import account_view, collect, snapshot
+from .monitor import collect, snapshot
 from .store import default_home
+from .desktop_ui import FleetView
+from .desktop_theme import BG, register_fonts
 
-BG = "#f3f5f8"
-WHITE = "#ffffff"
-INK = "#18212e"
-MUTED = "#687587"
-LINE = "#e0e6ed"
-GREEN = "#087f67"
-MINT = "#e1f3ec"
-ORANGE = "#b56813"
-FONT = "SF Pro Text" if sys.platform == "darwin" else "Segoe UI"
-
-
-class Dashboard:
-    def __init__(self, root, home, *, initial=None, refresh_fn=collect, start_refresh=True):
+class Dashboard(FleetView):
+    def __init__(self, root, home, *, initial=None, refresh_fn=collect, start_refresh=True, remote=None):
         self.root, self.home = root, Path(home)
+        self.local_refresh_fn = refresh_fn
+        self.remote = remote
+        self.target_epoch = 0
+        self.worker = None
         self.refresh_fn = refresh_fn
+        if remote:
+            self.refresh_fn = self._remote_collect
         self.events = queue.Queue()
-        self.accounts = initial if initial is not None else snapshot(self.home)
+        self.accounts = initial if initial is not None else ([] if remote else snapshot(self.home))
         self.refreshing = False
         self.closed = False
         self.last_refresh = None
+        self.refresh_error = None
         self.next_refresh = time.monotonic() + 60
         self.show_all = tk.BooleanVar(value=False)
         self.auto = tk.BooleanVar(value=True)
         self.search = tk.StringVar()
         self.rendered = []
-        self.column_count = 2
-        self.root.title("Agent Pool — Nutzung & Limits")
-        self.root.geometry("1100x790")
+        self.column_count = 3
+        self._after_ids = set()
+        self.pending_jobs = 0
+        self.root.title("Agent Fleet")
+        self.root.geometry("1280x840")
         self.root.minsize(760, 560)
         self.root.configure(bg=BG)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
@@ -50,274 +48,186 @@ class Dashboard:
         self.search.trace_add("write", lambda *_: self.render())
         self.root.bind("<Command-r>", lambda _: self.refresh())
         self.root.bind("<Control-r>", lambda _: self.refresh())
+        self.root.bind("<Command-f>", lambda _: self.search_entry.focus_set())
+        self.root.bind("<Control-f>", lambda _: self.search_entry.focus_set())
         self.root.bind("<Configure>", self._resized)
-        self.root.after(100, self._poll)
-        self.root.after(1000, self._clock)
+        self._schedule(100, self._poll)
+        self._schedule(1000, self._clock)
         self.render()
         if start_refresh:
-            self.root.after(250, self.refresh)
+            self._schedule(250, self.refresh)
 
-    def _style(self):
-        style = ttk.Style(self.root)
-        style.theme_use("clam")
-        style.configure("Pool.TButton", font=(FONT, 11, "bold"), padding=(14, 9),
-                        background=INK, foreground=WHITE, borderwidth=0, focusthickness=2,
-                        focuscolor="#8ccfbb")
-        style.map("Pool.TButton", background=[("active", "#334155"), ("disabled", "#d9dee6")],
-                  foreground=[("disabled", MUTED)])
-        style.configure("Soft.TButton", font=(FONT, 10), padding=(10, 6),
-                        background=WHITE, foreground=INK, borderwidth=1, bordercolor=LINE)
-        style.map("Soft.TButton", background=[("active", "#eaf0f5")])
-        style.configure("Pool.TCheckbutton", background=BG, foreground=MUTED, font=(FONT, 10))
-        style.configure("Pool.TEntry", fieldbackground=WHITE, foreground=INK, padding=9,
-                        bordercolor=LINE, lightcolor=LINE, darkcolor=LINE)
-        style.configure("Vertical.TScrollbar", background="#c9d2dc", troughcolor=BG,
-                        borderwidth=0, arrowsize=12)
-
-    def text(self, parent, text, *, size=11, bold=False, color=INK, bg=None, **kw):
-        return tk.Label(parent, text=text, font=(FONT, size, "bold" if bold else "normal"),
-                        fg=color, bg=bg or parent.cget("bg"), anchor="w", **kw)
-
-    def _layout(self):
-        header = tk.Frame(self.root, bg=BG)
-        header.pack(fill="x", padx=30, pady=(26, 0))
-        brand = tk.Frame(header, bg=BG)
-        brand.pack(side="left")
-        mark = tk.Canvas(brand, width=36, height=36, bg=BG, highlightthickness=0)
-        mark.pack(side="left", padx=(0, 10))
-        mark.create_rectangle(0, 0, 36, 36, fill=INK, outline=INK)
-        for y, width in [(11, 23), (18, 17), (25, 26)]:
-            mark.create_line(8, y, width, y, fill="#8be2c2", width=3, capstyle="round")
-        self.text(brand, "Agent Pool", size=17, bold=True).pack(side="left")
-        self.refresh_button = ttk.Button(header, text="Jetzt aktualisieren", style="Pool.TButton", command=self.refresh)
-        self.refresh_button.pack(side="right")
-        ttk.Checkbutton(header, text="Automatisch · 60 s", variable=self.auto,
-                        style="Pool.TCheckbutton").pack(side="right", padx=18)
-
-        title = tk.Frame(self.root, bg=BG)
-        title.pack(fill="x", padx=30, pady=(28, 20))
-        self.text(title, "Nutzung & Limits", size=27, bold=True).pack(anchor="w")
-        self.text(title, "Alle verbundenen Accounts. Die gemeldeten Kontingente auf einen Blick.",
-                  size=11, color=MUTED).pack(anchor="w", pady=(7, 0))
-
-        stats = tk.Frame(self.root, bg=BG)
-        stats.pack(fill="x", padx=30)
-        self.stat_labels = []
-        for i, caption in enumerate(["Accounts verbunden", "Profile für Aufträge aktiv", "Quotenfenster gemeldet"]):
-            tile = tk.Frame(stats, bg=WHITE, highlightbackground=LINE, highlightthickness=1)
-            tile.grid(row=0, column=i, sticky="nsew", padx=(0 if i == 0 else 7, 0 if i == 2 else 7))
-            stats.grid_columnconfigure(i, weight=1, uniform="stats")
-            value = self.text(tile, "—", size=24, bold=True)
-            value.pack(anchor="w", padx=17, pady=(12, 2))
-            self.text(tile, caption, size=10, color=MUTED).pack(anchor="w", padx=17, pady=(0, 14))
-            self.stat_labels.append(value)
-
-        toolbar = tk.Frame(self.root, bg=BG)
-        toolbar.pack(fill="x", padx=30, pady=(22, 13))
-        self.section_label = self.text(toolbar, "DEINE ACCOUNTS", size=10, bold=True, color=MUTED)
-        self.section_label.pack(side="left")
-        ttk.Checkbutton(toolbar, text="Auch unverbundene Profile", variable=self.show_all,
-                        command=self.render, style="Pool.TCheckbutton").pack(side="right", padx=(15, 0))
-        search = ttk.Entry(toolbar, textvariable=self.search, width=26, style="Pool.TEntry")
-        search.pack(side="right")
-        self.text(toolbar, "Suchen", size=10, color=MUTED).pack(side="right", padx=(0, 8))
-
-        content = tk.Frame(self.root, bg=BG)
-        content.pack(fill="both", expand=True, padx=(24, 22))
-        self.canvas = tk.Canvas(content, bg=BG, highlightthickness=0, bd=0)
-        scroll = ttk.Scrollbar(content, orient="vertical", command=self.canvas.yview)
-        self.canvas.configure(yscrollcommand=scroll.set)
-        scroll.pack(side="right", fill="y")
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.cards = tk.Frame(self.canvas, bg=BG)
-        self.cards_window = self.canvas.create_window(0, 0, anchor="nw", window=self.cards)
-        self.cards.bind("<Configure>", lambda _: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self.cards_window, width=e.width))
-        self.root.bind("<MouseWheel>", self._scroll)
-        self.root.bind("<Button-4>", lambda _: self.canvas.yview_scroll(-3, "units"))
-        self.root.bind("<Button-5>", lambda _: self.canvas.yview_scroll(3, "units"))
-
-        footer = tk.Frame(self.root, bg=BG)
-        footer.pack(fill="x", padx=30, pady=(12, 18))
-        self.status_text = self.text(footer, "Lokal gespeichert", size=10, color=MUTED)
-        self.status_text.pack(side="left")
-        self.text(footer, "Kontingente bleiben pro Account getrennt.", size=10, color=MUTED).pack(side="right")
-
-    def _scroll(self, event):
-        amount = int(-event.delta) if sys.platform == "darwin" else int(-event.delta / 120) * 3
-        self.canvas.yview_scroll(amount, "units")
-
-    def _resized(self, event):
-        if event.widget != self.root:
-            return
-        columns = 1 if event.width < 950 else 2
-        if columns != self.column_count:
-            self.column_count = columns
-            self.render()
-
-    def render(self):
+    def _schedule(self, delay, callback):
         if self.closed:
             return
-        position = self.canvas.yview()[0]
-        for child in self.cards.winfo_children():
-            child.destroy()
-        connected = [a for a in self.accounts if a.get("connected")]
-        for label, value in zip(self.stat_labels, [len(connected), sum(bool(a.get("enabled")) for a in self.accounts),
-                                                  sum(len(a.get("windows", [])) for a in connected)]):
-            label.configure(text=str(value))
-        query = self.search.get().strip().casefold()
-        visible = [a for a in self.accounts if (self.show_all.get() or a.get("connected")) and
-                   (not query or query in " ".join(str(a.get(k) or "") for k in ["name", "email", "provider", "plan"]).casefold())]
-        visible.sort(key=lambda a: (not a.get("connected", False), a.get("managed", True), a["name"]))
-        self.rendered = [a["name"] for a in visible]
-        for col in range(2):
-            self.cards.grid_columnconfigure(col, weight=1 if col < self.column_count else 0,
-                                            uniform="cards" if col < self.column_count else "")
-        if not visible:
-            empty = tk.Frame(self.cards, bg=WHITE, highlightbackground=LINE, highlightthickness=1)
-            empty.grid(row=0, column=0, columnspan=self.column_count, sticky="ew", padx=6, pady=6)
-            label = "Keine passenden Accounts" if query else "Noch keine verbundenen Accounts"
-            self.text(empty, label, size=16, bold=True).pack(anchor="w", padx=22, pady=(24, 8))
-            self.text(empty, "Zeige alle Profile an oder melde einen Account über agent-pool login an.",
-                      color=MUTED).pack(anchor="w", padx=22, pady=(0, 24))
-        for index, account in enumerate(visible):
-            self._card(account_view(account), index // self.column_count, index % self.column_count)
-        # Let the native event loop map the first window before processing layout.
-        # A re-entrant update_idletasks here can leave Aqua clipped to 200x200.
-        def restore_scroll():
+        def invoke():
+            self._after_ids.discard(identifier)
             if not self.closed:
-                self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-                self.canvas.yview_moveto(position)
-        self.root.after_idle(restore_scroll)
+                callback()
+        identifier = self.root.after(delay, invoke)
+        self._after_ids.add(identifier)
+        return identifier
 
-    def _card(self, account, row, col):
-        card = tk.Frame(self.cards, bg=WHITE, highlightbackground=LINE, highlightthickness=1)
-        card.grid(row=row, column=col, sticky="nsew", padx=6, pady=6)
-        self.cards.grid_rowconfigure(row, weight=0)
-        inner = tk.Frame(card, bg=WHITE)
-        inner.pack(fill="both", expand=True, padx=19, pady=18)
-        top = tk.Frame(inner, bg=WHITE)
-        top.pack(fill="x")
-        provider = "OPENAI · CODEX" if account["provider"] == "codex" else "ANTHROPIC · CLAUDE"
-        self.text(top, provider, size=9, bold=True, color=MUTED).pack(side="left")
-        colors = {"success": (GREEN, MINT), "warning": (ORANGE, "#fff1db"), "muted": (MUTED, "#eef1f5")}
-        foreground, background = colors[account["tone"]]
-        self.text(top, account["status_label"], size=9, bold=True, color=foreground, bg=background,
-                  padx=8, pady=4).pack(side="right")
-        email = account.get("email") or ("Codex-Hauptaccount" if not account["managed"] else account["name"])
-        self.text(inner, email, size=13, bold=True, wraplength=445).pack(anchor="w", pady=(14, 5))
-        self.text(inner, account["plan_label"] + "  ·  " + account["role_label"], size=9, color=MUTED,
-                  wraplength=445).pack(anchor="w")
-        tk.Frame(inner, bg=LINE, height=1).pack(fill="x", pady=(15, 13))
-        if not account["windows_view"]:
-            notice = "Nach dem Login werden die Limits hier angezeigt."
-            if account["provider"] == "claude":
-                notice = "Noch keine Quotenbeobachtung aus der Claude-CLI vorhanden."
-            elif account["connected"]:
-                notice = "Der Anbieter hat noch keine Kontingente gemeldet."
-            self.text(inner, notice, size=10, color=MUTED, wraplength=440).pack(anchor="w", pady=(8, 18))
-        for window in account["windows_view"]:
-            line = tk.Frame(inner, bg=WHITE)
-            line.pack(fill="x", pady=(0, 7))
-            self.text(line, window["title"], size=10, bold=True).pack(side="left")
-            remaining = window["remaining"]
-            value = "Nicht aktuell" if window["expired"] else "Unbekannt" if remaining is None else f"{remaining:g} % frei"
-            self.text(line, value, size=11, bold=True).pack(side="right")
-            used = window["used"]
-            bar = tk.Canvas(inner, height=7, bg="#edf1f5", highlightthickness=0)
-            bar.pack(fill="x")
-            if used is not None:
-                color = GREEN if used < 75 else ORANGE if used < 95 else "#ce4d49"
-                bar.bind("<Configure>", lambda e, b=bar, u=used, c=color: self._draw_bar(b, u, c, e.width))
-            reset = (f"{used:g} % genutzt · " if used is not None else "") + window["reset_label"]
-            if window["reset_absolute"]:
-                reset += "  ·  " + window["reset_absolute"]
-            self.text(inner, reset, size=9, color=MUTED, wraplength=440).pack(anchor="w", pady=(6, 13))
-        bottom = tk.Frame(inner, bg=WHITE)
-        bottom.pack(fill="x", pady=(3, 0))
-        self.text(bottom, account["updated_label"], size=9, color=ORANGE if account["stale"] else MUTED).pack(side="left")
-        ttk.Button(bottom, text="Details", style="Soft.TButton", command=lambda a=account: self.details(a)).pack(side="right")
-        if account.get("error"):
-            self.text(inner, "Aktualisierung fehlgeschlagen. Letzter bekannter Stand.",
-                      size=9, color=ORANGE, wraplength=440).pack(anchor="w", pady=(10, 0))
+    def _remote_collect(self, home):
+        from .remote import RemoteClient, RemoteConfig
+        return RemoteClient(RemoteConfig(home).get(self.remote)).data(["status"])
 
-    @staticmethod
-    def _draw_bar(canvas, used, color, width):
-        canvas.delete("fill")
-        if used > 0:
-            canvas.create_rectangle(0, 0, width * used / 100, 7, fill=color, outline=color, tags="fill")
+    def _select_target(self, event=None):
+        self.remote = None if self.target.get() == "Lokal" else self.target.get()
+        self.target_epoch += 1
+        self.refreshing = False
+        self.last_refresh = None
+        self.refresh_error = None
+        self.accounts = []
+        self.worker = None
+        self.pending_jobs = 0
+        self.status_text.configure(text="Verbindung wird abgefragt …")
+        self.refresh_fn = self._remote_collect if self.remote else self.local_refresh_fn
+        self.render()
+        self.refresh()
 
-    def details(self, account):
-        lines = [account.get("email") or account["name"], "Profil: " + account["name"],
-                 "Tarif: " + account["plan_label"], account["role_label"], "", account["updated_label"]]
-        for window in account["windows_view"]:
-            lines.append(window["title"] + ": " + window["reset_absolute"])
-        if account.get("error"):
-            lines += ["", "Letzter Fehler:", account["error"][:1600]]
-        messagebox.showinfo("Account-Details", "\n".join(lines), parent=self.root)
+    def add_server(self):
+        from tkinter import simpledialog
+        from .remote import RemoteConfig
+        name = simpledialog.askstring("Server hinzufügen", "Name für diesen Server (z. B. zentral):", parent=self.root)
+        if not name:
+            return
+        host = simpledialog.askstring("SSH-Verbindung", "SSH-Alias oder user@host (Schlüsselzugang vorher einrichten):", parent=self.root)
+        if not host:
+            return
+        command = simpledialog.askstring("Agent Fleet auf Linux", "Absoluter Pfad zur ausführbaren agent-fleet-Datei:", initialvalue="/home/agent/.local/bin/agent-fleet", parent=self.root)
+        if not command:
+            return
+        home = simpledialog.askstring("State-Verzeichnis auf Linux", "Absoluter State-Pfad des Workers:", initialvalue="/home/agent/.local/share/agent-pool", parent=self.root)
+        if not home:
+            return
+        try:
+            RemoteConfig(self.home).add(name, host, command, home)
+            for picker in self.target_pickers:
+                picker.configure(values=["Lokal", *RemoteConfig(self.home).all()])
+            self.target.set(name)
+            self._select_target()
+        except (ValueError, OSError) as exc:
+            messagebox.showerror("Server hinzufügen", str(exc), parent=self.root)
+
+    def open_manager(self):
+        from .manager import Manager
+        Manager(self.root, self.home, self.remote)
 
     def refresh(self):
         if self.refreshing or self.closed:
             return
+        epoch = self.target_epoch
+        refresh_fn = self.refresh_fn
+        # Capture the selected remote now; switching targets cannot relabel an old response.
+        if self.remote:
+            from .remote import RemoteClient, RemoteConfig
+            try:
+                client = RemoteClient(RemoteConfig(self.home).get(self.remote))
+            except (ValueError, OSError) as exc:
+                self.refresh_error = str(exc)
+                self.refresh_button.configure(state="normal", text=" Aktualisieren")
+                self.next_refresh = time.monotonic() + 60
+                self.status_text.configure(text="Verbindung prüfen: " + str(exc)[:150])
+                return
+            refresh_fn = lambda home: client.data(["status"])
         self.refreshing = True
-        self.refresh_button.configure(state="disabled", text="Wird aktualisiert …")
-        self.status_text.configure(text="Account-Status und Limits werden abgefragt …")
+        self.refresh_button.configure(state="disabled", text="Abfrage läuft …")
+        self.status_text.configure(text="Kontingente abrufen …")
         def background():
             try:
-                self.events.put(("data", self.refresh_fn(self.home)))
+                self.events.put(("data", refresh_fn(self.home), epoch))
             except Exception as exc:
                 from .providers import redact
-                self.events.put(("error", redact(str(exc))))
+                self.events.put(("error", redact(str(exc)), epoch))
         threading.Thread(target=background, daemon=True, name="quota-monitor").start()
 
     def _poll(self):
         if self.closed:
             return
         try:
-            kind, payload = self.events.get_nowait()
+            kind, payload, epoch = self.events.get_nowait()
         except queue.Empty:
             pass
         else:
+            if epoch != self.target_epoch:
+                self._schedule(100, self._poll)
+                return
             self.refreshing = False
-            self.refresh_button.configure(state="normal", text="Jetzt aktualisieren")
+            self.refresh_button.configure(state="normal", text=" Aktualisieren")
             self.next_refresh = time.monotonic() + 60
             if kind == "data":
+                self.refresh_error = None
+                if isinstance(payload, dict):
+                    self.worker = payload.get("worker")
+                    self.pending_jobs = payload.get("pending_jobs", 0)
+                    payload = payload["accounts"]
                 self.accounts = payload
                 self.last_refresh = time.time()
                 self.render()
+                self._update_status()
             else:
-                self.status_text.configure(text="Aktualisierung fehlgeschlagen: " + payload[:160])
+                self.refresh_error = payload
+                self.status_text.configure(text="Abfrage fehlgeschlagen: " + payload[:160])
                 self.next_refresh = time.monotonic() + 60
-        self.root.after(100, self._poll)
+        self._schedule(100, self._poll)
+
+    def _update_status(self):
+        if self.refreshing:
+            return
+        if self.refresh_error:
+            self.status_text.configure(text="Abfrage fehlgeschlagen: " + self.refresh_error[:160])
+            return
+        if not self.last_refresh:
+            return
+        stamp = time.strftime("%H:%M:%S", time.localtime(self.last_refresh))
+        errors = sum(bool(a.get("error")) for a in self.accounts)
+        suffix = f" · {errors} Abfrage{'' if errors == 1 else 'n'} fehlgeschlagen" if errors else ""
+        if self.remote:
+            suffix += " · " + self.remote + (" · Worker aktiv" if self.worker and self.worker.get("online") else " · Worker offline")
+            if self.pending_jobs:
+                suffix += f" · {self.pending_jobs} offene Aufträge"
+        if self.auto.get():
+            suffix += f" · Nächste Abfrage in {max(0, int(self.next_refresh-time.monotonic()))} s"
+        self.status_text.configure(text="Abgefragt " + stamp + suffix)
 
     def _clock(self):
         if self.closed:
             return
+        if time.time() >= self.view_deadline:
+            self.render()
         if not self.refreshing:
             if self.auto.get() and time.monotonic() >= self.next_refresh:
                 self.refresh()
-            elif self.last_refresh:
-                stamp = time.strftime("%H:%M:%S", time.localtime(self.last_refresh))
-                errors = sum(bool(a.get("error")) for a in self.accounts)
-                suffix = " · " + str(errors) + " Profil(e) prüfen" if errors else ""
-                if self.auto.get():
-                    suffix += f" · nächste Abfrage in {max(0, int(self.next_refresh - time.monotonic()))} s"
-                self.status_text.configure(text="Aktualisiert " + stamp + suffix)
-        self.root.after(1000, self._clock)
+            else:
+                self._update_status()
+        self._schedule(1000, self._clock)
 
     def close(self):
+        if self.closed:
+            return
         self.closed = True
+        for identifier in self._after_ids:
+            self.root.after_cancel(identifier)
+        self._after_ids.clear()
+        if self._resize_job:
+            self.root.after_cancel(self._resize_job)
         self.root.destroy()
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Agent Pool Desktop — Nutzung & Limits")
+    parser = argparse.ArgumentParser(description="Agent Fleet Desktop")
     parser.add_argument("--home", type=Path, default=default_home())
+    parser.add_argument("--remote", help="Configured SSH server")
     parser.add_argument("--version", action="version", version=__version__)
     parser.add_argument("--smoke-report", type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
+    if args.remote:
+        from .remote import RemoteConfig
+        RemoteConfig(args.home).get(args.remote)
+    register_fonts()
     root = tk.Tk()
-    dashboard = Dashboard(root, args.home)
+    dashboard = Dashboard(root, args.home, remote=args.remote)
     if args.smoke_report:
         deadline = time.monotonic() + 45
         def report():
@@ -326,6 +236,8 @@ def main(argv=None):
                 return
             payload = {"width": root.winfo_width(), "height": root.winfo_height(),
                        "refresh_completed": dashboard.last_refresh is not None,
+                       "font": dashboard.theme.family, "columns": dashboard.column_count,
+                       "remote": dashboard.remote,
                        "accounts": [{"name": a["name"], "connected": a.get("connected"),
                                      "windows": len(a.get("windows", [])), "error": bool(a.get("error"))}
                                     for a in dashboard.accounts]}

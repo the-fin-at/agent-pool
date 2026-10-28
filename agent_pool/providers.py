@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .store import file_lock, WorkerBusy
 from .quota import claude_window, codex_windows
 
 # Ambient keys/base URLs must not silently change the selected subscription or bill an API key.
@@ -20,7 +21,7 @@ AUTH_ENV = {"OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN", "OPENAI_BAS
             "OPENAI_API_BASE", "CODEX_SQLITE_HOME", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
             "ANTHROPIC_BASE_URL", "CLAUDE_CODE_OAUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
             "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX",
-            "CLAUDE_CODE_USE_FOUNDRY", "ANTHROPIC_MODEL", "CLAUDECODE", "CODEX_THREAD_ID"}
+            "CLAUDE_CODE_USE_FOUNDRY", "ANTHROPIC_MODEL", "CLAUDECODE", "CODEX_THREAD_ID", "SSH_AUTH_SOCK", "SSH_CONNECTION", "SSH_CLIENT"}
 
 
 def environment(provider, authdir):
@@ -143,6 +144,14 @@ def parse_run(provider, stdout, stderr, code, final=""):
 
 
 def run_native(profile, job, authdir):
+    try:
+        with file_lock(Path(authdir) / ".native.lock"):
+            return _run_native(profile, job, authdir)
+    except WorkerBusy:
+        return Outcome("busy", error="Account metadata or login session is active; waiting")
+
+
+def _run_native(profile, job, authdir):
     with tempfile.TemporaryDirectory(prefix="agent-pool-run-") as folder:
         final = Path(folder) / "final.txt"
         argv = command(profile, job, final)
@@ -170,6 +179,13 @@ def run_native(profile, job, authdir):
 @contextmanager
 def codex_metadata_session(profile, authdir, timeout=20):
     """Documented JSONL metadata session; no model turn is started."""
+    with file_lock(Path(authdir) / ".native.lock"):
+        with _codex_metadata_session(profile, authdir, timeout) as request:
+            yield request
+
+
+@contextmanager
+def _codex_metadata_session(profile, authdir, timeout=20):
     proc = subprocess.Popen([executable(profile["binary"]), "app-server"], stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, encoding="utf-8",
                             env=environment("codex", authdir), **spawn_options(hidden=True))
