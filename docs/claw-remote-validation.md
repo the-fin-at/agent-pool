@@ -33,26 +33,32 @@ Gefunden und test-first behoben: Das endungslose installierte Archiv startete se
 Ausschließlich in einem automatisch erzeugten, danach entfernten Test-Pool auf demselben Host, mit kontrollierter Provider-CLI ohne Inferenz oder Credentials:
 
 - Fünf ungültige/verbotene RPC-Varianten abgelehnt.
+- Reale SSH-Antwort nach dem Commit unterbrochen; identischer Retry liefert dieselbe ID und genau einen Job. Der Test verwendet einen eigenen Pool ohne Modell-Worker.
 - 16 gleichzeitige identische Übermittlungen ergeben genau einen Auftrag; anderer Inhalt unter demselben Schlüssel abgelehnt.
 - Unicode und Shell-Ausdrücke unverändert im Bericht, keine Ausführung des Shell-Payloads.
 - Nach Ablauf des kurzen Limits blockiert das beobachtete Wochenlimit weiterhin; nach frischer freier Beobachtung genau eine Ausführung. Keine echten Quoten manipuliert.
 - Wartenden Auftrag abgebrochen. Worker während eines nativen Testprozesses per SIGTERM beendet: Kindprozess beendet, Auftrag `needs_review`, kein automatischer Replay nach Neustart.
+- Nativen Testprozess mit 0,5 Sekunden Timeout beendet: `needs_review`, Kindprozess beendet. Danach Queue ohne wartende/laufende Testaufträge und finalen nativen PID auf Prozessende geprüft.
 - Installierten Login-Prozess gestartet/abgebrochen; nativer Kindprozess danach beendet.
 - In der echten UI: nicht erreichbarer SSH-Host, Rückkehr zum funktionierenden Host, zwölf schnelle Kontextwechsel und verspätete Antworten ohne Tk-Fehler und ohne Umbenennung alter Antworten. Verzögerung wird an der Transportgrenze injiziert; UI und Threading bleiben echt.
 
-Gefunden und test-first behoben: ZIP-CLI gab bei Fehlern und wartenden Aufträgen stets Exit 0 zurück. Der Builder erzeugt jetzt einen expliziten `SystemExit(main())`; Tests prüfen 0/1/2. Ein verschwundener angehängter Account blockiert nicht mehr die gesamte Status-Aktualisierung. Verbundene Accounts ohne gemeldete E-Mail tragen jetzt „Verbunden“ statt „Nicht angemeldet“.
+Gefunden und test-first behoben: ZIP-CLI gab bei Fehlern und wartenden Aufträgen stets Exit 0 zurück. Der Builder erzeugt jetzt einen expliziten `SystemExit(main())`; Tests prüfen 0/1/2. Ein verschwundener angehängter Account blockiert nicht mehr die gesamte Status-Aktualisierung. Nach Wiederherstellung eines Claude-Verzeichnisses verschwindet dessen spezifischer Registrierungsfehler wieder; andere Providerfehler bleiben sichtbar. Doppelte native Verzeichnisse werden in beiden Registrierungsrichtungen abgelehnt. Verbundene Accounts ohne gemeldete E-Mail tragen jetzt „Verbunden“ statt „Nicht angemeldet“.
 
 ## Schleife 3: Performance und Abnahme
 
-Vorläufige Messung nach den wesentlichen Korrekturen:
+Abschließende Messung nach den wesentlichen Korrekturen:
 
 | Prüfung | Ergebnis | Ziel |
 | --- | --- | --- |
-| 20 echte SSH-Statusabfragen | Median 644 ms, p95 785 ms, max. 797 ms | p95 < 3 s |
-| 100 kontrollierte native Aufträge | 18,84 s, 5,31/s, genau 100 eindeutige Ausführungen | keine Verluste/Duplikate |
-| Tk-Eventloop bei 2 s Transportverzögerung | p95 31 ms, max. 36 ms | p95 < 100 ms, max. < 500 ms |
+| 20 echte SSH-Statusabfragen | Median 654 ms, p95 820 ms, max. 821 ms | p95 < 3 s |
+| 100 kontrollierte native Aufträge | 18,75 s, 5,33/s, genau 100 eindeutige Ausführungen | keine Verluste/Duplikate |
+| Tk-Eventloop bei 2 s Transportverzögerung | p95 31 ms, max. 44 ms | p95 < 100 ms, max. < 500 ms |
 
-Die Lastwerte messen Broker, Queue und native Testprozesse. Sie sind keine Inferenzgeschwindigkeit echter Modelle. Abschließende Werte und Paketnachweise stehen in `claw-remote-validation.json`.
+Finale Tests: **128 lokal bestanden** (Mac mit echtem Tk) und **128 auf Linux bestanden, 30 GUI-Tests übersprungen**. Zwei unabhängige Reviewer: Standards 0 offene Befunde, Spec 0 offene Befunde. Das finale Mac-App-Paket besteht echten Remote-Smoke und kontrollierten Hintergrund-Login; Ad-hoc-Signatur verifiziert. Client und Server sind auf 0.4.1 aktualisiert; installierte CLI-Archive haben denselben SHA-256.
+
+Die Lastwerte messen Broker, Queue und native Testprozesse. Sie sind keine Inferenzgeschwindigkeit echter Modelle. Eine [native Fensteraufnahme](../design/2026-10-28/claw-remote/overview.png) zeigt den realen Serverstand mit ausgeblendeter Identität.
+
+Abschließende Werte und Paketnachweise stehen in `claw-remote-validation.json`.
 
 ## Wiederholen
 
