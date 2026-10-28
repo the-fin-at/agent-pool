@@ -1,0 +1,13 @@
+{
+  "platform": "Linux container / Python 3.12 / real OpenSSH",
+  "provider": "controlled fixture, no inference",
+  "lost_ack_idempotent": true,
+  "execution_count": 1,
+  "utf8_roundtrip": true,
+  "literal_shell_payload": true,
+  "independent_worker": true,
+  "heartbeat_online": true,
+  "administration_with_worker": true,
+  "restricted_ssh_key": true,
+  "public_cli_roundtrip": true
+}

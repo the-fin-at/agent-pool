@@ -31,6 +31,38 @@ class WorkerBusy(ValueError):
     pass
 
 
+@contextmanager
+def file_lock(path):
+    """Nonblocking OS lock, also used to serialize managed native account sessions."""
+    path = Path(path)
+    with open(path, "a+b") as stream:
+        if os.name != "nt":
+            path.chmod(0o600)
+            import fcntl
+            try:
+                fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError as exc:
+                raise WorkerBusy("Another worker or native account session is active") from exc
+        else:
+            import msvcrt
+            if path.stat().st_size == 0:
+                stream.write(b"0")
+                stream.flush()
+            stream.seek(0)
+            try:
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as exc:
+                raise WorkerBusy("Another worker or native account session is active") from exc
+        try:
+            yield
+        finally:
+            if os.name != "nt":
+                fcntl.flock(stream, fcntl.LOCK_UN)
+            else:
+                stream.seek(0)
+                msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+
+
 class Store:
     def __init__(self, home):
         self.home = Path(home).expanduser().resolve()
@@ -39,6 +71,7 @@ class Store:
         self.db.row_factory = sqlite3.Row
         self.db.execute("PRAGMA journal_mode=WAL")
         self.db.executescript('''
+        CREATE TABLE IF NOT EXISTS workspaces (name TEXT PRIMARY KEY, path TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS profiles (
           name TEXT PRIMARY KEY, provider TEXT NOT NULL, binary TEXT NOT NULL,
           enabled INTEGER NOT NULL DEFAULT 0, last_used REAL NOT NULL DEFAULT 0,
@@ -62,6 +95,28 @@ class Store:
 
     def close(self):
         self.db.close()
+
+    def workspaces(self):
+        return [dict(x) for x in self.db.execute("SELECT * FROM workspaces ORDER BY name")]
+
+    def add_workspace(self, name, path):
+        if not re.fullmatch(r"[a-z][a-z0-9-]{0,47}", name):
+            raise ValueError("Workspace name: lowercase letters, digits and hyphens")
+        path = Path(path).expanduser().resolve()
+        if not path.is_dir():
+            raise ValueError("Workspace must be an existing directory on this server")
+        with self.db:
+            self.db.execute("INSERT INTO workspaces VALUES(?,?)", (name, str(path)))
+        return {"name": name, "path": str(path)}
+
+    def workspace(self, name):
+        row = self.db.execute("SELECT * FROM workspaces WHERE name=?", (name,)).fetchone()
+        if row is None:
+            raise ValueError("Unknown server workspace: " + name)
+        path = Path(row["path"])
+        if not path.is_dir() or str(path.resolve()) != row["path"]:
+            raise ValueError("Workspace is missing or its symlink target changed; register it again")
+        return str(path)
 
     def profiles(self):
         return [dict(x) for x in self.db.execute("SELECT * FROM profiles ORDER BY name")]
@@ -130,6 +185,19 @@ class Store:
 
     def submit(self, prompt, cwd, provider, profile=None, model=None, bucket=None,
                allow_edits=False, key=None, timeout=1800, max_attempts=6):
+        for value in (prompt, model, bucket, key):
+            if value is not None:
+                try:
+                    value.encode("utf-8")
+                except UnicodeError as exc:
+                    raise ValueError("Task contains invalid Unicode") from exc
+                if "\x00" in value:
+                    raise ValueError("Task contains NUL characters")
+        for value in (model, bucket):
+            if value is not None and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", value):
+                raise ValueError("Invalid model or quota bucket")
+        if timeout > 14400 or max_attempts > 100:
+            raise ValueError("Task limit: timeout <= 4 hours, max attempts <= 100")
         path = Path(cwd).expanduser().resolve()
         if not path.is_dir() or not prompt.strip():
             raise ValueError("Task needs a nonempty prompt and an existing working directory")
@@ -171,6 +239,23 @@ class Store:
             self.db.execute("UPDATE jobs SET " + ",".join(f"{k}=?" for k in values) + ",updated=? WHERE id=?",
                             (*values.values(), time.time(), ident))
 
+    def transition_job(self, ident, expected, **values):
+        allowed = {"status", "attempts", "chosen_profile", "result", "error"}
+        if not values or not set(values) <= allowed or not expected:
+            raise ValueError("Invalid job transition")
+        with self.db:
+            changed = self.db.execute("UPDATE jobs SET " + ",".join(f"{k}=?" for k in values) +
+                ",updated=? WHERE id=? AND status IN (" + ",".join("?" for _ in expected) + ")",
+                (*values.values(), time.time(), ident, *expected)).rowcount
+        return bool(changed)
+
+    def claim_job(self, ident, name):
+        with self.db:
+            self.db.execute("BEGIN IMMEDIATE")
+            if not self.profile(name)["enabled"]:
+                return False
+            return bool(self.db.execute("UPDATE jobs SET status='running',chosen_profile=?,attempts=attempts+1,error=NULL,updated=? WHERE id=? AND status IN ('queued','waiting')", (name, time.time(), ident)).rowcount)
+
     def recover(self):
         with self.db:
             count = self.db.execute("UPDATE jobs SET status='needs_review', error='Worker stopped during execution; inspect workspace before retry',updated=? WHERE status='running'", (time.time(),)).rowcount
@@ -178,31 +263,6 @@ class Store:
 
     @contextmanager
     def worker_lock(self):
-        """OS lock survives neither process exit nor reboot; lock file contents are irrelevant."""
-        path = self.home / "worker.lock"
-        with open(path, "a+b") as stream:
-            stream.seek(0)
-            if os.name == "nt":
-                import msvcrt
-                if path.stat().st_size == 0:
-                    stream.write(b"0")
-                    stream.flush()
-                stream.seek(0)
-                try:
-                    msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
-                except OSError as exc:
-                    raise WorkerBusy("Another worker or profile operation is active") from exc
-            else:
-                import fcntl
-                try:
-                    fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except OSError as exc:
-                    raise WorkerBusy("Another worker or profile operation is active") from exc
-            try:
-                yield
-            finally:
-                if os.name == "nt":
-                    stream.seek(0)
-                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
-                else:
-                    fcntl.flock(stream, fcntl.LOCK_UN)
+        """Only the executor owns this lease; queue administration remains available."""
+        with file_lock(self.home / "worker.lock"):
+            yield

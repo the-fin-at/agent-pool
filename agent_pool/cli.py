@@ -13,7 +13,7 @@ from contextlib import ExitStack
 from . import __version__
 from .providers import environment, executable, redact
 from .quota import availability, timestamp
-from .store import Store, WorkerBusy, default_home
+from .store import Store, WorkerBusy, default_home, file_lock
 from .worker import refresh, tick
 
 TERMINAL = {"succeeded", "failed", "needs_review", "cancelled"}
@@ -32,7 +32,9 @@ def task_args(p):
     p.add_argument("--profile", help="Pin this job to one account; omit to choose among this provider's profiles")
     p.add_argument("--model", help="Provider-native model name; omit for its configured default")
     p.add_argument("--bucket", help="Codex rate-limit bucket id; default codex")
-    p.add_argument("--cwd", default=os.getcwd())
+    place = p.add_mutually_exclusive_group()
+    place.add_argument("--cwd", help="Local working directory")
+    place.add_argument("--workspace", help="Registered workspace on the executing server")
     text = p.add_mutually_exclusive_group(required=True)
     text.add_argument("--prompt")
     text.add_argument("--prompt-file", help="UTF-8 file, or - for stdin")
@@ -43,11 +45,35 @@ def task_args(p):
 
 
 def parser():
-    p = argparse.ArgumentParser(prog="agent-pool", description="Local durable job broker for native Codex and Claude Code")
+    p = argparse.ArgumentParser(prog="agent-fleet", description="Local durable job broker for native Codex and Claude Code")
     p.add_argument("--version", action="version", version=__version__)
     p.add_argument("--home", type=Path, default=default_home(), help="Local state directory; keep it off shared/sync drives")
+    p.add_argument("--remote", help="Execute against a configured SSH remote")
     sub = p.add_subparsers(dest="action", required=True)
     sub.add_parser("init", help="Create three disabled Codex profiles and one disabled Claude profile")
+    sub.add_parser("rpc", help="Internal versioned SSH endpoint")
+    status = sub.add_parser("status", help="Worker heartbeat and account snapshot")
+    status.add_argument("--refresh", action="store_true")
+    monitor = sub.add_parser("monitor", help="Read account metadata without inference")
+    monitor.add_argument("--refresh", action="store_true")
+    workspace = sub.add_parser("workspace").add_subparsers(dest="operation", required=True)
+    workspace.add_parser("list")
+    wa = workspace.add_parser("add")
+    wa.add_argument("name")
+    wa.add_argument("--path", required=True)
+    wd = workspace.add_parser("remove")
+    wd.add_argument("name")
+    service = sub.add_parser("service", help="Generate a Linux systemd user unit; does not install it")
+    service.add_argument("--exec", dest="exec_path", required=True, help="Absolute installed agent-fleet executable")
+    remote = sub.add_parser("remote").add_subparsers(dest="operation", required=True)
+    remote.add_parser("list")
+    ra = remote.add_parser("add")
+    ra.add_argument("name")
+    ra.add_argument("--host", required=True, help="SSH alias or user@host")
+    ra.add_argument("--command", default="agent-fleet", help="Installed executable on Linux")
+    ra.add_argument("--server-home", required=True, help="Absolute state directory on Linux")
+    for op in ("remove", "test"):
+        remote.add_parser(op).add_argument("name")
     sub.add_parser("doctor", help="Check installed native CLI executables; no inference requests")
     sub.add_parser("desktop", help="Open the native account and quota monitor")
     profiles = sub.add_parser("profile").add_subparsers(dest="operation", required=True)
@@ -60,6 +86,7 @@ def parser():
         profiles.add_parser(op).add_argument("name")
     login = sub.add_parser("login", help="Run the provider's own interactive browser sign-in in an isolated profile")
     login.add_argument("name")
+    login.add_argument("--device-auth", action="store_true", help="Codex headless device sign-in")
     quota = sub.add_parser("quota").add_subparsers(dest="operation", required=True)
     show = quota.add_parser("show")
     show.add_argument("name", nargs="?")
@@ -82,7 +109,10 @@ def parser():
     wait.add_argument("id")
     wait.add_argument("--seconds", type=float, default=60)
     for op in ["retry", "cancel"]:
-        jobs.add_parser(op).add_argument("id")
+        operation = jobs.add_parser(op)
+        operation.add_argument("id")
+        if op == "retry":
+            operation.add_argument("--acknowledge-review", action="store_true", help="Confirm that a needs_review workspace was inspected")
     work = sub.add_parser("work", help="Keep processing the queue; Ctrl-C stops this worker")
     work.add_argument("--once", action="store_true")
     work.add_argument("--drain", action="store_true", help="Exit when no task is runnable")
@@ -97,7 +127,8 @@ def submit(store, args):
     prompt = args.prompt
     if args.prompt_file:
         prompt = sys.stdin.read() if args.prompt_file == "-" else Path(args.prompt_file).read_text(encoding="utf-8")
-    return store.submit(prompt, args.cwd, args.provider, args.profile, args.model, args.bucket,
+    cwd = store.workspace(args.workspace) if args.workspace else (args.cwd or os.getcwd())
+    return store.submit(prompt, cwd, args.provider, args.profile, args.model, args.bucket,
                         args.allow_edits, args.key, args.timeout, args.max_attempts)
 
 
@@ -117,25 +148,66 @@ def quotas(store, name=None):
     return result
 
 
+def launch_desktop(home, remote=None):
+    args = ["--home", str(home)]
+    if remote:
+        args += ["--remote", remote]
+    installed = next((candidate for candidate in [
+        Path.home() / "Applications/Agent Fleet.app",
+        Path.home() / "Applications/Agent Pool.app",
+    ] if candidate.is_dir()), None)
+    if sys.platform == "darwin" and installed is not None:
+        subprocess.Popen(["open", "-n", str(installed), "--args", *args])
+        emit({"desktop": "opened", "home": str(home), "remote": remote})
+        return 0
+    try:
+        from .desktop import main as desktop_main
+    except ImportError as exc:
+        raise ValueError("Desktop needs Python with Tk, or the packaged Agent Fleet desktop app") from exc
+    return desktop_main(args)
+
+
 def dispatch(store, args):
-    if args.action == "desktop":
-        installed = Path.home() / "Applications/Agent Pool.app"
-        if sys.platform == "darwin" and installed.is_dir():
-            subprocess.Popen(["open", str(installed), "--args", "--home", str(store.home)])
-            emit({"desktop": "opened", "home": str(store.home)})
-            return 0
-        try:
-            from .desktop import main as desktop_main
-        except ImportError as exc:
-            raise ValueError("Desktop needs Python with Tk, or the packaged Agent Pool desktop app") from exc
-        return desktop_main(["--home", str(store.home)])
+    if args.action == "status":
+        from .monitor import collect, snapshot
+        from .runtime import worker_state
+        accounts = collect(store.home, include_default=False) if args.refresh else snapshot(store.home, include_default=False)
+        count = store.db.execute("SELECT COUNT(*) FROM jobs WHERE status IN ('queued','waiting','running')").fetchone()[0]
+        emit({"worker": worker_state(store.home), "accounts": accounts, "pending_jobs": count})
+    elif args.action == "monitor":
+        from .monitor import collect, snapshot
+        emit(collect(store.home, include_default=False) if args.refresh else snapshot(store.home, include_default=False))
+    elif args.action == "workspace":
+        if args.operation == "add":
+            store.add_workspace(args.name, args.path)
+        elif args.operation == "remove":
+            with store.db:
+                store.db.execute("DELETE FROM workspaces WHERE name=?", (args.name,))
+        emit(store.workspaces())
+    elif args.action == "service":
+        from .service import unit
+        print(unit(args.exec_path, store.home))
+    elif args.action == "remote":
+        from .remote import RemoteConfig, RemoteClient
+        config = RemoteConfig(store.home)
+        if args.operation == "add":
+            config.add(args.name, args.host, args.command, args.server_home)
+        elif args.operation == "remove":
+            config.remove(args.name)
+        elif args.operation == "test":
+            result = RemoteClient(config.get(args.name)).request(["doctor"])
+            print(result["output"], end="")
+            return result["code"]
+        emit(config.all())
+    elif args.action == "desktop":
+        return launch_desktop(store.home)
     elif args.action == "init":
         existing = {p["name"] for p in store.profiles()}
         for provider, names in [("codex", ["codex-1", "codex-2", "codex-3"]), ("claude", ["claude-1"])]:
             for name in names:
                 if name not in existing:
                     store.add_profile(name, provider, provider)
-        emit({"home": str(store.home), "profiles": store.profiles(), "next": "agent-pool login codex-1"})
+        emit({"home": str(store.home), "profiles": store.profiles(), "next": "agent-fleet login codex-1"})
     elif args.action == "doctor":
         checks = []
         for provider in ("codex", "claude"):
@@ -152,17 +224,20 @@ def dispatch(store, args):
         if args.operation == "add":
             store.add_profile(args.name, args.provider, args.binary or args.provider)
         elif args.operation in {"enable", "disable", "release"}:
-            with store.worker_lock():
-                if args.operation == "release":
-                    store.update_profile(args.name, hold_until=None, hold_reason=None)
-                else:
-                    store.update_profile(args.name, enabled=args.operation == "enable")
+            if args.operation == "release":
+                store.update_profile(args.name, hold_until=None, hold_reason=None)
+            else:
+                store.update_profile(args.name, enabled=args.operation == "enable")
         emit(store.profiles())
     elif args.action == "login":
-        with store.worker_lock():
+        with file_lock(store.authdir(args.name) / ".native.lock"):
             profile = store.profile(args.name)
             native = executable(profile["binary"])
             command = [native, "login"] if profile["provider"] == "codex" else [native, "auth", "login", "--claudeai"]
+            if args.device_auth:
+                if profile["provider"] != "codex":
+                    raise ValueError("--device-auth is supported by Codex only")
+                command.append("--device-auth")
             code = subprocess.call(command, env=environment(profile["provider"], store.authdir(args.name)))
             if code:
                 raise ValueError(f"Native login failed (exit {code}); profile was not enabled")
@@ -170,27 +245,25 @@ def dispatch(store, args):
         emit({"profile": args.name, "enabled": True})
     elif args.action == "quota":
         if args.operation == "refresh":
-            with store.worker_lock():
-                profiles = [store.profile(args.name)] if args.name else store.profiles()
-                for profile in profiles:
-                    if profile["provider"] == "codex":
-                        refresh(store, profile)
+            profiles = [store.profile(args.name)] if args.name else store.profiles()
+            for profile in profiles:
+                if profile["provider"] == "codex":
+                    refresh(store, profile)
         elif args.operation == "set":
-            with store.worker_lock():
-                p = store.profile(args.name)
-                reset = timestamp(args.reset_at)
-                if reset <= time.time():
-                    raise ValueError("Manual reset must be in the future")
-                minutes = 300 if args.window == "five-hour" else 10080
-                bucket = args.bucket if p["provider"] == "codex" else "claude"
-                key = f"{bucket}:primary" if minutes == 300 else f"{bucket}:secondary"
-                if p["provider"] == "claude":
-                    key = "five_hour" if minutes == 300 else "seven_day" + ("_" + args.model if args.model else "")
-                store.set_windows(args.name, [{"key": key, "bucket": bucket, "minutes": minutes,
-                                              "used": args.used, "reset": reset, "model": args.model}])
-                # A user observation makes a formerly unknown reset known.
-                if p["hold_reason"] == "quota_reset_unknown":
-                    store.update_profile(args.name, hold_until=None, hold_reason=None)
+            p = store.profile(args.name)
+            reset = timestamp(args.reset_at)
+            if reset <= time.time():
+                raise ValueError("Manual reset must be in the future")
+            minutes = 300 if args.window == "five-hour" else 10080
+            bucket = args.bucket if p["provider"] == "codex" else "claude"
+            key = f"{bucket}:primary" if minutes == 300 else f"{bucket}:secondary"
+            if p["provider"] == "claude":
+                key = "five_hour" if minutes == 300 else "seven_day" + ("_" + args.model if args.model else "")
+            store.set_windows(args.name, [{"key": key, "bucket": bucket, "minutes": minutes,
+                                          "used": args.used, "reset": reset, "model": args.model}])
+            # A user observation makes a formerly unknown reset known.
+            if p["hold_reason"] == "quota_reset_unknown":
+                store.update_profile(args.name, hold_until=None, hold_reason=None)
         emit(quotas(store, getattr(args, "name", None)))
     elif args.action == "job":
         if args.operation == "submit":
@@ -211,18 +284,19 @@ def dispatch(store, args):
                 emit({**summary(job), "result": job["result"]})
             return 0 if job["status"] == "succeeded" else 1 if job["status"] in TERMINAL else 2
         else:
-            with store.worker_lock():
-                job = store.job(args.id)
-                if job["status"] == "running":
-                    raise ValueError("Recover the stopped worker first with `work --once`")
-                if args.operation == "retry":
-                    if job["status"] not in {"failed", "needs_review", "cancelled"}:
-                        raise ValueError("Only a stopped terminal job can be retried")
-                    store.update_job(args.id, status="queued", attempts=0, result=None, error=None)
-                else:
-                    if job["status"] not in {"queued", "waiting"}:
-                        raise ValueError("Only queued or waiting jobs can be cancelled")
-                    store.update_job(args.id, status="cancelled", error="Cancelled by user")
+            job = store.job(args.id)
+            if job["status"] == "running":
+                raise ValueError("Job is running; inspect its status. Only the server administrator should recover a stopped worker")
+            if args.operation == "retry":
+                if job["status"] not in {"failed", "needs_review", "cancelled"}:
+                    raise ValueError("Only a stopped terminal job can be retried")
+                if not store.transition_job(args.id, ("failed", "needs_review", "cancelled"), status="queued", attempts=0, result=None, error=None):
+                    raise ValueError("Job changed before retry; reload it")
+            else:
+                if job["status"] not in {"queued", "waiting"}:
+                    raise ValueError("Only queued or waiting jobs can be cancelled")
+                if not store.transition_job(args.id, ("queued", "waiting"), status="cancelled", error="Cancelled by user"):
+                    raise ValueError("Job already started; running tasks cannot be cancelled")
             emit(summary(store.job(args.id)))
     elif args.action in {"work", "run"}:
         if args.action == "run" and (not math.isfinite(args.wait_seconds) or args.wait_seconds < 0):
@@ -241,6 +315,9 @@ def dispatch(store, args):
                     current = store.job(job["id"])
                 emit({**summary(current), "result": current["result"]})
                 return 0 if current["status"] == "succeeded" else 1 if current["status"] in TERMINAL else 2
+            from .runtime import heartbeat
+            resources.enter_context(heartbeat(store.home))
+            next_monitor = 0
             recovered = store.recover()
             if recovered:
                 print(f"Recovered {recovered} interrupted job(s) as needs_review", file=sys.stderr)
@@ -250,6 +327,10 @@ def dispatch(store, args):
                     if current["status"] in TERMINAL or time.monotonic() >= deadline:
                         emit({**summary(current), "result": current["result"]})
                         return 0 if current["status"] == "succeeded" else 1 if current["status"] in TERMINAL else 2
+                if args.action == "work" and time.monotonic() >= next_monitor:
+                    from .monitor import collect
+                    collect(store.home, include_default=False)
+                    next_monitor = time.monotonic() + 60
                 did_work = tick(store)
                 if args.action == "work":
                     if args.once or (args.drain and not did_work):
@@ -264,9 +345,21 @@ def dispatch(store, args):
 
 
 def main(argv=None):
-    args = parser().parse_args(argv)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    args = parser().parse_args(raw)
     store = None
+    previous_term = None
+    if args.action in {"work", "run"}:
+        import signal, threading
+        if threading.current_thread() is threading.main_thread():
+            previous_term = signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
     try:
+        if args.action == "rpc":
+            from .rpc import serve
+            return serve(args.home)
+        if args.remote:
+            from .remote import dispatch_remote
+            return dispatch_remote(args)
         store = Store(args.home)
         return dispatch(store, args)
     except (ValueError, OSError, sqlite3.Error) as exc:
@@ -278,3 +371,5 @@ def main(argv=None):
     finally:
         if store:
             store.close()
+        if previous_term is not None:
+            signal.signal(signal.SIGTERM, previous_term)
