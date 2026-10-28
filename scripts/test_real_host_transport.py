@@ -12,13 +12,15 @@ from agent_pool.store import default_home
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--remote',required=True)
+parser.add_argument('--client-home',type=Path,help='Use a disposable client configuration instead of the personal pool')
 parser.add_argument('--output',type=Path,required=True)
 args=parser.parse_args()
-config=RemoteConfig(default_home()).get(args.remote)
+config=RemoteConfig(args.client_home or default_home()).get(args.remote)
 def shell(argv,input=None):
     done=subprocess.run(['ssh','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ForwardAgent=no',config['host'],shlex.join(argv)],input=input,text=True,capture_output=True,timeout=20)
     if done.returncode:raise RuntimeError(done.stderr[-800:])
     return done.stdout.strip()
+server_version=shell([config['command'],'--version'])
 folder=shell(['mktemp','-d',config['home']+'/../agent-fleet-validation/transport.XXXXXX'])
 child=None
 try:
@@ -48,7 +50,7 @@ sys.exit(r.returncode)
     retry=direct.data(argv)
     assert retry['id']==jobs[0]['id'] and len(direct.data(['job','list']))==1
     assert direct.data(['job','cancel',retry['id']])['status']=='cancelled'
-    report={'real_ssh':True,'controlled_pool':True,'provider_inference':False,'reply_interrupted_after_commit':True,'identical_retry_one_job':True,'no_model_worker_started':True}
+    report={'server_version':server_version,'real_ssh':True,'controlled_pool':True,'provider_inference':False,'reply_interrupted_after_commit':True,'identical_retry_one_job':True,'no_model_worker_started':True}
     args.output.write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
 finally:
     if child and child.poll() is None:child.kill();child.communicate(timeout=5)

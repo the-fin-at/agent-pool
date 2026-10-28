@@ -1,0 +1,15 @@
+[package]
+name = "fleet-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+[[bin]]
+name = "agent-fleet"
+path = "src/main.rs"
+[[bin]]
+name = "agent-pool"
+path = "src/compat.rs"
+[dependencies]
+fleet-core = { path = "../fleet-core" }
+serde_json = "1"

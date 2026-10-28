@@ -13,51 +13,50 @@ Repository-Anleitungen nach dem Auschecken lesen: `docs/desktop.md`, `docs/remot
 
 Bei vorhandener Installation zuerst Executable/App-Version, State-Verzeichnis, laufende Jobs und Dienste feststellen. Bei einem Update CLI/App/Skills sichern, nicht den Pool ersetzen. Während laufender Aufträge den Worker nicht zum Aktualisieren abbrechen. Binaries und App auf derselben Maschine bereitstellen und gezielt austauschen; nach Prüfung nur den eigenen Agent-Fleet-Worker kontrolliert neu starten. Der Installer bricht vor Änderungen ab, wenn ein Ziel existiert; diese Meldung ist kein Anlass zum Löschen von State oder Skills. Neue Skill-Versionen nach Vergleich gezielt kopieren und eigene Anpassungen erhalten.
 
-## Mac: CLI und App
+## Mac: native CLI und Tauri-App
 
-Python 3.11+ und Git verwenden. Für die native App einen verfügbaren Python mit funktionierendem Tcl/Tk auswählen; `import tkinter` allein beweist noch kein lauffähiges Fenster. Erstinstallation:
-
-```sh
-python3 scripts/build_zipapp.py
-python3 scripts/install_local.py
-```
-
-CLI-Ziele sind `~/.local/bin/agent-fleet` und `agent-pool`; Skills werden unter `~/.agents/skills` und `~/.claude/skills` installiert. Für diese Sitzung `~/.local/bin` in PATH nehmen oder den absoluten Executable-Pfad verwenden. Shell-Konfiguration nur gezielt ergänzen, bestehende Einträge erhalten.
-
-Ein zum aktuellen Stand passendes Mac-App-Paket bevorzugen. Falls es fehlt, mit einem Python inklusive Tk in einer Build-Umgebung bauen:
+Ab 0.5 die Rust-/Tauri-Laufzeit verwenden. Rust gemäß `rust-toolchain.toml` und Git sind Buildwerkzeuge; Node.js 24 und die Tauri-Systemvoraussetzungen werden zusätzlich für die App benötigt. Die fertigen Programme brauchen diese Entwicklungswerkzeuge und Python nicht.
 
 ```sh
-python3 -m venv .venv-desktop
-.venv-desktop/bin/python -m pip install -r requirements-desktop-build.txt
-.venv-desktop/bin/python scripts/build_desktop.py
+cargo build -p fleet-cli --release --locked
+sh scripts/install_native.sh
 ```
 
-`dist/macos/Agent Fleet.app` nach `~/Applications/Agent Fleet.app` installieren. Der Build gilt für die Architektur des Build-Rechners und ist ad hoc signiert, nicht öffentlich notarisiert. Danach öffnen und tatsächlich laden lassen. Die reine Remote-App benötigt dort keine native Codex-/Claude-CLI. Eine vorhandene App mit unbekannten laufenden Sitzungen nicht pauschal beenden.
+CLI-Ziel ist `~/.local/bin/agent-fleet`. Für Updates nach Vergleich `--replace` verwenden; der Installer behält die vorige Programmdatei als Backup und berührt den Pool nicht. Er installiert ausschließlich Programme. Die Skills `agent-fleet` und `setup-agents-fleet` nach Vergleich aus `skills/` unter `~/.agents/skills` und `~/.claude/skills` übernehmen; eigene Anpassungen und Sicherungen erhalten. `~/.local/bin` in PATH nehmen oder den absoluten Pfad verwenden.
 
-## Windows: CLI und portable App
+Für die App:
 
-Python 3.11+ mit Tcl/Tk, Git und für Remote OpenSSH Client prüfen. Mit `py -3` bauen und installieren:
+```sh
+cd desktop
+npm ci
+npm run tauri build
+cd ..
+sh scripts/install_native.sh --desktop --replace
+```
+
+Die Quelle liegt unter `target/release/bundle/macos/Agent Fleet.app`, das installierte Ziel unter `~/Applications/Agent Fleet.app`. Ein Build gilt für seine Zielarchitektur. Signierung/Notarisierung am tatsächlichen Artefakt prüfen. Die vorhandene App mit laufenden Anmeldungen erst kontrolliert schließen; ein Fensterstart allein beweist keine erfolgreiche native Oberfläche. Eine reine Remote-App benötigt keine lokalen Provider-Logins.
+
+## Windows: native CLI und Tauri-App
+
+Zum Bauen Rust/MSVC und Git verwenden; für die App zusätzlich Node.js 24 sowie C++-Buildwerkzeuge und WebView2 nach den offiziellen Tauri-Voraussetzungen.
 
 ```powershell
-py -3 scripts/build_zipapp.py
-py -3 scripts/build_desktop.py --portable-only
-py -3 scripts/install_local.py
+cargo build -p fleet-cli --release --locked
+.\scripts\install_native.ps1
+cd desktop
+npm ci
+npm run tauri build
 ```
 
-Die installierte CLI liegt unter `%USERPROFILE%\.local\bin\agent-fleet.pyz`. Beispielaufruf:
+Der Installer gibt den CLI-Zielpfad unter `%LOCALAPPDATA%\AgentFleet\bin` aus. Mit `-Replace` behält er die vorige EXE als Backup. Den Ordner zum Benutzer-PATH hinzufügen oder den absoluten Pfad verwenden. Desktop-Installer aus `target\release\bundle` installieren. Skills nach Vergleich in beide persönlichen Agentenverzeichnisse übernehmen.
 
-```powershell
-py -3 "$env:USERPROFILE\.local\bin\agent-fleet.pyz" --version
-pyw -3 '.\dist\Agent Fleet.pyzw'
-```
-
-Das portable Desktop-Archiv an einem dauerhaften Ort behalten; es benötigt Python/Tk. Bei fehlendem `pyw` ist `py -3` möglich. Ein natives EXE-Paket mit PyInstaller ausschließlich auf Windows bauen und vollständig mit seinem `_internal`-Ordner installieren. Kein Download oder Windows-Build-Erfolg ohne tatsächliches Artefakt behaupten. WSL-Ausführung hält Broker, Provider-CLIs und Projekte zusammen in WSL; ein nativer Windows-Desktop ist davon ein separater Client.
+Native Windows-Builds und die Oberfläche tatsächlich auf Windows prüfen; Mac-, Browser- und Cross-Compile-Prüfungen getrennt ausweisen. Alte `.pyz`-/`.pyzw`-Downloads bleiben Python-Versionen und sind keine nativen 0.5-Artefakte. Eine WSL-Installation hat ihren eigenen Linux-Pool; der native Desktop ist ein separater Client.
 
 ## Linux-Pool über SSH
 
 Den vom Nutzer gewählten SSH-Alias bzw. `user@host` verwenden. Mit geprüftem Host-Key und Schlüsselzugang verbinden; der Client arbeitet mit `BatchMode=yes`, `StrictHostKeyChecking=yes`, ohne Agent-Forwarding. Einen unbekannten Host-Key erst auf vertrauenswürdigem Weg prüfen. Existierende Dienste und Provider-Sitzungen inventarisieren; für diesen Pool einen eigenen Unix-Benutzer verwenden, wenn das gewünscht bzw. bereits eingerichtet ist.
 
-Python 3.11+, Agent-Fleet-CLI und benötigte native Provider auf Linux installieren. Entweder im berechtigten Server-Checkout bauen oder das lokal gebaute reine Python-Archiv übertragen. Das Archiv ist portabel; native App-Pakete sind es nicht. Auf Linux unter `~/.local/bin/agent-fleet` ausführbar installieren. Danach mit demselben Benutzer:
+Die native Rust-CLI und benötigte Provider auf Linux installieren. Mit `cargo build -p fleet-cli --release --locked` im berechtigten Server-Checkout bauen oder ein geprüftes Linux-Artefakt für genau Architektur und libc des Servers übertragen. Eine Mac-/Windows-Binärdatei ist kein Linux-Paket. Unter `~/.local/bin/agent-fleet` ausführbar installieren. Ein bestehender Python-Server kann während einer gestuften Migration über RPC v1 weiterlaufen; ein Server-Upgrade erfolgt erst nach Prüfung der laufenden Queue und separat vom Client-Update. Danach mit demselben Benutzer:
 
 ```sh
 agent-fleet init
@@ -76,7 +75,7 @@ agent-fleet remote test zentral
 agent-fleet --remote zentral status
 ```
 
-Pool-Pfad muss genau dem Worker entsprechen. Vorhandene passende Verbindungen wiederverwenden; abweichende nicht still ersetzen. Unter Windows dieselben CLI-Argumente hinter `py -3 <installierte-agent-fleet.pyz>` setzen.
+Pool-Pfad muss genau dem Worker entsprechen. Vorhandene passende Verbindungen wiederverwenden; abweichende nicht still ersetzen. Unter Windows dieselben CLI-Argumente mit der installierten `agent-fleet.exe` verwenden.
 
 Ein bestehender nativer Server-Account kann auf Wunsch mit `profile add <name> --provider codex --binary <absoluter-cli-pfad> --auth-home <bestehendes-verzeichnis>` registriert werden. Das ist eine lokale Server-Administration, kein RPC. Vor Aktivierung native Anmeldung verifizieren. Das externe Verzeichnis wird nicht kopiert oder umgechmodet; andere native Prozesse teilen die Account-Sitzung und beachten die Broker-Sperre nicht. Neue zusätzliche Abos bevorzugt in getrennten Profilen anmelden.
 
