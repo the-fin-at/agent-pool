@@ -1,4 +1,5 @@
-name: desktop-build
+# Legacy Python/Tk artifacts are retained only for explicit regression builds.
+name: legacy-python-desktop
 on:
   workflow_dispatch:
 jobs:
@@ -17,7 +18,7 @@ jobs:
       - run: python scripts/build_desktop.py
       - uses: actions/upload-artifact@v4
         with:
-          name: Agent-Fleet-${{ runner.os }}
+          name: legacy-python-Agent-Fleet-${{ runner.os }}
           path: |
             dist/Agent-Fleet-*.zip
             dist/Agent Fleet.pyzw

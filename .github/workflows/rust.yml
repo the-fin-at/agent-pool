@@ -1,0 +1,67 @@
+name: native-rust-tauri
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  native-cli:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.96.1
+        with:
+          components: clippy,rustfmt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: cargo test -p fleet-core -p fleet-cli --locked
+      - run: cargo clippy -p fleet-core -p fleet-cli --all-targets --locked -- -D warnings
+      - run: cargo build -p fleet-cli --examples --locked
+      - run: cargo build -p fleet-cli --locked
+      - shell: bash
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            export FLEET_RUST_BIN="$PWD/target/debug/agent-fleet.exe"
+          else
+            export FLEET_RUST_BIN="$PWD/target/debug/agent-fleet"
+          fi
+          python scripts/test_rust_compatibility.py
+      - run: cargo build -p fleet-cli --release --locked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-fleet-cli-${{ runner.os }}
+          path: |
+            target/release/agent-fleet
+            target/release/agent-fleet.exe
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.96.1
+        with:
+          components: clippy,rustfmt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci
+        working-directory: desktop
+      - run: npm test
+        working-directory: desktop
+      - run: npm run build
+        working-directory: desktop
+      - run: cargo fmt --all -- --check
+      - run: cargo test -p agent-fleet-desktop --features custom-protocol --locked
+      - run: cargo clippy -p agent-fleet-desktop --all-targets --features custom-protocol --locked -- -D warnings
+      - run: npx tauri build
+        working-directory: desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-fleet-desktop-${{ runner.os }}
+          path: target/release/bundle/

@@ -1,123 +1,79 @@
 # Lokal installieren und den ersten Auftrag ausführen
 
-[Übersicht](../README.md) · [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest)
+[Übersicht](../README.md) · [Native Desktop-App](desktop.md) · [Migration](rust-migration.md)
 
-Du brauchst Zugriff auf das private Repository `the-fin-at/agent-pool`, Python 3.11+ und eine aktuelle native Codex-CLI. Für Claude-Aufträge zusätzlich Claude Code installieren. Getestete lokale Provider-Versionen: Codex 0.161.0 und Claude Code 2.1.312. Der Broker stellt keine Accounts bereit; du meldest deine eigenen berechtigten Accounts über die Provider an.
+Du brauchst Zugriff auf `the-fin-at/agent-pool` sowie die offiziellen nativen Codex-/Claude-CLIs für die Anbieter, die auf diesem Rechner arbeiten sollen. Agent Fleet verwendet deine eigenen Anmeldungen. Ein reiner SSH-Client benötigt nur die Agent-Fleet-CLI und den eingerichteten SSH-Zugang.
 
-## Mac
+## Mac und Linux
 
-1. Projekt holen und das CLI-Paket bauen:
+Für einen Build aus dem Repository Rust gemäß `rust-toolchain.toml` installieren:
 
-   ```sh
-   git clone https://github.com/the-fin-at/agent-pool.git
-   cd agent-pool
-   python3 scripts/build_zipapp.py
-   python3 scripts/install_local.py
-   export PATH="$HOME/.local/bin:$PATH"
-   ```
+```sh
+git clone https://github.com/the-fin-at/agent-pool.git
+cd agent-pool
+cargo build -p fleet-cli --release --locked
+sh scripts/install_native.sh
+export PATH="$HOME/.local/bin:$PATH"
+agent-fleet doctor
+```
 
-   Der Installer kopiert Programm und Skill in deine persönlichen Verzeichnisse und überschreibt vorhandene Ziele nicht. Die PATH-Zeile gilt für das aktuelle Terminal; bei Bedarf in die eigene Shell-Konfiguration übernehmen.
+Eine bestehende Installation erst vergleichen; `--replace` ersetzt sie mit Backup. Vorhandene Pools, Accounts und Ergebnisse bleiben am bisherigen Ort. `init` ist nur bei einer Ersteinrichtung nötig:
 
-2. Profile vorbereiten und deinen ersten Account verbinden:
+```sh
+agent-fleet init
+agent-fleet login codex-1
+agent-fleet quota refresh codex-1
+```
 
-   ```sh
-   agent-fleet init
-   agent-fleet login codex-1
-   agent-fleet quota refresh codex-1
-   agent-fleet doctor
-   ```
-
-3. Weitere eigene Accounts verbinden. Für jeden Browser-Login den gewünschten Account wählen:
-
-   ```sh
-   agent-fleet login codex-2
-   agent-fleet login codex-3
-   # Optional, wenn Claude verwendet wird:
-   agent-fleet login claude-1
-   ```
-
-4. Einen ersten Leseauftrag in einem vorhandenen Projektordner ausführen:
-
-   ```sh
-   agent-fleet run --provider codex --cwd /pfad/zum/projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
-   ```
-
-   Erfolg: Ausgabe mit `status: succeeded` und einem Bericht in `result`. `waiting` ist ein noch offener Auftrag; `failed` oder `needs_review` ist kein erfolgreicher Abschluss.
-
-5. Optional den Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) installieren: Mac-ZIP entpacken, `Agent Fleet.app` nach `~/Applications` kopieren und öffnen. Die App zeigt die Accounts und aktualisiert alle 60 Sekunden. Die lokale `.app` ist ad hoc signiert; eine öffentliche Apple-Notarisierung ist nicht enthalten.
+Weitere Profile mit `login codex-2` und `login claude-1` anmelden und im Browser den gewünschten Account wählen. Den Mac-Desktop gemäß [Desktop-Anleitung](desktop.md) bauen. Fertige native Programme brauchen keine Python-, Rust- oder Node-Installation.
 
 ## Windows
 
-1. Projekt holen und das CLI-Paket bauen:
+Für den Build Rust/MSVC installieren; für die App zusätzlich die [Tauri-Voraussetzungen](https://v2.tauri.app/start/prerequisites/#windows).
 
-   ```powershell
-   git clone https://github.com/the-fin-at/agent-pool.git
-   cd agent-pool
-   py -3 scripts/build_zipapp.py
-   ```
+```powershell
+git clone https://github.com/the-fin-at/agent-pool.git
+cd agent-pool
+cargo build -p fleet-cli --release --locked
+.\scripts\install_native.ps1
+```
 
-2. Profile vorbereiten und einen eigenen Account verbinden:
+Den ausgegebenen `bin`-Ordner zum Benutzer-PATH hinzufügen. Bei vorhandener Installation nach Prüfung `-Replace` verwenden. Danach gelten dieselben `agent-fleet`-Befehle wie auf dem Mac. Native Provider-EXEs verwenden; CMD-/BAT-Shims werden nicht als Provider gestartet. Desktop-Installer mit `npm ci` und `npm run tauri build` in `desktop/` bauen. Eine tatsächlich ausgeführte Windows-Abnahme wird im [Migrationsnachweis](rust-migration.md) separat ausgewiesen.
 
-   ```powershell
-   py -3 dist/agent-fleet.pyz init
-   py -3 dist/agent-fleet.pyz login codex-1
-   py -3 dist/agent-fleet.pyz quota refresh codex-1
-   py -3 dist/agent-fleet.pyz doctor
-   ```
+## Ersten Auftrag ausführen
 
-   Weitere Profile mit `login codex-2` und `login codex-3` anmelden. Für Claude optional `login claude-1`. Native Provider-EXEs verwenden; npm-CMD-/BAT-Shims funktionieren nicht. Alternativ CLI, Broker und Projekte gemeinsam unter WSL betreiben; der native Desktop läuft getrennt unter Windows.
+Im vorhandenen Projektverzeichnis:
 
-3. Ersten Leseauftrag ausführen:
+```sh
+agent-fleet run --provider codex --cwd . --prompt "Beschreibe kurz dieses Projekt. Ändere keine Dateien."
+```
 
-   ```powershell
-   py -3 dist/agent-fleet.pyz run --provider codex --cwd C:\work\projekt --prompt "Beschreibe kurz, was dieses Projekt macht. Ändere keine Dateien."
-   ```
+Ohne `--profile` wählt der Worker selbst ein verfügbares Profil desselben Anbieters. Er berücksichtigt alle passenden 5-Stunden-, Wochen- und Modelllimits. Ein ausdrücklich gewähltes Profil bleibt gebunden. `succeeded` enthält den Bericht; `waiting` ist noch offen, `failed` oder `needs_review` ist kein Erfolg.
 
-4. Desktop aus den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) vollständig entpacken. Bei einem nativen Paket `Agent Fleet.exe` starten und den `_internal`-Ordner daneben behalten. Alternativ das portable Paket nutzen:
-
-   ```powershell
-   pyw -3 '.\Agent Fleet.pyzw'
-   ```
-
-   Die portable Variante benötigt Python mit Tcl/Tk. Bei fehlender `pyw`-Dateizuordnung funktioniert auch `py -3`, dann mit sichtbarem Terminal.
-
-5. Den Skill installieren:
-
-   ```powershell
-   py -3 scripts/install_local.py
-   ```
-
-   Der Installer legt das Paket unter `%USERPROFILE%\.local\bin\agent-fleet.pyz` ab und kopiert den Skill in die persönlichen Verzeichnisse. Im Skill bzw. Agentenaufruf die tatsächlich vorhandene `.pyz` verwenden, beispielsweise `py -3 C:\pfad\zu\agent-fleet.pyz`.
-
-## Längere Aufgaben über einen Worker
-
-Ein Terminal offenlassen:
+Für längere Aufgaben einen Worker in einem Terminal laufen lassen:
 
 ```sh
 agent-fleet work
 ```
 
-In einem zweiten Terminal die Aufgabe einreichen:
+In einem zweiten Terminal:
 
 ```sh
-agent-fleet job submit --provider codex --cwd /pfad/zum/projekt --prompt-file task.txt --key erster-test-001
+agent-fleet job submit --provider codex --cwd . --prompt-file task.txt --key erster-test-001
 agent-fleet job get <job-id>
 ```
 
-Unter Windows stattdessen `py -3 dist/agent-fleet.pyz work` bzw. `py -3 dist/agent-fleet.pyz job ...` verwenden.
-
-Schreibe in `task.txt`: Ziel, betroffene Dateien, Abnahmekriterien und das gewünschte Berichtsformat. Bei Dateiänderungen ausdrücklich `--allow-edits` ergänzen. Änderungen prüfen, bevor sie übernommen werden. Der Desktop ist ein Monitor; für Warteschlange und automatische Wiederaufnahme muss `work` laufen.
+In `task.txt` Ziel, betroffene Dateien und Abnahmekriterien angeben. Dateiänderungen erfordern ausdrücklich `--allow-edits`. Einen unsicher zugestellten Auftrag mit demselben Schlüssel und Inhalt erneut senden; dadurch entsteht kein zweiter Auftrag. Der Desktop zeigt Accounts und Anmeldungen, startet aber keinen Worker.
 
 ## Wenn etwas nicht klappt
 
 | Beobachtung | Nächster Schritt |
 |---|---|
-| Repository nicht erreichbar | Mit dem GitHub-Account anmelden, der Zugriff auf `the-fin-at` hat. |
-| Provider-Binary fehlt | Native Codex-/Claude-CLI installieren, dann `doctor` wiederholen. |
-| Account nicht verbunden | `login <profil>` starten und den Browser-Login abschließen. |
-| Quoten fehlen | `quota refresh <profil>`; bei Claude sind CLI-Ereignisse oder eine manuelle Beobachtung nötig. |
-| Job wartet | `quota show` prüfen. Bei bekanntem Limit auf den Reset warten und den Worker laufen lassen. |
-| `needs_review` | Arbeitsverzeichnis und mögliche Kindprozesse prüfen; erst danach `job retry <id>`. |
-| Desktop zeigt alten Stand | Manuell aktualisieren; Fehler und Zeitstempel in den Account-Details prüfen. |
+| Provider fehlt | Native CLI installieren, dann `doctor`. |
+| Account nicht verbunden | `login <profil>` abschließen. |
+| Quoten fehlen | `quota refresh <profil>`; Claude benötigt gespeicherte CLI-Ereignisse oder eine manuelle Beobachtung. |
+| Auftrag wartet | `quota show` prüfen und den Worker laufen lassen. Ein unbekannter Reset bleibt gesperrt. |
+| `needs_review` | Ergebnis, Arbeitsverzeichnis und Restprozesse prüfen; erst danach gezielt erneut freigeben. |
+| Anzeige veraltet | Zeitstempel und Fehler in den Account-Details prüfen, aktualisieren. |
 
-Die Profile und deren Credentials gehören auf die jeweilige Maschine. Sie werden weder aus dem Repository geladen noch zwischen Nutzern synchronisiert.
+Native Account-Verzeichnisse und Credentials bleiben auf dem jeweiligen Rechner. Sie gehören nicht ins Repository oder in synchronisierte Projektordner.

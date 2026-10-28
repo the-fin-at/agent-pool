@@ -4,7 +4,7 @@ Mac- und Windows-Clients übermitteln Aufträge per SSH an einen persönlichen L
 
 ## Voraussetzungen
 
-Jeder Linux-Server mit Python 3.11+, OpenSSH und einer vom Provider unterstützten nativen Codex- bzw. Claude-Code-CLI ist geeignet. systemd ist optional, für den beschriebenen Hintergrunddienst aber erforderlich. Ohne systemd kann `agent-fleet work` von einem eigenen Prozess-Supervisor gestartet werden. Entscheidend ist ein dauerhaft laufender Worker unabhängig von der Client-SSH-Verbindung.
+Ein Linux-Server mit passender nativer Rust-CLI, OpenSSH und einer vom Provider unterstützten Codex- bzw. Claude-Code-CLI kann den Pool ausführen. Vorhandene Python-Server bleiben über RPC v1 kompatibel. systemd ist optional, für den beschriebenen Hintergrunddienst aber erforderlich. Ohne systemd kann `agent-fleet work` von einem eigenen Prozess-Supervisor gestartet werden. Entscheidend ist ein dauerhaft laufender Worker unabhängig von der Client-SSH-Verbindung.
 
 Ein eigener Unix-Benutzer ohne sudo empfiehlt sich. Ein Pool ist eine persönliche Vertrauenszone: zugelassene Clients können Aufträge und Ergebnisse aller Profile dieses Pools lesen. Mehrere Personen bekommen getrennte Unix-Benutzer und getrennte Pools. Die Profilverzeichnisse sind keine vollständige Sandbox gegen einen bösartigen Agenten im selben Unix-Account. Es gibt keine Kontingentübertragung zwischen Accounts.
 
@@ -15,14 +15,14 @@ Als der Benutzer, der später auch den Worker betreibt:
 ```sh
 git clone https://github.com/the-fin-at/agent-pool.git
 cd agent-pool
-python3 scripts/build_zipapp.py
-python3 scripts/install_local.py
+cargo build -p fleet-cli --release --locked
+sh scripts/install_native.sh
 export PATH="$HOME/.local/bin:$PATH"
 agent-fleet init
 agent-fleet doctor
 ```
 
-Der Installer überschreibt vorhandene Installationen nicht. Für ein geprüftes Update die neue `dist/agent-fleet.pyz` gezielt an die Stelle des bisherigen Executables kopieren und den Worker kontrolliert neu starten. Client und Server sollten dieselbe Agent-Pool-Version verwenden. Standard-State auf Linux: `~/.local/share/agent-pool`, auf einer lokalen Platte.
+Der native Installer überschreibt vorhandene Programme erst mit `--replace` und behält ein Backup. Vor einem Server-Update laufende Ausführungen kontrolliert abwarten, Queue und Poolpfad erhalten und nur den eigenen Worker neu starten. Die [Migration](rust-migration.md) beschreibt den gestuften Betrieb mit älteren Python-Servern. Standard-State auf Linux: `~/.local/share/agent-pool`, auf einer lokalen Platte.
 
 Die Provider-CLIs separat nach deren [Codex-](https://developers.openai.com/codex/cli) und [Claude-Code-Anleitung](https://code.claude.com/docs/en/setup) installieren. `doctor` zeigt fehlende Executables. API-Schlüssel sind für den Abonnementbetrieb nicht nötig.
 
@@ -107,12 +107,12 @@ agent-fleet --remote zentral status
 agent-fleet --remote zentral desktop
 ```
 
-Auf Windows dieselben Argumente mit dem Python-Launcher:
+Auf Windows dieselben Argumente mit der nativen CLI:
 
 ```powershell
-py -3 dist/agent-fleet.pyz remote add zentral --host pool-server --command /home/agentpool/.local/bin/agent-fleet --server-home /home/agentpool/.local/share/agent-pool
-py -3 dist/agent-fleet.pyz remote test zentral
-py -3 dist/agent-fleet.pyz --remote zentral desktop
+agent-fleet remote add zentral --host pool-server --command /home/agentpool/.local/bin/agent-fleet --server-home /home/agentpool/.local/share/agent-pool
+agent-fleet remote test zentral
+agent-fleet --remote zentral desktop
 ```
 
 Den tatsächlichen Benutzerpfad einsetzen. `--server-home` ist Pflicht und muss exakt dem State-Verzeichnis des Workers entsprechen; dadurch wird eine versehentlich zweite Queue durch unterschiedliche SSH-/Dienst-Umgebungen vermieden. Remotes werden ausschließlich lokal unter `remotes.json` gespeichert. In der Desktop-App oben auf „Remote“ wechseln und „Verbindung hinzufügen“ wählen. Nach dem Öffnen eines Servers stehen seine Accounts und die integrierte Anmeldung bereit; Aufträge übernehmen Agenten über die CLI. Remote-Accounts stammen aus den verwalteten Server-Profilen; der native Hauptaccount des Clients wird nicht in diesen Pool gemischt.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Agent Fleet",
+  "version": "0.5.0",
+  "identifier": "local.agentfleet.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Agent Fleet",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 760,
+        "minHeight": 560,
+        "backgroundColor": "#F9F6F2"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data:; font-src 'self' data:; connect-src ipc: http://ipc.localhost https://ipc.localhost; object-src 'none'; base-uri 'self'; frame-src 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "shortDescription": "Accounts, Kontingente und Auftr\u00e4ge f\u00fcr Codex und Claude",
+    "category": "DeveloperTool",
+    "icon": [
+      "icons/app.png",
+      "icons/app.icns",
+      "icons/app.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    }
+  }
+}

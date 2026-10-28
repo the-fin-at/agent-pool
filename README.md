@@ -1,6 +1,6 @@
 ![Agent Fleet](docs/assets/header.svg)
 
-Agent Fleet hieß bis Version 0.2 Agent Pool. Der bisherige Befehl `agent-pool` und der lokale Datenordner bleiben kompatibel. Die Accounts müssen nicht neu angemeldet werden.
+Agent Fleet hieß bis Version 0.2 Agent Pool. Der lokale Datenordner bleibt kompatibel; der optionale native Kompatibilitätsbefehl `agent-pool` verwendet denselben Rust-Kern. Der Installer legt standardmäßig `agent-fleet` an. Die Accounts müssen nicht neu angemeldet werden.
 
 **Ein persönlicher Auftragsverteiler für Codex und Claude Code – lokal oder zentral auf Linux, mit Desktop-Manager für Mac und Windows.**
 
@@ -26,9 +26,9 @@ Agent Fleet ist eine Auftragsschicht um die offiziellen CLIs. Es stellt keinen O
 
 Die Seitenleiste filtert nach Codex und Claude. Die Kreise zeigen den freien Anteil im 5-Stunden-Fenster, die Balken das Wochenkontingent. Der obere Kontextwechsler trennt lokale Accounts und Remote-Verbindungen. Neue Accounts werden innerhalb der App angemeldet. Schrift und Icons liegen im App-Paket.
 
-![Agent Fleet Desktop mit Beispieldaten](design/2026-10-28/overview/local.png)
+![Native Tauri-App mit kontrollierten Testaccounts](design/2026-10-28/rust-tauri/native-overview.png)
 
-Der neue Desktop ist im Quellstand enthalten; veröffentlichte v0.2.0-Pakete zeigen noch die alte Oberfläche. Zum Bauen die [Desktop-Anleitung](docs/desktop.md) verwenden.
+Die Rust-/Tauri-Umstellung ist im Quellstand enthalten. Ältere Downloads können noch die Python-/Tk-Version enthalten. Zum Bauen die [Desktop-Anleitung](docs/desktop.md) verwenden.
 
 ## Neu in 0.4: Übersicht und Login
 
@@ -46,55 +46,58 @@ agent-fleet --remote zentral job submit --provider codex --workspace projekt --p
 
 Voraussetzung ist die einmalige Servereinrichtung einschließlich SSH-Schlüsselzugang und registriertem Workspace. Die [vollständige Anleitung](docs/remote.md) beschreibt Installation, Headless-Login, systemd und Windows. Server und Clients aus demselben Quellstand bauen; ältere Release-Downloads enthalten die neue 0.4-Anmeldung noch nicht.
 
-## Schnellstart · Mac
+## Native Installation · Mac und Linux
 
-Voraussetzungen: Python 3.11+, Git und die native [Codex-CLI](https://developers.openai.com/codex/cli). Claude ist optional; dafür die native [Claude-Code-CLI](https://code.claude.com/docs/en/setup) installieren.
+Ab 0.5 laufen Dispatcher und CLI in Rust, der Desktop in Tauri 2 mit React und TypeScript. Die fertigen Programme brauchen kein Python, Node.js oder Cargo. Die offiziellen Codex-/Claude-CLIs bleiben separat installiert. Bestehende Accounts und Aufträge bleiben im bisherigen `AgentPool`-Verzeichnis; siehe [Migration und Prüfstand](docs/rust-migration.md).
+
+Zum Bauen aus dem Quellstand: Git und die Rust-Version aus `rust-toolchain.toml`; für die Desktop-App zusätzlich Node.js 24 und die [Tauri-Systemvoraussetzungen](https://v2.tauri.app/start/prerequisites/).
 
 ```sh
 git clone https://github.com/the-fin-at/agent-pool.git
 cd agent-pool
-python3 scripts/build_zipapp.py
-python3 scripts/install_local.py
-```
-
-Falls `~/.local/bin` noch nicht im PATH liegt, für das aktuelle Terminal:
-
-```sh
+cargo build -p fleet-cli --release --locked
+sh scripts/install_native.sh
 export PATH="$HOME/.local/bin:$PATH"
+agent-fleet doctor
 ```
 
-Profile anlegen, einen eigenen Account anmelden und die Verbindung prüfen:
+Bei einer vorhandenen Installation prüft der Installer zuerst die Ziele. `sh scripts/install_native.sh --replace` ersetzt die CLI und behält die vorige Datei als Backup. Er berührt keine Account- oder Auftragsdaten. Einen bestehenden Pool weiterverwenden; `init` nur bei einer Ersteinrichtung aufrufen.
 
 ```sh
 agent-fleet init
 agent-fleet login codex-1
 agent-fleet quota refresh codex-1
-agent-fleet doctor
 ```
 
-Weitere Accounts mit `agent-fleet login codex-2` und `agent-fleet login codex-3` anmelden. Dabei im Browser jeweils den gewünschten Account wählen. Für Claude: `agent-fleet login claude-1`.
+Weitere eigene Accounts lassen sich mit `agent-fleet login codex-2` oder `agent-fleet login claude-1` anmelden. Im Browser jeweils den gewünschten Account wählen. Die [Setup-Anleitung](skills/setup-agents-fleet/SKILL.md) erläutert die nativen Anmeldungen und SSH-Verbindungen.
 
-**Desktop:** [Mac-Paket herunterladen](https://github.com/the-fin-at/agent-pool/releases/latest), entpacken und `Agent Fleet.app` nach `~/Applications` kopieren. Per Doppelklick oder `agent-fleet desktop` öffnen. Das Mac-App-Paket enthält Python und Tk; das CLI braucht weiterhin Python. Architektur und genaue Voraussetzungen stehen in der [Desktop-Anleitung](docs/desktop.md).
+Für den Mac-Desktop aus demselben Checkout:
 
-## Schnellstart · Windows
+```sh
+cd desktop
+npm ci
+npm run tauri build
+cd ..
+sh scripts/install_native.sh --desktop --replace
+agent-fleet desktop
+```
 
-Voraussetzungen: Python 3.11+ mit Tcl/Tk und Python-Launcher, Git sowie die native Codex-CLI. Für den Desktop genügen auch die in den [Downloads](https://github.com/the-fin-at/agent-pool/releases/latest) angebotenen Pakete; die Provider-CLI und eigene Logins werden je Rechner eingerichtet.
+## Native Installation · Windows
+
+Der Rust-Build benötigt die MSVC-Toolchain; der Desktop zusätzlich die [Tauri-Voraussetzungen](https://v2.tauri.app/start/prerequisites/#windows), darunter WebView2. Für die Verwendung fertiger Pakete sind die Buildwerkzeuge nicht erforderlich.
 
 ```powershell
 git clone https://github.com/the-fin-at/agent-pool.git
 cd agent-pool
-py -3 scripts/build_zipapp.py
-py -3 dist/agent-fleet.pyz init
-py -3 dist/agent-fleet.pyz login codex-1
-py -3 dist/agent-fleet.pyz quota refresh codex-1
-py -3 dist/agent-fleet.pyz doctor
+cargo build -p fleet-cli --release --locked
+.\scripts\install_native.ps1
+# Den ausgegebenen bin-Ordner zum Benutzer-PATH hinzufügen.
+cd desktop
+npm ci
+npm run tauri build
 ```
 
-**Aktueller Download:** Das portable Windows-Paket (`.pyzw`, Python mit Tk erforderlich). Eine native Windows-EXE ist noch nicht veröffentlicht, weil der GitHub-Runner wegen Kontoabrechnung/Ausgabenlimit nicht gestartet wurde. [Details zum Prüfstand](docs/validation.md).
-
-**Desktop:** Das Windows-Desktop-Paket vollständig entpacken. Bei einem nativen Build `Agent Fleet.exe` zusammen mit seinem `_internal`-Ordner behalten. Das portable `Agent Fleet.pyzw` benötigt Python mit Tk und startet alternativ mit `pyw -3 '.\Agent Fleet.pyzw'`.
-
-Für die CLI kann unter Windows jeder folgende Aufruf von `agent-fleet` durch `py -3 dist/agent-fleet.pyz` ersetzt werden. Native Provider-`.exe` verwenden; npm-`.cmd`-/`.bat`-Shims werden nicht unterstützt. [Windows-Schritte und Builds](docs/quickstart.md#windows).
+Die CLI heißt `agent-fleet.exe`, Desktop-Installer liegen unter `target\release\bundle`. [Plattformnachweise](docs/rust-migration.md) führen tatsächlich ausgeführte Prüfungen und offene Windows-Abnahme getrennt auf. Ältere `.pyz`-/`.pyzw`-Downloads enthalten weiterhin die Python-Version. Native Provider-`.exe` verwenden; npm-`.cmd`-/`.bat`-Shims sind keine nativen Providerprozesse.
 
 ## Einen Auftrag ausführen
 
@@ -124,7 +127,7 @@ Standard ist Lesen. Mit `--allow-edits` darf der Worker Dateien bearbeiten. Code
 
 ## Den Skill nutzen
 
-Der lokale Installer kopiert [`agent-fleet`](skills/agent-fleet/SKILL.md), den Kompatibilitäts-Skill `agent-pool` und [`setup-agents-fleet`](skills/setup-agents-fleet/SKILL.md) in die persönlichen Skill-Verzeichnisse für Codex und Claude Code. Mit `$setup-agents-fleet` führt der Agent durch Installation/Update, lokale oder Remote-Einrichtung und native Browser-Anmeldungen. Bestehende Installationen werden nach Vergleich gezielt aktualisiert; der Erstinstaller überschreibt sie nicht. Danach bei Bedarf eine neue Agenten-Sitzung öffnen und beispielsweise beauftragen:
+Die Skills [`agent-fleet`](skills/agent-fleet/SKILL.md) und [`setup-agents-fleet`](skills/setup-agents-fleet/SKILL.md) können aus `skills/` in die persönlichen Skill-Verzeichnisse für Codex und Claude Code übernommen werden. Der native Binärinstaller installiert ausschließlich Programme. Der alte Python-Erstinstaller bleibt für ältere Versionen erhalten. Mit `$setup-agents-fleet` führt der Agent durch Installation/Update, lokale oder Remote-Einrichtung und native Browser-Anmeldungen. Bestehende Installationen werden nach Vergleich gezielt aktualisiert; der Erstinstaller überschreibt sie nicht. Danach bei Bedarf eine neue Agenten-Sitzung öffnen und beispielsweise beauftragen:
 
 > Nutze den agent-fleet-Skill. Lass einen Codex-Worker die Architektur dieses Projekts untersuchen und hole seinen Bericht ab. Es sollen keine Dateien geändert werden.
 
@@ -159,18 +162,18 @@ Verfügbare Profile mit dem frühesten bekannten Wochenreset erhalten bevorzugt 
 ## Entwicklung und Prüfstand
 
 ```sh
-python3 -m unittest discover -s tests -v
-python3 scripts/build_zipapp.py
+cargo test -p fleet-core -p fleet-cli --locked
+cargo build -p fleet-cli --examples --locked
+cargo build -p fleet-cli --locked
+python3 scripts/test_rust_compatibility.py
+cd desktop
+npm ci
+npm test
+npm run build
+npm run tauri build
 ```
 
-Desktop-Pakete auf dem jeweiligen Zielsystem bauen:
-
-```sh
-python3 -m pip install -r requirements-desktop-build.txt
-python3 scripts/build_desktop.py
-```
-
-Der lokale Mac-Lauf besteht aus **55 erfolgreichen Tests**, einschließlich nativer Fenster- und Prozess-Tests. Das gebündelte Mac-Programm wurde mit echten Account-Metadaten geprüft. Der [Prüfnachweis](docs/validation.md) hält lokale, CI- und offene Live-Prüfungen getrennt. Die Workflows testen Mac, Windows und Linux; native Desktop-Builds werden zusätzlich über `desktop-build` gestartet.
+Python dient hier als unabhängige Referenz für bestehende Daten und RPC-Verträge. Die Produktionslaufzeit verwendet Rust. Die alten Python-Tests und Buildskripte bleiben für Regressionen und ältere Server erhalten. `native-rust-tauri` baut CLI und Desktop auf den jeweiligen Zielplattformen. Die konkrete lokale, native, SSH- und CI-Abnahme steht im [Migrationsnachweis](docs/rust-migration.md); ein alter Tk-Testlauf belegt keine Tauri-Oberfläche.
 
 ## Weiterführend
 

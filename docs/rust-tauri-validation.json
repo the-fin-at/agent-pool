@@ -1,0 +1,136 @@
+{
+  "version": "0.5.0",
+  "integration_base": "ddbc859cbecb7c7af80fc2be918574d34d0099d7",
+  "python_reference": {
+    "platform": "macOS with real Tk",
+    "passed": 145
+  },
+  "rust_core": {
+    "passed": 85,
+    "desktop_bridge_tests": 2,
+    "clippy": "passed with -D warnings"
+  },
+  "frontend": {
+    "tests_passed": 22,
+    "typecheck_build": "passed",
+    "npm_audit_vulnerabilities": 0
+  },
+  "compatibility": {
+    "cases": 23,
+    "macOS": "passed",
+    "local_linux_x86_64_container": "passed",
+    "real_linux_x86_64_host": "passed",
+    "provider_inference": false
+  },
+  "controlled_workload": {
+    "unique_jobs": 100,
+    "native_executions": 100,
+    "macOS_seconds": 3.411,
+    "linux_container_seconds": 2.995,
+    "real_linux_seconds": 2.511,
+    "meaning": "broker and controlled subprocess throughput, not model inference speed"
+  },
+  "existing_local_state": {
+    "version": "0.5.0",
+    "existing_pool_opened": true,
+    "profile_count": 4,
+    "job_count": 0,
+    "profiles_unchanged": true,
+    "jobs_and_results_unchanged": true,
+    "native_account_directories_unchanged": true,
+    "provider_inference": false,
+    "account_metadata_refreshed": false
+  },
+  "existing_python_server": {
+    "rust_client_version": "0.5.0",
+    "server_version": "0.4.2",
+    "real_ssh": true,
+    "cache_only": true,
+    "existing_remote_jobs": 7,
+    "job_ids_preserved": true,
+    "existing_completed_report_matches": true,
+    "accounts_visible": 6,
+    "worker_online": true,
+    "provider_inference": false,
+    "production_service_changed": false
+  },
+  "native_rust_ssh_lost_ack": {
+    "server_version": "0.5.0",
+    "real_ssh": true,
+    "controlled_pool": true,
+    "provider_inference": false,
+    "reply_interrupted_after_commit": true,
+    "identical_retry_one_job": true,
+    "no_model_worker_started": true
+  },
+  "native_gui": {
+    "final_full_run": {
+      "passed": true,
+      "platform": "macOS WKWebView + Rust IPC",
+      "checks": [
+        "Product name rendered in native WebView",
+        "Production transport has no demo fallback",
+        "Existing profiles rendered from legacy SQLite",
+        "Native overview has no horizontal overflow",
+        "Rust quota matches native UI percentage for arbeit",
+        "Rust quota matches native UI percentage for privat",
+        "Rust quota matches native UI percentage for team",
+        "Native quota circles stay aligned with long account email addresses",
+        "Real Rust IPC reads existing queue",
+        "Real Rust IPC preserves existing result",
+        "WebView cannot start a worker",
+        "Native bridge rejects unofficial login URLs",
+        "Provider filter shows existing Claude profile",
+        "Search empty state hides unrelated cards",
+        "Account details show native profile metadata",
+        "Integrated native login form is reachable",
+        "Desktop does not add a task composer",
+        "All-profiles control available",
+        "Native Codex device code reaches the actual UI",
+        "Official login browser action is available",
+        "Cancelled native login leaves the account disabled",
+        "Native Claude authorization input is masked",
+        "Provider-confirmed Claude login enables the existing profile"
+      ],
+      "viewport": {
+        "width": 1280,
+        "height": 808
+      },
+      "native_login_children_terminated": 2,
+      "database_preserved": true,
+      "native_screenshot": true
+    },
+    "release_hooks_absent": true,
+    "diagnosed_environment_failure": "A locked macOS session suspended WebView timers. The preflight now exits77 before spawning an app; final rerun on unlocked console passed23checks.",
+    "debug_binary_sha256": "6217d9ba35ae790c542bd5f7d686542e9849862b88ecfad6daedead139be0a7f"
+  },
+  "release": {
+    "platform": "macOS arm64",
+    "app_mib": 15.59,
+    "signature": "local ad-hoc, deep/strict verification passed",
+    "notarized": false,
+    "app_executable_sha256": "8d38dbaff79a2cfb8f63cee88d8543e89e1c9b2447284641360d12a85951af5c",
+    "mac_cli_sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+    "linux_cli_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8"
+  },
+  "windows": {
+    "native_execution": "not run",
+    "ci_matrix": "configured",
+    "installer": "NSIS"
+  },
+  "ci": {
+    "status": "blocked before execution by GitHub organization billing/spending limit",
+    "verified_candidate": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "native_run": "https://github.com/the-fin-at/agent-pool/actions/runs/40778503951",
+    "reference_run": "https://github.com/the-fin-at/agent-pool/actions/runs/40778503882",
+    "windows_native_execution": "not run"
+  },
+  "production_service_changed": false,
+  "reviewed_implementation_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+  "reviews": {
+    "standards_open_findings": 0,
+    "spec_open_findings": 0,
+    "fixed_findings": 2,
+    "fix_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d"
+  }
+}
