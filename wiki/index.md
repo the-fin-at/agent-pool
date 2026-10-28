@@ -31,3 +31,7 @@ Die [Zielauswahl pro Projekt](entscheidungen.md) ersetzt die frühere persönlic
 ## Integrationsbefund vom 2026-10-28: belegter Account blockiert andere Arbeit
 
 Ein unabhängiges Review identifizierte einen gemeinsamen Python-/Rust-Schedulingfall: ein belegter nativer Accountlock kann die Bearbeitung weiterer verfügbarer Profile oder Jobs anhalten. [Entscheidungen](entscheidungen.md), [Aufträge](auftraege.md) und [Releaseplan](release-1.0.md) ergänzen den konkreten Fall und die getrennten Fix-Zuständigkeiten. Die Korrektur war beim Eintrag noch nicht abgeschlossen; die bisherigen Rust-Build-/Frontendberichte sind keine finale native Abnahme.
+
+## Python-Lock-Fix abgeschlossen: Checkpoint vom 2026-10-28
+
+[PR #21](https://github.com/the-fin-at/agent-pool/pull/21) liefert den Python-Referenzfix gegen den belegten Accountlock-Fall auf `ddbc859cbecb7c7af80fc2be918574d34d0099d7`. [Entscheidungen](entscheidungen.md), [Aufträge](auftraege.md) und [Releaseplan](release-1.0.md) trennen die gemergten 145-Test-/Lock-Belege vom noch ausstehenden finalen Rust-Kandidaten. Die produktive Serverruntime wurde dadurch nicht aktualisiert.
