@@ -1,4 +1,4 @@
-# Agent Fleet Desktop · 0.4.0
+# Agent Fleet Desktop · 0.4.2
 
 Ein Fenster für alle verbundenen Accounts: im THE-FIN-Design mit Seitenleiste, Kontingentkreisen und Wochenbalken. Lokal und für konfigurierte Linux-Server.
 
