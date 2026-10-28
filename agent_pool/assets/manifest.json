@@ -5,15 +5,25 @@
     "source": "https://raw.githubusercontent.com/twbs/icons/v1.11.3",
     "license": "MIT",
     "names": [
-      "people",
-      "hdd-stack",
-      "diagram-3",
-      "person",
       "arrow-clockwise",
+      "arrow-left",
+      "box-arrow-up-right",
+      "check2",
+      "chevron-down",
+      "diagram-3",
+      "exclamation-circle",
+      "globe2",
+      "hdd-stack",
+      "key",
+      "laptop",
+      "link-45deg",
+      "list-task",
+      "people",
+      "person",
+      "plus-lg",
       "search",
       "server",
-      "list-task",
-      "exclamation-circle"
+      "x-lg"
     ]
   },
   "colors": {

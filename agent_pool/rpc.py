@@ -38,7 +38,7 @@ def _handle(home, request):
                 raise ValueError("Invalid Unicode in RPC arguments") from exc
             if "\x00" in token:
                 raise ValueError("NUL in RPC arguments")
-        if argv[0] not in {"doctor", "status", "monitor", "workspace", "profile", "quota", "job"}:
+        if argv[0] not in {"doctor", "connection-info", "status", "monitor", "workspace", "profile", "quota", "job", "auth"}:
             raise ValueError("RPC operation not allowed")
         with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
             try:
@@ -56,6 +56,8 @@ def _handle(home, request):
             raise ValueError("Register workspaces directly on the server")
         if args.action == "profile" and args.operation == "add":
             raise ValueError("Add native executables and profiles directly on the server")
+        if args.action == "auth" and args.operation == "input" and args.code_file:
+            raise ValueError("RPC login codes are transferred directly, not read from server files")
         if args.action == "job" and args.operation == "submit":
             if not args.workspace or args.cwd or args.prompt_file or not args.key:
                 raise ValueError("Remote submit requires --workspace, --prompt and a stable --key")

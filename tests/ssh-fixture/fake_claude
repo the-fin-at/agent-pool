@@ -1,0 +1,15 @@
+#!/usr/local/bin/python3
+"""Controlled browser-login fixture, never contacts Anthropic."""
+import json,os,sys
+from pathlib import Path
+home=Path(os.environ['CLAUDE_CONFIG_DIR'])
+accepted=home/'fixture-accepted'
+if sys.argv[1:]==['auth','status']:
+    print(json.dumps({'loggedIn':accepted.exists(),'authMethod':'claude.ai' if accepted.exists() else 'none','email':'login-fixture@example.invalid','subscriptionType':'max','configDirectory':str(home)}))
+    sys.exit(0 if accepted.exists() else 1)
+elif '--version' in sys.argv:print('claude-fixture 1.0')
+else:
+    print('Visit https://claude.com/oauth/authorize?state=fixture-only\nPaste code here if prompted > ',end='',flush=True)
+    if sys.stdin.readline().strip()!='fixture-authorized-code':sys.exit(1)
+    accepted.write_text('fixture-only')
+    print('Login successful',flush=True)

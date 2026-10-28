@@ -115,7 +115,7 @@ py -3 dist/agent-fleet.pyz remote test zentral
 py -3 dist/agent-fleet.pyz --remote zentral desktop
 ```
 
-Den tatsächlichen Benutzerpfad einsetzen. `--server-home` ist Pflicht und muss exakt dem State-Verzeichnis des Workers entsprechen; dadurch wird eine versehentlich zweite Queue durch unterschiedliche SSH-/Dienst-Umgebungen vermieden. Remotes werden ausschließlich lokal unter `remotes.json` gespeichert. In der Desktop-App stehen „Server hinzufügen“, die Serverauswahl und „Aufträge“ bereit. Remote-Accounts stammen aus den verwalteten Server-Profilen; der native Hauptaccount des Clients wird nicht in diesen Pool gemischt.
+Den tatsächlichen Benutzerpfad einsetzen. `--server-home` ist Pflicht und muss exakt dem State-Verzeichnis des Workers entsprechen; dadurch wird eine versehentlich zweite Queue durch unterschiedliche SSH-/Dienst-Umgebungen vermieden. Remotes werden ausschließlich lokal unter `remotes.json` gespeichert. In der Desktop-App oben auf „Remote“ wechseln und „Verbindung hinzufügen“ wählen. Nach dem Öffnen eines Servers stehen seine Accounts und die integrierte Anmeldung bereit; Aufträge übernehmen Agenten über die CLI. Remote-Accounts stammen aus den verwalteten Server-Profilen; der native Hauptaccount des Clients wird nicht in diesen Pool gemischt.
 
 ## Aufträge starten und Berichte abholen
 
@@ -168,3 +168,8 @@ Dieser Schlüssel führt nur den versionierten RPC-Endpunkt aus. `SSH_ORIGINAL_C
 `python -m unittest discover -s tests -v` prüft die Plattformlogik. `python scripts/test_remote_ssh.py` ist ein zusätzlicher, ausdrücklich gestarteter Test mit Docker, echtem OpenSSH und einer kontrollierten Provider-Test-CLI ohne Accounts. Der Test erzeugt einen temporären Schlüssel und einen nur an Loopback gebundenen Container; beides wird danach entfernt. Er unterbricht die Antwort nach gespeichertem Auftrag und prüft genau eine Ausführung.
 
 Die [Opus-Architekturprüfung](reviews/opus-remote-review.md) und die [Entscheidungen](remote-decisions.md) dokumentieren Befunde und Grenzen. Testnachweise ersetzen weder einen echten Provider-Login auf einem späteren Server noch native Windows-Abnahme.
+
+
+## Native Anmeldung über die App ab 0.4
+
+Nach der einmaligen Server- und SSH-Einrichtung können Codex- und Claude-Accounts direkt aus dem Dashboard angemeldet werden. Ein eigenes SSH-Terminal pro Account ist dafür nicht mehr nötig. Browser-Zustimmung und gegebenenfalls Rückgabecode bleiben beim Benutzer. Details: [Übersicht und Login](overview-login.md). Für den aktuellen Login-Ablauf benötigen Client und Server Version 0.4.

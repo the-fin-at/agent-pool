@@ -1,7 +1,17 @@
 #!/usr/local/bin/python3
 """Controlled fixture, never contacts OpenAI or uses subscription credentials."""
-import json,sys,time
+import json,sys,time,os
 from pathlib import Path
+home=Path(os.environ.get('CODEX_HOME','/tmp'))
+accepted=home/'fixture-accepted'
+if sys.argv[1:]==['login','status']:
+    if not accepted.exists():sys.exit(1)
+    print('Logged in using ChatGPT');sys.exit()
+if sys.argv[1:]==['login','--device-auth']:
+    print('Visit https://auth.openai.com/codex/device\nEnter ABCD-EFGHI',flush=True)
+    deadline=time.monotonic()+30
+    while not accepted.exists() and time.monotonic()<deadline:time.sleep(.05)
+    sys.exit(0 if accepted.exists() else 1)
 if '--version' in sys.argv:
     print('codex-fixture 1.0');sys.exit()
 if 'app-server' in sys.argv:
@@ -9,7 +19,7 @@ if 'app-server' in sys.argv:
         msg=json.loads(line)
         if msg['method']=='initialized':continue
         if msg['method']=='account/read':
-            result={'account':{'type':'chatgpt','email':'fixture@example.invalid','planType':'team'}}
+            result={'account':{'type':'chatgpt','email':'fixture@example.invalid','planType':'team'} if accepted.exists() or home.name in {'codex-1','codex-2','codex-3'} else None}
         elif msg['method']=='account/rateLimits/read':
             result={'rateLimits':{'primary':{'usedPercent':20,'windowDurationMins':300,'resetsAt':time.time()+600}}}
         else: result={}

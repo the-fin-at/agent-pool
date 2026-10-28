@@ -1,36 +1,38 @@
-# Agent Fleet · Native Desktop Design QA
+# Agent Fleet 0.4 – Übersicht und Anmeldung
 
 final result: passed
 
-## Vergleich und Nachweise
+## Bezug und tatsächliche Prüfung
 
-- Visuelle Quelle: `design/2026-10-28/agent-fleet-the-fin-sidebar.png`, 1568 × 1003 px.
-- Implementierung: `design/2026-10-28/implementation-final.png`, echte native macOS-Fensteraufnahme, 3136 × 1968 px bei 2× Pixeldichte.
-- Normalisierung: auf 1568 × 984 px verkleinert, 28 px native Titelleiste entfernt. Inhalt: 1568 × 956 px, gespeichert als `implementation-final-content.png`. macOS begrenzt die Fensterhöhe auf dem Prüfbildschirm auf 956 px. Die Quelle wird für den Vergleich unten auf dieselben 956 px beschnitten, ohne Strecken des Inhalts.
-- Gemeinsamer Vergleich: `design/2026-10-28/comparison-final.png`; lesbarer Account-/Kreis-/Wochenbereich in `comparison-final-detail.png`. Beide Bilder wurden gemeinsam geöffnet und visuell verglichen.
-- Zustand: heller THE-FIN-Stil, Alle Accounts, dieselben drei Beispielaccounts Privat/Arbeit/Team; 72/92/18 % im 5-Stunden-Fenster und 41/86/12 % im Wochenfenster. Reset-Anzeigen laufen in der App relativ zur realen Aufnahmezeit und stimmen deshalb nicht sekundenweise mit dem statischen Mockup überein.
-- Zusätzliche echte Fensteraufnahme: `implementation-narrow.png`, 760 × 700 logische Pixel; Navigation oberhalb des Inhalts, Accountdaten neben einem 168-px-Kreis. Claude-Filter und leerer Zustand wurden zusätzlich im echten Tk-Test geprüft. Eine zusätzliche leere Screenshot-Ansicht konnte nicht gespeichert werden; die breite Quell-/Implementierungsaufnahme und die schmale Aufnahme liegen vollständig vor.
+Bezug ist der vom Nutzer bereitgestellte ChatGPT-/Codex-Kontextwechsler. Er wird als Lokal-/Remote-Wechsel in die bestehende helle THE-FIN-Oberfläche übertragen. Ziel ist eine Account- und Kontingentübersicht; Auftragsmanagement bleibt beim CLI-/Skill-Betrieb. Quelle und finale native Fensteraufnahme wurden zusammen im selben Vergleich betrachtet. Es wird keine Kopie der dunklen Referenzfarben behauptet.
 
-## Vergleichsverlauf
+Die Aufnahmen stammen aus einem tatsächlichen Tk-Fenster, Albert Sans aus den eingebetteten Assets. Die normalen Aufnahmen haben 1280 × 900 Inhaltsgeometrie, die schmale Ansicht 760 × 840. Screenshots enthalten ausschließlich Beispieldaten. CUA war wegen der bestehenden Symlink-Umgebung nicht ausführbar; die Fensteraufnahmen wurden per macOS-Screenshot-Werkzeug erzeugt und visuell geprüft.
 
-1. Erste Aufnahme: zu kleine Typografie und System-Fallback Helvetica Neue statt Albert Sans (P1). Korrigiert durch prozesslokale Fontregistrierung vor Tk-Initialisierung, eingebettete aufrechte TTFs und eine auf großen Fenstern mitwachsende Schriftgröße. Nachweis: finale Aufnahme und nativer Smoke-Bericht melden Albert Sans.
-2. Frühe breite Ansicht: Details-Schaltflächen am unteren Rand teilweise abgeschnitten (P2). Unteren Toolbar-Abstand und Kartendichte angepasst. Finale Geometrie: Kartenbeginn y=274, sichtbare Inhaltsfläche 617 px, Kartenhöhe 616 px; die Schaltflächen sind vollständig sichtbar.
-3. Frühe schmale Ansicht: großer vertikaler Kreis verdrängt wesentliche Daten unter den sichtbaren Bereich (P2). Unter 880 px horizontale Zusammenfassung mit kleinem Kreis, darüber eine beschriftete Navigation samt Server- und Auftragssteuerung. Kein horizontal abgeschnittener persistenter Aktionsbereich.
-4. Avatar-/Identitätsbereich: Größe und Anordnung näher an die Referenz gebracht. Plan, Rolle und Warnzustand liegen bei der Identität. Lange E-Mail-Adressen werden für die verfügbare Breite gekürzt; Details zeigen die volle Adresse.
-5. Letzter Vergleich: keine offenen P0/P1/P2-Befunde.
+## Nachweise
 
-## Fünf Prüfflächen
+- [Referenz](design/2026-10-28/overview/reference-context-switch.png)
+- [Lokal](design/2026-10-28/overview/local.png)
+- [Geöffneter Kontextwechsler](design/2026-10-28/overview/context-switch.png)
+- [Remote-Verbindungen](design/2026-10-28/overview/remote-connections.png)
+- [Verbindung im Hauptfenster](design/2026-10-28/overview/connection-form.png)
+- [Integrierter Geräte-Login](design/2026-10-28/overview/device-login.png)
+- [Schmale Ansicht](design/2026-10-28/overview/narrow-local.png)
 
-- Typografie: Albert Sans aus dem Paket, aufrecht, normale Überschriften und klare Hervorhebungen. Zahlen und Beschriftungen lesbar und ohne Überlagerung. Header- und Eingabeschriften reagieren auf die Fenstergröße.
-- Abstände/Layout: warme Seitenleiste, drei Kontingentspalten mit feinen Trennlinien; zwei und eine Spalte bei geringerer Breite. Aufträge, Serverauswahl und Such-/Profilfilter sind notwendige Ergänzungen zur produktiven App.
-- Farben: originale corporate.light-Rollen, Papier #F9F6F2, Fläche #F4EFE9, Text #1B1612, Muted #6D6863, Marke #BD775F und Aktionsfarbe #9D5035. Warnungen erhalten Text und Zustandsfarbe. Keine Aussage hängt allein von Farbe ab.
-- Assets: originales THE-FIN-Kompass-Signet und daraus abgeleitetes App-Icon, Geometrie unverändert. Bibliotheksicons aus Bootstrap Icons v1.11.3 mit MIT-Lizenz; keine nachgezeichneten Markenlogos. Kreis- und Balkendarstellungen sind echte datenabhängige Charts.
-- Texte/Inhalt: Agent Fleet, Alle Accounts/Codex/Claude, frei im 5-Stunden-Fenster, Wochenkontingent, Wenig frei. Fehlende Werte erscheinen als unbekannt, abgelaufene Werte nicht als 0 oder 100 %. Ausführungsrolle, Datenstand und Fehler bleiben erkennbar.
+## Vergleich und Korrekturen
 
-## Funktionale Abnahme
+1. Kontextwechsel oben statt technischer Server-Comboboxen. Zwei klar beschriftete Auswahlflächen mit sekundärer Beschreibung, eigener Auswahlmarkierung und Escape-/Außenklick-Verhalten.
+2. Lokale Accounts und entfernte Verbindungen sind getrennte Ansichten. Nach Öffnen eines Servers erscheint dessen Account-Übersicht. Die Remote-Statuszeilen übernehmen keinen lokalen Datenstand.
+3. Auftragskomponist und System-Pop-ups sind aus dem Dashboard entfernt. Verbindung, Login und Details liegen im Hauptfenster.
+4. Die erste Aufnahme zeigte abgeschnittene Formulare durch verbliebene gleichmäßige Account-Grid-Gruppen. Die Gruppen werden beim Seitenwechsel zurückgesetzt; die tatsächliche Formularbreite ist regressionsgetestet. Finale Aufnahmen zeigen alle Felder und Aktionen vollständig.
+5. Überbreite Icon-Schaltflächen und die doppelte ausgewählte Menüfläche wurden reduziert. Körpertext und Metadaten bleiben aufrecht; die Brand-Rollen stammen aus THE-FIN.
+6. 760 px: die Seitenleiste wechselt zu kompakter Anbieter-Navigation; Kontextschalter, Suche, Hinzufügen und Kreis-/Wochenanzeige bleiben erreichbar. Weitere Accounts werden regulär vertikal gescrollt.
 
-93 Tests mit echtem Tk, einschließlich Anbieter-Navigation über die Schaltfläche, kombinierter Suche, Verbindungsauswahl, weiterhin bedienbarer Wiederholung nach ungültigem Serverwechsel, verworfener alter Serverantworten, Ablauf eines Kontingents ohne automatische Abfrage, getrenntem Wochen- und 5-Stunden-Limit, Timer-Aufräumen und responsiven Aktionsbereichen. Remote- und Manager-Tests sind Teil desselben Laufs. Native macOS-App: 1280 × 840, Albert Sans, drei verbundene Accounts, erfolgreiche Abfragen ohne Fehler. Der separate Linux-/OpenSSH-Nachweis liegt in `docs/remote-ssh-validation.json`.
+Keine offenen P0/P1/P2-Befunde im geprüften Ablauf. Native Checkboxen, Radioelemente und Scrollleisten bleiben plattformspezifisch (P3); dies ist keine Behauptung einer Windows- oder vollständigen Accessibility-Abnahme.
 
-## Erwartete Plattformunterschiede und P3
+## Funktions- und Laufzeitnachweise
 
-Native Checkboxen, Eingabefelder und Scrollleisten folgen Tk und ersetzen die illustrative Toggle-Darstellung. Exakte Generierungsfarben werden durch die offiziellen THE-FIN-Tokens ersetzt. Statische Beispieltermine werden durch tatsächliche Reset-Zeitpunkte ersetzt. Die Windows-Portabeldatei enthält dieselben Assets; ein echter Windows-GUI-/EXE-Lauf bleibt unbestätigt. Der Windows-CI-Runner startet wegen der dokumentierten GitHub-Abrechnungsblockade nicht. Dies ist keine Behauptung plattformübergreifender visueller Abnahme.
+118 Tests mit echtem Tk bestehen. Die native UI führt einen kontrollierten Geräte-Login bis zum verbundenen Account aus. Die echte UI → OpenSSH → Linux → Provider-Test-CLI → UI-Kette besteht einschließlich Claude-Rückgabecode, Gerätecode, eingeschränktem SSH-Schlüssel und unabhängiger serverseitiger Prozesse. Details: [SSH-Nachweis](docs/remote-ssh-validation.json).
+
+Das tatsächlich gebaute Mac-App-Paket startet den Login-Hintergrundprozess und bestätigt den kontrollierten Account. Drei vorhandene reale Accounts werden per nativer Metadatenabfrage ohne Fehler angezeigt; Albert Sans ist geladen. [Paket-Nachweis](docs/overview-packaged-login.json), [App-Nachweis](docs/overview-native-smoke.json).
+
+Die echten Provider-CLIs wurden mit leeren isolierten Profilen auf den Flow-Start geprüft; Claude verarbeitet die Pipe-Eingabe und lehnt einen ungültigen Code erwartungsgemäß ab. Eine neue reale Browser-Zustimmung des Accountinhabers auf einem produktiven Linux-Host ist damit nicht ersetzt. Native Windows-UI und neue Windows-EXE bleiben ungeprüft.

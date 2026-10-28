@@ -109,10 +109,67 @@ def main():
             assert cli_result['result']==result['result']
             rejected=client.request(['profile','add','bad','--provider','codex'])
             assert rejected['code']==1
+            # Native browser/device logins run on Linux even after the initiating SSH connection ends.
+            def auth_wait(ident,expected):
+                until=time.monotonic()+25
+                while time.monotonic()<until:
+                    state=client.data(['auth','get',ident])
+                    if state['state'] in expected:return state
+                    assert state['state'] not in {'failed','expired'}, state['message']
+                    time.sleep(.1)
+                raise AssertionError('Native login did not reach expected state')
+            key=uuid.uuid4().hex
+            client.data(['auth','start','login-codex','--provider','codex','--key',key])
+            device=auth_wait(key,{'awaiting_browser'})
+            assert device['device_code']=='ABCD-EFGHI'
+            run(['docker','exec','-u','agent',name,'python3','-c',"from pathlib import Path;Path('/home/agent/.local/share/agent-pool/profiles/login-codex/fixture-accepted').write_text('fixture-only')"])
+            assert auth_wait(key,{'succeeded'})['url'] is None
+            key2=uuid.uuid4().hex
+            client.data(['auth','start','login-claude','--provider','claude','--key',key2])
+            auth_wait(key2,{'awaiting_code'})
+            client.data(['auth','input',key2,'--code=fixture-authorized-code'])
+            auth_wait(key2,{'succeeded'})
+            accounts=client.data(['status'])['accounts']
+            assert all(any(a['name']==profile and a['connected'] for a in accounts) for profile in ('login-codex','login-claude'))
+            ui_roundtrip=False
+            try:
+                import tkinter as tk
+                from agent_pool.desktop import Dashboard
+                from agent_pool.desktop_theme import register_fonts
+                register_fonts()
+                try:root=tk.Tk()
+                except tk.TclError:root=None
+                if root is not None:
+                    root.withdraw()
+                    app=Dashboard(root,stage/'client',initial=[],remote='central',start_refresh=False)
+                    app.auto.set(False)
+                    def settle(predicate,seconds=35):
+                        until=time.monotonic()+seconds
+                        while not predicate() and time.monotonic()<until:
+                            root.update();time.sleep(.02)
+                        assert predicate(),'UI login roundtrip timed out'
+                    try:
+                        app.show_login({'name':'login-ui','provider':'claude'})
+                        app.login_start_button.invoke()
+                        settle(lambda:app.login_state is not None and app.login_state['state']=='awaiting_code')
+                        app.login_form['code'].set('fixture-authorized-code')
+                        app.submit_login_code()
+                        settle(lambda:app.login_state['state']=='succeeded')
+                        app.finish_login()
+                        settle(lambda:not app.refreshing)
+                        assert any(a['name']=='login-ui' and a['connected'] for a in app.accounts)
+                        assert not any(isinstance(w,tk.Toplevel) for w in root.winfo_children())
+                        assert not hasattr(app,'open_manager')
+                        ui_roundtrip=True
+                    finally:app.close()
+            except ImportError:
+                pass
             evidence={'platform':'Linux container / Python 3.12 / real OpenSSH','provider':'controlled fixture, no inference',
                 'lost_ack_idempotent':True,'execution_count':1,'utf8_roundtrip':True,'literal_shell_payload':True,
                 'independent_worker':True,'heartbeat_online':True,'administration_with_worker':True,
-                'restricted_ssh_key':True,'public_cli_roundtrip':True}
+                'restricted_ssh_key':True,'public_cli_roundtrip':True,
+                'native_device_login_roundtrip':True,'native_browser_code_login_roundtrip':True,
+                'native_ui_remote_login_roundtrip':ui_roundtrip}
             print(json.dumps(evidence,indent=2),flush=True)
             (ROOT/'docs/remote-ssh-validation.json').write_text(json.dumps(evidence,indent=2)+'\n')
         finally:

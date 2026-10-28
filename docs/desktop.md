@@ -1,8 +1,8 @@
-# Agent Fleet Desktop · 0.3.0
+# Agent Fleet Desktop · 0.4.0
 
 Ein Fenster für alle verbundenen Accounts: im THE-FIN-Design mit Seitenleiste, Kontingentkreisen und Wochenbalken. Lokal und für konfigurierte Linux-Server.
 
-Die 0.3-Ansicht wird aus dem aktuellen Quellstand gebaut. Die bisherigen v0.2.0-Release-Pakete heißen noch Agent Pool und enthalten weder das neue Layout noch den Remote-Manager.
+Die 0.4-Ansicht wird aus dem aktuellen Quellstand gebaut. Ältere Release-Pakete enthalten die neue Kontextnavigation und integrierte Anmeldung noch nicht.
 
 ## Mac
 
@@ -70,11 +70,11 @@ Ergebnis: `dist\windows\Agent Fleet\Agent Fleet.exe` zusammen mit dem `_internal
 - Der bestehende Hauptaccount dient in der App als Anzeigequelle. Damit wird er nicht automatisch für Aufträge freigeschaltet.
 - Auch pausierte oder nicht angemeldete Profile sind über „Alle Profile anzeigen“ sichtbar. Die Suche filtert nach E-Mail, Profil, Provider und Tarif.
 
-Die App lädt zunächst den letzten lokalen Stand und aktualisiert dann im Hintergrund, automatisch alle 60 Sekunden oder per „Aktualisieren“ / Cmd-R / Ctrl-R. Über „Ausführen auf“ zwischen dem lokalen Rechner und eingerichteten SSH-Servern wechseln. „Server hinzufügen“ speichert eine neue Verbindung; der SSH-Schlüsselzugang wird vorher eingerichtet. Über „Aufträge“ öffnet sich der vorhandene Manager für Einreichung und Ergebnisse. Die Job-Queue wird von einem separaten `agent-fleet work` bedient; das Schließen des Fensters beendet keinen Remote-Worker.
+Die App lädt zunächst den letzten lokalen Stand und aktualisiert dann im Hintergrund, automatisch alle 60 Sekunden oder per „Aktualisieren“ / Cmd-R / Ctrl-R. Oben links zwischen Lokal und Remote wechseln. Remote zeigt zunächst die Verbindungen, dann die Accounts des gewählten Servers. Verbindungen und neue Accounts werden in integrierten Ansichten hinzugefügt; der SSH-Schlüsselzugang wird vorher eingerichtet. Die Job-Queue wird von einem separaten `agent-fleet work` bedient; das Schließen des Fensters beendet keinen Remote-Worker.
 
 Bei fehlgeschlagenen Abfragen bleiben vorherige Werte als letzter bekannter Stand sichtbar. Nach Überschreiten eines gemeldeten Resets zeigt die App „Nicht aktuell“, bis eine neue Beobachtung vorliegt. Ein abgelaufener Timer gilt nicht automatisch als Nachweis für 100 % freies Kontingent. Der Datenstand und Fehler sind je Account erkennbar.
 
-Claude-Quoten stammen weiterhin aus den vom Broker gespeicherten nativen CLI-Ereignissen. Für Claude gibt es in diesem Stand keine zusätzliche private Usage-HTTP-Abfrage; noch fehlende Daten werden als unbekannt angezeigt. Neue Browser-Logins erfolgen weiterhin über die CLI.
+Claude-Quoten stammen weiterhin aus den vom Broker gespeicherten nativen CLI-Ereignissen. Für Claude gibt es in diesem Stand keine zusätzliche private Usage-HTTP-Abfrage; noch fehlende Daten werden als unbekannt angezeigt. Neue Browser-Logins können direkt aus der App gestartet werden; die offizielle native CLI verarbeitet die Anmeldung auf dem Zielrechner.
 
 ## Datenhaltung und Prüfungen
 
@@ -87,3 +87,8 @@ python -m unittest discover -s tests -v
 ```
 
 Die Tests prüfen unter anderem die erste Fensterdarstellung in einem frischen nativen Prozess. Python-Installationen ohne Tk überspringen GUI-Tests; auf einem System ohne Bildschirm können GUI-Tests ebenfalls übersprungen werden. Die finale Mac-App wird zusätzlich mit echten Account-Metadaten geprüft. Windows bleibt als echte Plattformprüfung offen.
+
+
+## Übersicht und Login ab 0.4
+
+Das Dashboard wechselt oben zwischen Lokal und Remote. Unter Remote erscheint zunächst die Verbindungsübersicht; anschließend die Accounts des gewählten Servers. Account-Details, Verbindungen und Browser-Login sind integrierte Ansichten im Hauptfenster. Der bisherige Auftragsdialog gehört nicht mehr zur Desktop-Oberfläche; Agenten verwenden weiterhin die CLI. Der genaue Ablauf und die realen Nachweise stehen unter [Übersicht und Login](overview-login.md).

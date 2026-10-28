@@ -9,5 +9,8 @@
   "heartbeat_online": true,
   "administration_with_worker": true,
   "restricted_ssh_key": true,
-  "public_cli_roundtrip": true
+  "public_cli_roundtrip": true,
+  "native_device_login_roundtrip": true,
+  "native_browser_code_login_roundtrip": true,
+  "native_ui_remote_login_roundtrip": true
 }

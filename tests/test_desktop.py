@@ -199,7 +199,7 @@ root.mainloop()
         self.assertFalse(self.app.sidebar.winfo_ismapped())
         self.assertTrue(self.app.compact_bar.winfo_ismapped())
         self.assertEqual(self.app.column_count, 1)
-        for widget in [self.app.refresh_button, self.app.search_entry, self.app.target_pickers[1]]:
+        for widget in [self.app.refresh_button, self.app.search_entry, self.app.scope_button]:
             self.assertLessEqual(widget.winfo_rootx()+widget.winfo_width(), self.root.winfo_rootx()+self.root.winfo_width())
         resize(1000)
         self.assertFalse(self.app._compact)

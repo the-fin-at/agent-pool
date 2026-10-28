@@ -52,6 +52,18 @@ def parser():
     sub = p.add_subparsers(dest="action", required=True)
     sub.add_parser("init", help="Create three disabled Codex profiles and one disabled Claude profile")
     sub.add_parser("rpc", help="Internal versioned SSH endpoint")
+    auth = sub.add_parser("auth", help="Native browser login sessions without a terminal").add_subparsers(dest="operation", required=True)
+    ast = auth.add_parser("start")
+    ast.add_argument("name")
+    ast.add_argument("--provider", choices=["codex", "claude"], required=True)
+    ast.add_argument("--key", required=True, help="Stable UUID hex for this login attempt")
+    for op in ("get", "cancel"):
+        auth.add_parser(op).add_argument("id")
+    ain = auth.add_parser("input")
+    ain.add_argument("id")
+    code = ain.add_mutually_exclusive_group(required=True)
+    code.add_argument("--code")
+    code.add_argument("--code-file", help="UTF-8 file or - for stdin; keeps code off the command line")
     status = sub.add_parser("status", help="Worker heartbeat and account snapshot")
     status.add_argument("--refresh", action="store_true")
     monitor = sub.add_parser("monitor", help="Read account metadata without inference")
@@ -74,6 +86,7 @@ def parser():
     ra.add_argument("--server-home", required=True, help="Absolute state directory on Linux")
     for op in ("remove", "test"):
         remote.add_parser(op).add_argument("name")
+    sub.add_parser("connection-info", help="Discover the installed executable and server state")
     sub.add_parser("doctor", help="Check installed native CLI executables; no inference requests")
     sub.add_parser("desktop", help="Open the native account and quota monitor")
     profiles = sub.add_parser("profile").add_subparsers(dest="operation", required=True)
@@ -168,12 +181,29 @@ def launch_desktop(home, remote=None):
 
 
 def dispatch(store, args):
-    if args.action == "status":
+    if args.action == "connection-info":
+        launch = str(Path(sys.executable).resolve()) if getattr(sys, "frozen", False) else str(Path(sys.argv[0]).resolve())
+        emit({"version": __version__, "command": launch, "home": str(store.home), "features": ["native-login-sessions", "cached-status"]})
+    elif args.action == "auth":
+        from . import login_sessions
+        if args.operation == "start":
+            emit(login_sessions.start(store.home, args.name, args.provider, args.key))
+        elif args.operation == "get":
+            emit(login_sessions.status(store.home, args.id))
+        elif args.operation == "cancel":
+            emit(login_sessions.cancel(store.home, args.id))
+        else:
+            code = args.code
+            if args.code_file:
+                code = sys.stdin.read() if args.code_file == "-" else Path(args.code_file).read_text(encoding="utf-8")
+            emit(login_sessions.provide_code(store.home, args.id, code))
+    elif args.action == "status":
         from .monitor import collect, snapshot
         from .runtime import worker_state
         accounts = collect(store.home, include_default=False) if args.refresh else snapshot(store.home, include_default=False)
         count = store.db.execute("SELECT COUNT(*) FROM jobs WHERE status IN ('queued','waiting','running')").fetchone()[0]
-        emit({"worker": worker_state(store.home), "accounts": accounts, "pending_jobs": count})
+        emit({"worker": worker_state(store.home), "accounts": accounts, "pending_jobs": count,
+              "features": ["native-login-sessions", "cached-status"], "version": __version__})
     elif args.action == "monitor":
         from .monitor import collect, snapshot
         emit(collect(store.home, include_default=False) if args.refresh else snapshot(store.home, include_default=False))
@@ -346,6 +376,15 @@ def dispatch(store, args):
 
 def main(argv=None):
     raw = list(sys.argv[1:] if argv is None else argv)
+    if raw and raw[0] == "--login-cancel":
+        if len(raw) != 4:return 1
+        from .login_sessions import run_cancel
+        return run_cancel(Path(raw[1]), raw[2], raw[3])
+    if raw and raw[0] == "--login-worker":
+        if len(raw) != 3:
+            return 1
+        from .login_sessions import run_worker
+        return run_worker(Path(raw[1]), raw[2])
     args = parser().parse_args(raw)
     store = None
     previous_term = None

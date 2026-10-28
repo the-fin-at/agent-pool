@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-28",
+  "codex": {
+    "version": "0.161.0",
+    "isolated_device_flow_started": true,
+    "credentials_changed": false
+  },
+  "claude": {
+    "version": "2.1.312",
+    "isolated_browser_flow_started": true,
+    "pipe_code_with_state_consumed": true,
+    "invalid_code_rejected_with_exit_1": true,
+    "empty_profiles_report_own_config_directory": 2,
+    "credentials_changed": false
+  },
+  "full_new_provider_consent": "requires the account owner in a browser"
+}

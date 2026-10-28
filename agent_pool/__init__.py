@@ -1,2 +1,2 @@
 """Local task broker. Credentials stay with the native provider CLIs."""
-__version__ = "0.3.0"
+__version__ = "0.4.0"
