@@ -157,7 +157,8 @@ class Store:
             auth_home = str(path)
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
-            if auth_home and any(Path(p.get("auth_home") or self.home / "profiles" / p["name"]).resolve() == Path(auth_home) for p in self.profiles()):
+            target = Path(auth_home or self.home / "profiles" / name).resolve()
+            if any(Path(p.get("auth_home") or self.home / "profiles" / p["name"]).resolve() == target for p in self.profiles()):
                 raise ValueError("This native account directory is already registered")
             self.db.execute("INSERT INTO profiles(name,provider,binary,auth_home) VALUES(?,?,?,?)",
                             (name, provider, binary, auth_home))

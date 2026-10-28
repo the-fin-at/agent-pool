@@ -26,12 +26,13 @@ def read_source(home, source, probe=read_codex_status):
     store = Store(home)
     try:
         old = store.cached_monitor(source["name"])
-        if source["provider"] == "claude":
-            # No private usage endpoint or credential-file parsing for subscription accounts.
-            return old
         now = time.time()
         try:
-            data = probe(source, store.authdir(source["name"]) if source["managed"] else Path(source["authdir"]))
+            authdir = store.authdir(source["name"]) if source["managed"] else Path(source["authdir"])
+            if source["provider"] == "claude":
+                # Validate registration even when Claude only has cached observations.
+                return old
+            data = probe(source, authdir)
             windows = data.get("windows")
             fresh = {k: data.get(k) for k in ("connected", "email", "plan", "account_type", "error")}
             fresh["checked_at"] = now

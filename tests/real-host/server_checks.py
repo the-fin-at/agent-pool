@@ -92,6 +92,14 @@ with tempfile.TemporaryDirectory(prefix='loops-',dir=base) as tmp:
         proc=worker(home);time.sleep(.5)
         assert command(home,'job','get',interrupted['id'],ok=(1,))['status']=='needs_review'
         report['checks']['sigterm_child_cleanup_and_no_automatic_replay']=True
+        (work/'native.pid').unlink(missing_ok=True)
+        timed=command(home,'job','submit','--provider','codex','--workspace','test','--prompt','SLEEP:20','--key','native-timeout','--timeout','0.5')
+        assert poll(home,timed['id'],{'needs_review'})['attempts']==1
+        timeout_pid=int((work/'native.pid').read_text())
+        try:os.kill(timeout_pid,0)
+        except ProcessLookupError:pass
+        else:raise AssertionError('Timed-out native child survived')
+        report['checks']['native_timeout_marks_review_and_kills_child']=True
         # Loop 3: a bounded sustained queue, using native subprocesses for every job.
         start=time.monotonic()
         with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
@@ -102,6 +110,11 @@ with tempfile.TemporaryDirectory(prefix='loops-',dir=base) as tmp:
         load=[x for x in executions if x.startswith('LOAD:')]
         assert len(load)==100 and len(set(load))==100
         report['performance'].update(jobs=100,unique_executions=100,seconds=round(seconds,3),jobs_per_second=round(100/seconds,2))
+        assert not any(j['status'] in {'queued','waiting','running'} for j in command(home,'job','list'))
+        last_pid=int((work/'native.pid').read_text())
+        try:os.kill(last_pid,0)
+        except ProcessLookupError:pass
+        else:raise AssertionError('Last native worker is still alive')
         report['checks']['no_fixture_process_or_queue_leak']=True
     finally:stop(proc)
     # Login worker must work from the deployed extensionless archive and stop its native process.

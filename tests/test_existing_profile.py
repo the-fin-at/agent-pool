@@ -51,3 +51,23 @@ class ExistingNativeProfileTests(unittest.TestCase):
             accounts=collect(root/'pool',include_default=False)
             self.assertEqual(len(accounts),1)
             self.assertIn('missing',accounts[0]['error'])
+
+    def test_normal_profile_cannot_alias_an_already_attached_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store=Store(Path(tmp)/'pool');future=store.home/'profiles/later';future.mkdir(parents=True)
+            try:
+                store.add_profile('attached','codex','codex',auth_home=str(future))
+                with self.assertRaisesRegex(ValueError,'already registered'):
+                    store.add_profile('later','codex','codex')
+            finally:store.close()
+
+    def test_missing_attached_claude_directory_is_reported_instead_of_cached_success(self):
+        from agent_pool.monitor import collect
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);native=root/'native';native.mkdir();store=Store(root/'pool')
+            store.add_profile('claude','claude','claude',auth_home=str(native))
+            store.update_profile('claude',enabled=True)
+            store.cache_monitor('claude',{'connected':True,'windows':[]})
+            store.close();native.rmdir()
+            account=collect(root/'pool',include_default=False)[0]
+            self.assertIn('missing',account.get('error') or '')
