@@ -457,3 +457,26 @@ fn quota_jsonrpc_handshake_uses_no_model_turn() {
             .unwrap();
     assert_eq!(windows[0]["used"], 25);
 }
+
+#[test]
+fn unusable_native_lock_surfaces_error_instead_of_waiting_forever() {
+    let (pool, mut db) = setup();
+    let auth = db.authdir("one").unwrap();
+    // A directory at the lock-file path is an actual non-contention OS error.
+    std::fs::create_dir(auth.join(".native.lock")).unwrap();
+    let error =
+        match fleet_core::provider::run_native(&db.profile("one").unwrap(), &json!({}), &auth) {
+            Err(error) => error,
+            Ok(_) => panic!("A lock I/O error must not be reported as a busy account"),
+        };
+    assert!(!fleet_core::db::is_busy(&error));
+    let mut s = spec(&pool);
+    s.profile = Some("one".into());
+    let job = db.submit(&s).unwrap();
+    assert!(tick(&mut db, &fleet_core::worker::native_runner, &no_probe, None).unwrap());
+    let failed = db.job(job["id"].as_str().unwrap()).unwrap();
+    assert_eq!(failed["status"], "needs_review");
+    assert!(failed["error"].as_str().is_some_and(|e| !e.is_empty()));
+    assert!(!tick(&mut db, &fleet_core::worker::native_runner, &no_probe, None).unwrap());
+    assert_eq!(db.job(job["id"].as_str().unwrap()).unwrap()["attempts"], 1);
+}

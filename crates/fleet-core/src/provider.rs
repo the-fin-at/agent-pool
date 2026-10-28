@@ -509,13 +509,14 @@ const MAX_RUN_OUTPUT: u64 = 32 * 1024 * 1024;
 pub fn run_native(profile: &Value, job: &Value, dir: &Path) -> Result<Outcome> {
     let _lease = match Lease::acquire(&dir.join(".native.lock")) {
         Ok(l) => l,
-        Err(_) => {
+        Err(error) if crate::db::is_busy(&error) => {
             return Ok(Outcome::new(
                 "busy",
                 "",
                 "Account metadata or login session is active; waiting",
             ))
         }
+        Err(error) => return Err(error),
     };
     let folder = tempfile::Builder::new()
         .prefix("agent-pool-run-")

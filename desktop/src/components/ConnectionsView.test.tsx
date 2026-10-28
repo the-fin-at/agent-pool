@@ -74,6 +74,42 @@ describe('remote connections', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Rechner verbinden' })).toBeInTheDocument();
   });
 
+  it('keeps a newer connection form when an abandoned save finishes late', async () => {
+    const user = userEvent.setup();
+    const slowCheck = deferred();
+    const { transport, commands } = server({}, (name) => (name === 'A-Server' ? slowCheck.promise : status([])));
+    render(<App transport={transport} timing={FAST} />);
+    await openRemote(user);
+
+    await user.click(screen.getAllByRole('button', { name: 'Verbindung hinzufügen' })[0]);
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'A-Server');
+    await user.type(screen.getByRole('textbox', { name: 'SSH-Adresse oder Alias' }), 'host-a');
+    await user.click(screen.getByRole('button', { name: 'Verbinden' }));
+    await waitFor(() => expect(commands('A-Server')).toContain('status'));
+
+    // Leave form A while its check is pending and start form B.
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    await user.click(screen.getAllByRole('button', { name: 'Verbindung hinzufügen' })[0]);
+    const nameB = screen.getByRole('textbox', { name: 'Name' });
+    expect(nameB).toHaveValue('');
+    await user.type(nameB, 'B-Server');
+    await user.type(screen.getByRole('textbox', { name: 'SSH-Adresse oder Alias' }), 'host-b');
+
+    const listsBefore = commands(null).filter((c) => c === 'remote list').length;
+    slowCheck.resolve(status([codexAccount('a-codex')]));
+
+    // A was really saved: the registry is reread and lists it.
+    expect(await screen.findByRole('button', { name: 'A-Server' })).toBeInTheDocument();
+    expect(commands(null).filter((c) => c === 'remote list').length).toBeGreaterThan(listsBefore);
+    // No stale switch to A: form B and its draft stay.
+    expect(screen.getByRole('heading', { level: 1, name: 'Rechner verbinden' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('B-Server');
+    expect(screen.getByRole('textbox', { name: 'SSH-Adresse oder Alias' })).toHaveValue('host-b');
+    expect(screen.getByText('Verbundene Rechner')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'a-codex' })).not.toBeInTheDocument();
+    expect(commands(null).some((c) => c.startsWith('remote remove'))).toBe(false);
+  });
+
   it('probes every server even when the connection list answers late', async () => {
     const user = userEvent.setup();
     const list = deferred();

@@ -72,6 +72,9 @@ export function App({ transport, timing: override }: { transport: Transport; tim
   const probeTokens = useRef<Record<string, number>>({});
   const probeSeq = useRef(0);
   const probing = useRef(false);
+  /** Identifies the currently open connection form; older forms may not navigate. */
+  const formRef = useRef(0);
+  const [formId, setFormId] = useState(0);
 
   const startBoot = useCallback(() => {
     setBoot('loading');
@@ -167,6 +170,13 @@ export function App({ transport, timing: override }: { transport: Transport; tim
     return load;
   }, [fleet]);
 
+  /** Fresh read after a change elsewhere; any older read or snapshot loses to it. */
+  const reloadRemotes = useCallback((): Promise<RemoteMap | null> => {
+    remotesGen.current += 1;
+    remotesLoad.current = null;
+    return loadRemotes();
+  }, [loadRemotes]);
+
   const probe = useCallback(async (names: string[]) => {
     await limited(names, 3, async (name) => {
       const token = ++probeSeq.current;
@@ -244,6 +254,8 @@ export function App({ transport, timing: override }: { transport: Transport; tim
   };
 
   const addConnection = () => {
+    formRef.current += 1;
+    setFormId(formRef.current);
     switchContext('remote', null);
     setPage('connect');
   };
@@ -259,10 +271,15 @@ export function App({ transport, timing: override }: { transport: Transport; tim
     if (remote === name) switchContext('remote', null);
   };
 
-  const onConnectionSaved = (name: string, map: RemoteMap, status: StatusData) => {
-    applyRemotes(map);
+  /**
+   * Any form's completion reconciles the registry with a fresh read, never with a map
+   * captured before its delayed check. Only the form that is still open navigates.
+   */
+  const onConnectionSaved = (origin: number, name: string, status: StatusData) => {
+    void reloadRemotes();
+    probeTokens.current[name] = ++probeSeq.current;
     setSummaries((s) => ({ ...s, [name]: { state: 'ok', connected: status.accounts.filter((a) => a.connected).length, workerOnline: status.worker?.online ?? null } }));
-    if (pageRef.current === 'connect') switchContext('remote', name);
+    if (pageRef.current === 'connect' && formRef.current === origin) switchContext('remote', name);
   };
 
   const finishLogin = () => {
@@ -326,8 +343,9 @@ export function App({ transport, timing: override }: { transport: Transport; tim
       break;
     case 'connect':
       content = (
-        <ConnectionForm fleet={fleet} existing={remotes.map} onBack={() => setPage('connections')}
-          onRemotesChanged={applyRemotes} onSaved={onConnectionSaved} />
+        <ConnectionForm key={formId} fleet={fleet} existing={remotes.map} onBack={() => setPage('connections')}
+          onRegistryChanged={() => void reloadRemotes()}
+          onSaved={(name, status) => onConnectionSaved(formId, name, status)} />
       );
       break;
     case 'login':

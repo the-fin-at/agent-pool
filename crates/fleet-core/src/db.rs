@@ -130,7 +130,15 @@ impl Lease {
             file.write_all(b"0")?;
             file.flush()?;
         }
-        file.try_lock_exclusive().map_err(|_| anyhow!(WorkerBusy))?;
+        if let Err(error) = file.try_lock_exclusive() {
+            let contended = error
+                .raw_os_error()
+                .is_some_and(|code| Some(code) == fs2::lock_contended_error().raw_os_error());
+            if contended || error.kind() == std::io::ErrorKind::WouldBlock {
+                return Err(anyhow!(WorkerBusy));
+            }
+            return Err(error.into());
+        }
         Ok(Self(file))
     }
 }

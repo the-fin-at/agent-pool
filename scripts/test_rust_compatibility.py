@@ -300,6 +300,19 @@ class RustCompatibility(unittest.TestCase):
             self.assertEqual(current['chosen_profile'], b)
             self.assertEqual(current['attempts'], 1)
 
+    def test_unusable_native_lock_reports_error_without_busy_retry_loop(self):
+        name = self.native_fixture()
+        auth = self.db.authdir(name)
+        (auth/'.native.lock').mkdir()
+        job = self.db.submit('Never run with broken lock', self.workspace, 'codex', profile=name)
+        self.call('work', '--once')
+        current = self.db.job(job['id'])
+        self.assertEqual(current['status'], 'needs_review', current)
+        self.assertTrue(current['error'])
+        self.assertFalse((auth/'fixture-executions.jsonl').exists())
+        self.call('work', '--once')
+        self.assertEqual(self.db.job(job['id'])['attempts'], 1)
+
     def test_busy_native_account_does_not_hide_free_same_provider_account(self):
         a = self.native_fixture(name='a')
         b = self.native_fixture(name='b')

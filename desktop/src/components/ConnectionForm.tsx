@@ -10,14 +10,17 @@ const UPDATE_SERVER = 'Bitte Agent Fleet auf dem Server aktualisieren, um den Lo
 
 /**
  * Saves a connection only after the server answered `status` with native login
- * support; a failed check removes the entry again.
+ * support; a failed check removes the entry again. The form reports changes but
+ * never hands over a registry snapshot: the app rereads the saved connections, so a
+ * late completion cannot replace a newer list.
  */
-export function ConnectionForm({ fleet, existing, onBack, onRemotesChanged, onSaved }: {
+export function ConnectionForm({ fleet, existing, onBack, onRegistryChanged, onSaved }: {
   fleet: Fleet;
   existing: RemoteMap | null;
   onBack: () => void;
-  onRemotesChanged: (map: RemoteMap) => void;
-  onSaved: (name: string, map: RemoteMap, status: StatusData) => void;
+  onRegistryChanged: () => void;
+  /** The app decides whether this form is still the open one before navigating. */
+  onSaved: (name: string, status: StatusData) => void;
 }) {
   const alive = useAlive();
   const [input, setInput] = useState<ConnectionInput>({ name: '', host: '', advanced: false, command: '', home: '' });
@@ -32,14 +35,14 @@ export function ConnectionForm({ fleet, existing, onBack, onRemotesChanged, onSa
    */
   const rollback = async (name: string, config: RemoteConfig): Promise<string> => {
     try {
-      const list = await fleet.remotes();
-      const current = list[name];
+      const current = (await fleet.remotes())[name];
       const ours = current && current.host === config.host && current.command === config.command && current.home === config.home;
-      onRemotesChanged(ours ? await fleet.removeRemote(name) : list);
+      if (ours) await fleet.removeRemote(name);
       return 'Die Verbindung wurde nicht gespeichert.';
     } catch {
-      fleet.remotes().then(onRemotesChanged, () => undefined);
       return 'Die Verbindung bleibt vorerst gespeichert und kann in der Übersicht entfernt werden.';
+    } finally {
+      onRegistryChanged();
     }
   };
 
@@ -62,7 +65,7 @@ export function ConnectionForm({ fleet, existing, onBack, onRemotesChanged, onSa
       const config = input.advanced
         ? { host, command: input.command.trim(), home: input.home.trim() }
         : await fleet.discover(host);
-      const map = await fleet.addRemote(name, config);
+      await fleet.addRemote(name, config);
       let status: StatusData;
       try {
         status = await fleet.remoteStatus(name);
@@ -70,7 +73,7 @@ export function ConnectionForm({ fleet, existing, onBack, onRemotesChanged, onSa
       } catch (checkError) {
         throw new FleetError(errorMessage(checkError) + ' ' + (await rollback(name, config)));
       }
-      onSaved(name, map, status);
+      onSaved(name, status);
     } catch (err) {
       if (alive.current) setError(errorMessage(err));
     } finally {
