@@ -85,7 +85,7 @@ class NativeLockRoutingTests(unittest.TestCase):
             for _ in range(3):
                 progressed, visited = self.run_tick()
                 self.assertFalse(progressed)
-                self.assertEqual(set(visited), {"a", "b"})
+                self.assertEqual(visited, ["a", "b"])
                 self.assertEqual(self.store.job(job["id"])["attempts"], 0)
             self.assertLess(time.monotonic() - started, 2)
         # Failed lock acquisition is not usage and cannot reorder equal work.

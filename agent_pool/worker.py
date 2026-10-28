@@ -20,11 +20,14 @@ def refresh(store, profile, probe=read_codex_quota):
         return False
 
 
-def choose(store, job, now):
+def choose(store, job, now, busy_profiles=()):
     candidates = []
     reasons = []
     for p in store.profiles():
         if p["provider"] != job["provider"] or (job["profile"] and p["name"] != job["profile"]):
+            continue
+        if p["name"] in busy_profiles:
+            reasons.append(p["name"] + ":native_account_busy")
             continue
         if not p["enabled"]:
             reasons.append(p["name"] + ":disabled_or_not_logged_in")
@@ -55,6 +58,7 @@ def tick(store, runner=run_native, probe=read_codex_quota, now=None):
         if p["enabled"] and p["provider"] in providers and p["provider"] == "codex":
             if p["checked_at"] is None or now - p["checked_at"] >= 60:
                 refresh(store, p, probe)
+    busy_profiles = set()
     for job in jobs:
         cwd = Path(job["cwd"])
         if not cwd.is_dir() or str(cwd.resolve()) != job["cwd"]:
@@ -63,38 +67,42 @@ def tick(store, runner=run_native, probe=read_codex_quota, now=None):
         if job["attempts"] >= job["max_attempts"]:
             store.transition_job(job["id"], ("queued", "waiting"), status="failed", error="Maximum attempts reached")
             continue
-        profile, reason = choose(store, job, now)
-        if profile is None:
-            store.transition_job(job["id"], ("queued", "waiting"), status="waiting", error=reason)
-            continue
-        name = profile["name"]
-        if not store.claim_job(job["id"], name):
-            continue
-        store.update_profile(name, last_used=now)
-        try:
-            result = runner(profile, job, store.authdir(name))
-        except (OSError, ValueError) as exc:
-            store.update_job(job["id"], status="needs_review", error=str(exc))
+        while True:
+            profile, reason = choose(store, job, now, busy_profiles)
+            if profile is None:
+                store.transition_job(job["id"], ("queued", "waiting"), status="waiting", error=reason)
+                break
+            name = profile["name"]
+            if not store.claim_job(job["id"], name):
+                break
+            try:
+                result = runner(profile, job, store.authdir(name))
+            except (OSError, ValueError) as exc:
+                store.update_job(job["id"], status="needs_review", error=str(exc))
+                return True
+            except BaseException:
+                store.update_job(job["id"], status="needs_review", error="Worker interrupted; inspect workspace before retry")
+                raise
+            if result.kind == "busy":
+                # Lock acquisition starts no inference. Try each busy profile only
+                # once this tick, then let independent queued jobs make progress.
+                busy_profiles.add(name)
+                store.update_job(job["id"], status="waiting", attempts=job["attempts"], error=result.error)
+                continue
+            store.update_profile(name, last_used=now)
+            if result.windows:
+                store.set_windows(name, result.windows)
+            if result.kind == "success":
+                store.update_job(job["id"], status="succeeded", result=result.result, error=None)
+            elif result.kind == "quota":
+                if profile["provider"] == "codex":
+                    refresh(store, profile, probe)
+                state = availability(store.windows(name), now, model=job["model"],
+                                     bucket=(job["bucket"] or "codex") if profile["provider"] == "codex" else None)
+                until = state["ready_at"] if not state["ready"] else None
+                store.update_profile(name, hold_until=until, hold_reason="quota" if until else "quota_reset_unknown")
+                store.update_job(job["id"], status="needs_review" if job["allow_edits"] else "waiting", error=result.error)
+            else:
+                store.update_job(job["id"], status="needs_review" if job["allow_edits"] or result.kind == "uncertain" else "failed", error=result.error)
             return True
-        except BaseException:
-            store.update_job(job["id"], status="needs_review", error="Worker interrupted; inspect workspace before retry")
-            raise
-        if result.windows:
-            store.set_windows(name, result.windows)
-        if result.kind == "busy":
-            store.update_job(job["id"], status="waiting", attempts=job["attempts"], error=result.error)
-            return False
-        elif result.kind == "success":
-            store.update_job(job["id"], status="succeeded", result=result.result, error=None)
-        elif result.kind == "quota":
-            if profile["provider"] == "codex":
-                refresh(store, profile, probe)
-            state = availability(store.windows(name), now, model=job["model"],
-                                 bucket=(job["bucket"] or "codex") if profile["provider"] == "codex" else None)
-            until = state["ready_at"] if not state["ready"] else None
-            store.update_profile(name, hold_until=until, hold_reason="quota" if until else "quota_reset_unknown")
-            store.update_job(job["id"], status="needs_review" if job["allow_edits"] else "waiting", error=result.error)
-        else:
-            store.update_job(job["id"], status="needs_review" if job["allow_edits"] or result.kind == "uncertain" else "failed", error=result.error)
-        return True
     return False
