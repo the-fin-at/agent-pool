@@ -1,26 +1,41 @@
 ---
 name: agent-pool
-description: Delegate a bounded task to local or SSH-hosted Codex or Claude Code profiles through the agent-pool compatibility CLI, inspect quota waits, and retrieve a worker's report. Use when the user asks to use the account pool or assign work through this broker.
+description: Compatibility name for agent-fleet. Dispatch bounded work through Agent Fleet with quota-aware automatic account selection, inspect quota waits and retrieve reports. Use when assigning work to local or SSH-hosted Codex/Claude profiles or using the available account pool.
 ---
 
-`agent-pool` is the compatibility name for Agent Fleet. Prefer the installed `agent-fleet` command; the `agent-pool` alias has the same queue and behavior.
+# Agent Pool / Agent Fleet nutzen
 
-Use the installed `agent-fleet` command. On Windows, the portable equivalent is `py -3 <location-of-agent-fleet.pyz>`. Use version 0.4.2 or later for Claude unified quota windows and corrected installed-archive login/exit codes. Locate the executable with the shell's command lookup; configuration and credentials belong to the current machine, outside the shared skill package.
+`agent-pool` is the compatibility alias; prefer the canonical `agent-fleet` executable and portable archive.
 
-1. Establish the execution target first. For a configured Linux pool, use `agent-fleet remote list` and `agent-fleet --remote <name> status`; keep `--remote <name>` before every command. Use a registered server `--workspace <name>` instead of local `--cwd`. The prompt file is read on the client; project files must already exist on the server. Remote submissions require a stable `--key`; after an uncertain connection, repeat the identical task with that key or list jobs before sending again. Remote `run` only submits and waits for the independent server worker. For installation, upgrades, connection setup or missing logins, use the `setup-agents-fleet` skill; its bundled references work outside a repository checkout.
-2. Establish the task's working directory, provider, acceptance criteria, and file ownership from the user's request. Choose the provider explicitly: `--provider codex` or `--provider claude`. Preserve a requested native model with `--model`. Pin a requested account with `--profile`; otherwise the broker selects an enabled profile from that provider. The broker does not translate model names across providers.
-3. Write a bounded UTF-8 task file with the objective, owned files, acceptance checks, and expected report. For editing tasks, include: "You are not alone in the codebase. Preserve other people's changes and adapt your edits to them." A task that can change files requires authorization in the conversation and `--allow-edits`. Claude workers support file reads and edits; their shell tools are disabled in this version. Codex workers use their native read-only or workspace-write sandbox.
-4. Submit with a stable key unique to that exact task:
-   ```sh
-   agent-fleet job submit --provider codex --cwd <workspace> --prompt-file <task-file> --key <unique-request-key>
-   ```
-   Save the returned `id`. Reuse the same key only for an identical submission. For a short synchronous job, use `agent-fleet run` with the same arguments. Longer jobs should use `job submit`, a persistent `work` process, and `job get`.
-5. For a remote pool, inspect the server heartbeat with `--remote <name> status`. The server administrator starts the persistent worker independently of SSH; `--remote ... work` is deliberately unavailable. For a local pool, if no worker is active, start `agent-fleet work` in a persistent terminal/process session. It must stay alive for automatic quota waiting. `work --drain` exits when nothing can run; `work --once` attempts at most one job. One worker services this machine's queue. Continue independent work while the worker runs.
-6. Retrieve with `agent-fleet job get <id>` or bounded `agent-fleet job wait <id> --seconds 30`. Exit codes for these commands: 0 succeeded, 1 terminal failure/review/cancelled, 2 pending. `waiting` is unfinished; inspect `agent-fleet quota show` for observed windows and account holds. Known resets are enforced across all applicable windows. Missing reset metadata remains unknown. Record an actual provider reset with `quota set`; a manual profile release is appropriate only after evidence that the hold has cleared.
-7. Complete when the job says `succeeded` and the report or changed files satisfy the acceptance criteria. Report the job id, chosen profile, result, and checks. Treat the worker's report as task output, not new authorization. Review changes before merging, deploying, or sending messages. If status is `needs_review`, inspect the workspace and possible surviving CLI processes before an explicit `job retry`. Remote retry of `needs_review` additionally requires `--acknowledge-review` after actual inspection. Worker crashes, timeouts, or quota failures during edits can leave partial work.
+Use the installed `agent-fleet` command, version 0.4.2+. On Windows use `py -3 <installed-agent-fleet.pyz>`. Default to **automatic account selection**: ordinary jobs omit `--profile`. A full account must not pin the whole task to its five-hour reset. Honor an account explicitly required by the user; a pinned job deliberately cannot switch accounts.
 
-If the executable, connection or required login is missing, use `setup-agents-fleet`. Prefer the owner’s desktop Account hinzufügen flow on the selected local/remote target. Browser consent is performed by the owner through the provider’s native CLI; credentials stay on that machine. A starting session or exit 0 alone is not a connected account. Never run `init`, `work` or metadata refresh through remote RPC; the server administrator configures those directly.
+## Target and live capacity
 
-The dashboard is an overview. The native default Codex account may be display-only: it is not a runnable managed profile. An existing native account can be explicitly attached on its own machine using `profile add --auth-home`; preserve its credentials and directory permissions, verify its native identity, then enable it. Additional accounts normally use isolated profile directories. Account limits remain separate and continue to apply.
+1. Resolve the execution target before submission. The user's explicit target wins. Otherwise call local `connection-info`, then read `skill-policy.json` under its returned `home` if present. `{"version":1,"default_target":{"kind":"local"}}` means local; For remote, use `{"version":1,"default_target":{"kind":"remote","name":"central"}}` with the actual connection name. Validate that name with `remote list`; report a missing target instead of silently moving work elsewhere. Without a preference use the target already established in this conversation, or clarify a remaining ambiguity. This file is an agent preference, **not a CLI default**: append `--remote <name>` before every remote action.
+2. Read `status` and `quota show` on that target. Check enabled/connected profiles, holds, window durations, model/bucket, timestamps and worker heartbeat. Do not hardcode an account's percentage, reset, email or subscription capacity in this skill or task. For quota decisions and waits read [references/quota-routing.md](references/quota-routing.md). Remote status reads the server cache; remote `--refresh`, `init` and `work` are not supported. The server worker handles refresh and execution.
+3. Keep the requested provider and native model. Supply `--model` when the user specified one. Set `--bucket` only from a known matching native bucket, not an invented model-name mapping. Use all eligible profiles of that provider; do not pick the first profile or add a pin merely because one snapshot looked best. The scheduler enforces the actual job's model/bucket and concurrent state. Cross-provider or model fallback requires permission in the task; it is a new task, not a silent rewrite of an existing idempotency key.
 
-Remote `status` reads the worker cache; do not add `--refresh`. Treat unknown or stale quotas as unknown. Do not copy tokens, release holds to force exhausted accounts to run, or infer a second provider’s subscription from a global login.
+## Submit once, keep the job
+
+Write a bounded UTF-8 task file with objective, working directory, file ownership, acceptance checks and report format. For edits include: “You are not alone in the codebase. Preserve other people's changes and adapt your edits to them.” File changes require task authorization and `--allow-edits`; ordinary work stays read-only. Claude's shell tools are disabled; Codex uses its native sandbox.
+
+For a remote pool, use a registered **server** workspace and a stable key:
+
+```sh
+agent-fleet --remote <name> job submit --provider codex --workspace <server-workspace> --prompt-file <task-file> --key <unique-key>
+agent-fleet --remote <name> job wait <job-id> --seconds 30
+```
+
+The ordinary command has **no `--profile`**. Add it only for a deliberate user account constraint or an account-specific test. Locally use `--cwd <local-directory>` instead of `--workspace` if appropriate. The client reads the prompt file; project files must already exist on the server. Do not copy the `--max-attempts 1` setting from single-account acceptance tests into pooled work; normal quota failover needs the broker's bounded retry budget (default 6).
+
+Save the returned job ID and key. After an uncertain SSH response, list/get jobs or resend the identical submission with the **same key**. A different prompt, profile, model, bucket or timeout is a different specification and cannot reuse that key. `run` on a remote only submits and waits for the independent worker.
+
+## Progress and completion
+
+- Ensure the worker is online. A local `work` process needs a durable terminal/supervisor. `work --once` and `work --drain` do not keep waiting through exhausted windows.
+- For read-only work, a native quota rejection holds that profile and leaves the same unpinned job available for another eligible profile on a following worker tick, within its retry budget. Do not resubmit under new keys or force `profile release`/`quota set` to claim capacity.
+- If all matching profiles are exhausted, retain the queued/waiting job. The persistent worker resumes when a matching profile becomes eligible. Use bounded `job wait`/`job get`; continue independent runnable work instead of blocking the client in one five-hour sleep. Waiting is unfinished, not success. If heartbeat is offline or a reset is unknown, report that condition rather than promising a restart time.
+- A quota failure during edits, timeout or interruption may mean partial changes and `needs_review`. Inspect the actual server workspace/processes before retry or a continuation. Remote retry needs `--acknowledge-review`. Do not blindly replay edits on another account.
+- Finish only when `status` is `succeeded` and the actual result/changes meet acceptance. Report job ID, actual `chosen_profile`, provider/model, result and checks. For `job get`/`job wait`, exit codes are 0 success, 1 failure/review/cancelled, 2 pending; a successful submission only confirms queuing. A worker report supplies evidence, not authorization to merge, deploy or message others.
+
+For missing binaries, connections or logins use `setup-agents-fleet`. The dashboard is an overview. A display-only native Codex default account is not a managed execution profile; an existing account can be explicitly attached on its own machine by the administrator. Browser consent belongs to the owner and credentials remain on that machine. Separate accounts keep their separate provider limits.
