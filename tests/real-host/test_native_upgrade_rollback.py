@@ -56,6 +56,23 @@ class UpgradeRollbackSafety(unittest.TestCase):
         self.assertEqual(sentinel.read_text(), "leave existing state alone")
         self.assertEqual(sorted(path.name for path in scratch.iterdir()), ["sentinel"])
 
+    def test_rejects_a_lock_only_pool_without_touching_its_lease(self):
+        pool = self.root / "lock-only-pool"
+        pool.mkdir()
+        # Both shipped runtimes use worker.lock, even before a queue DB exists.
+        lease = pool / "worker.lock"
+        lease.write_text("owned worker lease sentinel")
+        before = lease.stat()
+        scratch = pool / "native-upgrade-rollback.lease"
+        result = self.call(scratch)
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("pool", result.stderr.lower())
+        self.assertFalse(scratch.exists())
+        self.assertEqual(lease.read_text(), "owned worker lease sentinel")
+        self.assertEqual(lease.stat().st_ino, before.st_ino)
+        self.assertEqual(lease.stat().st_mtime_ns, before.st_mtime_ns)
+        self.assertEqual(sorted(path.name for path in pool.iterdir()), ["worker.lock"])
+
     def test_hash_mismatch_is_rejected_before_scratch_creation(self):
         scratch = self.root / "native-upgrade-rollback.hash"
         result = self.call(scratch, "--new-sha256", "0" * 64)

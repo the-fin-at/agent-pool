@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in actual-programme handover acceptance in one newly created private pool."""
+"""Opt-in pending-work programme handover acceptance in one newly created private pool."""
 import argparse
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -54,7 +54,7 @@ def validate(args):
     root = parent / raw_root.name
     # A new directory inside an existing pool is still the wrong place for faults.
     for ancestor in (parent, *parent.parents):
-        require(not (ancestor / "queue.sqlite3").exists() and not (ancestor / ".worker.lock").exists(),
+        require(not (ancestor / "queue.sqlite3").exists() and not (ancestor / "worker.lock").exists(),
                 "Scratch root must not be inside an existing pool")
     programs = {}
     for role in ("old", "new", "provider"):
@@ -110,7 +110,7 @@ class Handover:
         self.jobs = {}
         self.report = {
             "schema_version": 1, "passed": False,
-            "scope": "isolated controlled-provider CLI handover; no production state or real inference",
+            "scope": "isolated pending-work controlled-provider CLI handover; no active-job transition, production state or real inference",
             "versions": versions, "programme_sha256": hashes,
             "checks": self.checks, "worker_stops": [], "phases": [],
         }
