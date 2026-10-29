@@ -1,0 +1,441 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-29",
+  "scope": "Pre-deployment controlled-provider validation of native Claude retry handling; no real OAuth, user-account or production mutation",
+  "issue": "https://github.com/the-fin-at/agent-pool/issues/35",
+  "version": "0.5.1",
+  "integration_base": "2093fc17131629f6c5cd21b045c69ce5f896618d",
+  "implementation_commit": "e551a463bfd4bc035db55c547d0f142e106a7ec2",
+  "source_files_sha256": {
+    "Cargo.toml": "80278a3a6e1807aa4444ff7793a48fa3868211ce4378134386a6398050c49f72",
+    "Cargo.lock": "8dfe91680982e3ec7fecf2e77ba0cd3b1a3e72a0f89ef435fb1e42528876c560",
+    "crates/fleet-core/src/login.rs": "acbea78c74ee2825d6bb287ffe7fc6d84c641cefcc50fac37fe51cb9e3b9f7c4",
+    "crates/fleet-core/tests/login.rs": "a4d8239df2479b94e5cd5d09aa728880417da74c857f836622966ff8c3f4c089",
+    "crates/fleet-cli/examples/controlled_provider.rs": "c285a4d2a41845060436d3f668ded3c537cf140ee6e54d9d2e03ad17c202c6b8",
+    "scripts/test_rust_compatibility.py": "e94f9ef9997be23dbb23622dbb51dfac30855aace2af353bafbedc47b7ccf4dd",
+    "desktop/src/components/LoginView.test.tsx": "15c5eb6b9b1256ffddb4f5f556c98155a7be26d2c7963ed4d384624c44de7df4",
+    "tests/native_desktop.js": "85431887fb6f6f4b0816fa4599d0e9c50a3f45aed4777ea181f55ab38c2dcfa2",
+    "scripts/test_native_desktop.py": "c24aa8bf7d23edd18d91e804e7a0e70157ad721ad4623f77016e6dff496b68c7",
+    "desktop/package.json": "a63c63378e566132d786e8cd6600df38f19b3dffaa16bf28a7afa3207ac4d7eb",
+    "desktop/package-lock.json": "a982ec502588dcce10bab891f2677691bfebad19a5e3d2a5c26ef671d3a72348",
+    "desktop/src-tauri/tauri.conf.json": "5fddfb278af9894447dbf0921b49891ecf714e3760f5f871a8b68add2283395f",
+    "desktop/src/demo.ts": "c35f63b58e7d49b45446c801047ad75b22b24569cc69174dade4fd9537df9b61"
+  },
+  "behavior": {
+    "native_rejection_without_reprompt": "awaiting_code with fixed safe instruction",
+    "retry": "same session, profile and native provider process",
+    "unconfirmed_profile_enabled": false,
+    "corrected_success": "requires exact native configDirectory, loggedIn and claude.ai subscription verification"
+  },
+  "tdd": {
+    "test": "RustCompatibility.test_native_claude_rejected_code_can_be_corrected_in_same_session",
+    "before": {
+      "exit": 1,
+      "observed_state": "verifying",
+      "expected_state": "awaiting_code",
+      "log_sha256": "41a02e0bc0f1c0d4e719033411606cbf64581be9091d9af6b105fc3754e14cab"
+    },
+    "after": {
+      "exit": 0,
+      "log_sha256": "fc24506651d142f8720d581dd33eec0acb0aee7586547de217fcec584d548ae3"
+    },
+    "original_diagnostic_probe": {
+      "assertion_passed": true,
+      "second_input_exit": 0,
+      "provider_continues_waiting": true,
+      "owned_cleanup_complete": true,
+      "proof_sha256": "b9e32cbc5569589e784141c021a8a8462ed33be13aea05d5cb5b9165d29544ac",
+      "metadata_only_rebound_to_candidate": true
+    }
+  },
+  "macos": {
+    "platform": "Darwin arm64",
+    "toolchain": {
+      "rustc": "1.96.1",
+      "cargo": "1.96.1",
+      "node": "24.11.1",
+      "npm": "11.6.2",
+      "python": "3.14.7"
+    },
+    "commands": [
+      {
+        "name": "fmt",
+        "argv": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "rust-tests",
+        "argv": [
+          "cargo",
+          "test",
+          "-p",
+          "fleet-core",
+          "-p",
+          "fleet-cli",
+          "--locked"
+        ],
+        "exit": 0,
+        "log_sha256": "eb28ed95adf56daf0fcb540a7fe4716fcb57ea2ab097d88928de83a0b87a8e4f"
+      },
+      {
+        "name": "rust-clippy",
+        "argv": [
+          "cargo",
+          "clippy",
+          "-p",
+          "fleet-core",
+          "-p",
+          "fleet-cli",
+          "--all-targets",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0,
+        "log_sha256": "1f0a46ab2182c6a5ca9032ea3cede68611fbbb9d594825af3c218546e1aef2a2"
+      },
+      {
+        "name": "bridge-tests",
+        "argv": [
+          "cargo",
+          "test",
+          "-p",
+          "agent-fleet-desktop",
+          "--features",
+          "custom-protocol",
+          "--locked"
+        ],
+        "exit": 0,
+        "log_sha256": "fbb1b83be49472eb9751c2b206d22ce6bc737d61cf24be70e08b4561a953d7ee"
+      },
+      {
+        "name": "bridge-clippy",
+        "argv": [
+          "cargo",
+          "clippy",
+          "-p",
+          "agent-fleet-desktop",
+          "--all-targets",
+          "--features",
+          "custom-protocol",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0,
+        "log_sha256": "9a0a17c3ec723916ac0d753cebe8765681a693d664bc261b6c39b78af325722f"
+      },
+      {
+        "name": "workspace-check",
+        "argv": [
+          "cargo",
+          "check",
+          "--workspace",
+          "--all-targets",
+          "--features",
+          "agent-fleet-desktop/custom-protocol",
+          "--locked"
+        ],
+        "exit": 0,
+        "log_sha256": "c29e79f5aa795e59b4f7267b35bc2b6682f686a7829bc6bc69d3dcc3a39d11a9"
+      },
+      {
+        "name": "frontend-typecheck",
+        "argv": [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        "exit": 0,
+        "log_sha256": "ec0fc449425433fcede8fa9ff19f832b22aeb1f2619a60e870654e1e948a284f"
+      },
+      {
+        "name": "frontend-tests",
+        "argv": [
+          "npm",
+          "test"
+        ],
+        "exit": 0,
+        "log_sha256": "e0cf1f25d34e7aa90d56f930c637cded903a25fdefe241e942702b353f169463"
+      },
+      {
+        "name": "frontend-build",
+        "argv": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "exit": 0,
+        "log_sha256": "c88ee1ff94ebc3423294d955d54cee991720925a313588120e39c4a9a0971f4c"
+      },
+      {
+        "name": "python-tests",
+        "argv": [
+          "python3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-v"
+        ],
+        "exit": 0,
+        "log_sha256": "597a5a39f8161d5bf9d624b9c9ed77771319d7015b72e6fa6e07d47ba10c6149"
+      },
+      {
+        "name": "native-compat",
+        "argv": [
+          "python3",
+          "scripts/test_rust_compatibility.py"
+        ],
+        "exit": 0,
+        "log_sha256": "8fa19bcd56370ff78c1b2b3f65b236d981b8524a15498f1a110ffefbbaa1130e"
+      },
+      {
+        "name": "upgrade-guards",
+        "argv": [
+          "python3",
+          "tests/real-host/test_native_upgrade_rollback.py"
+        ],
+        "exit": 0,
+        "log_sha256": "ceb01ab66308e3fcd3e206a6771ec14ce934aaff5736c2696ca5fe3fc8ce25bf"
+      },
+      {
+        "name": "release-cli",
+        "argv": [
+          "cargo",
+          "build",
+          "-p",
+          "fleet-cli",
+          "--release",
+          "--locked"
+        ],
+        "exit": 0,
+        "log_sha256": "80a913b4102590392931228a1411b9d5a0ecbfee90bcda48ca1d30185e71970b"
+      },
+      {
+        "name": "release-app",
+        "argv": [
+          "npm",
+          "run",
+          "tauri",
+          "build",
+          "--",
+          "--bundles",
+          "app"
+        ],
+        "exit": 0,
+        "log_sha256": "56838d869518b769d2b60b81b8328aae4fa84c8ff3f25bd420447fafa24e8487"
+      }
+    ],
+    "tests": {
+      "rust_core": 86,
+      "rust_bridge": 2,
+      "frontend": 23,
+      "native_compatibility": 25,
+      "controlled_unique_jobs_in_compatibility": 100,
+      "upgrade_guards": 7,
+      "python_discovered": 145,
+      "python_passed": 115,
+      "python_skipped": 30,
+      "python_skip_reason": "Tk GUI tests: this Python has no _tkinter"
+    },
+    "native_ui": {
+      "passed": true,
+      "checks": 28,
+      "transport": "actual macOS WKWebView + Rust IPC",
+      "scope": "owned isolated pool and native controlled provider, not browser demo or real OAuth",
+      "rejection_feedback_visible": true,
+      "masked_editable_input_restored": true,
+      "rejected_profile_stays_disabled": true,
+      "corrected_code_succeeds": true,
+      "report_sha256": "706fc35942b6edcb914c420b1cec5ac653ab30ed6aa1f7ebcb6fc2492ed840ef",
+      "process_proof_sha256": "f75de3603f812a6d90468bca2b9d7fa709eb8913dac2162f0c78fdf6ebb90c47",
+      "debug_app_sha256": "d09459e3dd368cd6c001c0f6dea9b583268a58a0cbefa29ddd5eb7022268c2c2",
+      "controlled_provider_sha256": "507b7768bb32ce264f60adbe6535244ff7834a6f42741222a2c832a98e319557",
+      "owned_cleanup_complete": true,
+      "sleep_assertion": "owned app, display/idle inhibition after unlocked-console preflight; no simulated user activity"
+    },
+    "release_cli_focused": {
+      "cli_sha256": "fd625227f3ff52e3f457c6ef7201578d660f3525ac7842e1f0843da0c4fc0632",
+      "fixture_sha256": "507b7768bb32ce264f60adbe6535244ff7834a6f42741222a2c832a98e319557",
+      "argv": [
+        "python3",
+        "scripts/test_rust_compatibility.py",
+        "RustCompatibility.test_native_claude_login_consumes_code_without_persisting_it",
+        "RustCompatibility.test_native_claude_rejected_code_can_be_corrected_in_same_session",
+        "RustCompatibility.test_native_claude_rejected_code_remains_cancellable"
+      ],
+      "exit": 0,
+      "tests": 3,
+      "log_sha256": "19127e7058da430a36adc158b10a9c9f428d9aebe66e44281c22e38720ad7867",
+      "scope": "byte-identical release CLI and existing native controlled provider in owned temporary bundle/pools; no real OAuth"
+    }
+  },
+  "release": {
+    "version": "0.5.1",
+    "mac_cli_sha256": "fd625227f3ff52e3f457c6ef7201578d660f3525ac7842e1f0843da0c4fc0632",
+    "app_executable_sha256": "79c9108ab5313e942d6425b6e9d7fe349d4789c5f0f3d851d404b0132a426e0c",
+    "app_metadata_versions": [
+      "0.5.1",
+      "0.5.1"
+    ],
+    "mac_signature": "local ad-hoc; codesign --verify --deep --strict passed",
+    "notarized": false,
+    "linux_cli_sha256": "0526330a54068d8782b23d58d73a1bcc756ba7cfdcd9acce9c3ee6fd390e76ee"
+  },
+  "linux": {
+    "platform": "actual Linux x86_64 host, isolated pool",
+    "python": "3.14.4",
+    "implementation_commit": "e551a463bfd4bc035db55c547d0f142e106a7ec2",
+    "source_archive_sha256": "4df720626c97ad1fd5f925d26c24cda9bde3bfd2f076eb3cacbe807d2300f710",
+    "tracked_source_files": 245,
+    "all_transferred_source_hashes_verified": true,
+    "build": {
+      "image_ref": "rust@sha256:a41f7740f8b45d45795624eec13a8b42263cc700f19f7e4e86e04d3dda08a479",
+      "image_id": "sha256:3be1484b093e4b27fa7de92c29073126617f6a72d428586fe4b782a6e21dccdd",
+      "platform": "linux/amd64",
+      "rustc": "1.96.1 (31fca3adb 2026-06-26)",
+      "cargo": "1.96.1 (356927216 2026-06-26)",
+      "network": "none",
+      "cargo_locked": true,
+      "cargo_offline": true,
+      "release_build_exit": 0
+    },
+    "tests": {
+      "rust_core_passed": 86,
+      "rust_core_failed": 0,
+      "claude_focused": 3,
+      "compatibility": 25,
+      "failed": 0,
+      "skipped": 0,
+      "actual_host_commands": 11
+    },
+    "commands": [
+      {
+        "name": "version",
+        "exit_code": 0,
+        "seconds": 0.002,
+        "stdout_sha256": "aba951626c8690ce493cbc8f018205bb468003f61fbf00fd3d3c71cebabc0177",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "claude-focused",
+        "exit_code": 0,
+        "seconds": 1.4,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "0445a3b5e3336f0c94e367eef3164b5a20cc097b4375cbe72ad092a0db3b572d",
+        "tests_run": 3
+      },
+      {
+        "name": "compatibility",
+        "exit_code": 0,
+        "seconds": 7.321,
+        "stdout_sha256": "ff1f29ad66a7bc29c358b9368d6c00932dc2084a004782d14f02b8072e9883ee",
+        "stderr_sha256": "3f068dc9750adb1c5f0baef4f1fbbb60366df5357634dd3ef995d60965942b9e",
+        "tests_run": 25
+      },
+      {
+        "name": "core-0",
+        "exit_code": 0,
+        "seconds": 0.818,
+        "stdout_sha256": "89ab0c142c3f2296069a65d49db0c4fbe882e6c5a3a01fa72894aba67c18955b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 20,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-1",
+        "exit_code": 0,
+        "seconds": 0.119,
+        "stdout_sha256": "bb5db911fccf393ced5e80544e9366580a9269b35e167a95cc6ab5389bd52e47",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 6,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-2",
+        "exit_code": 0,
+        "seconds": 0.486,
+        "stdout_sha256": "aeb15e88a39a21a2c8b0c84a7aa4b76128100f2759c279e704b6df51a11ede98",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 17,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-3",
+        "exit_code": 0,
+        "seconds": 0.001,
+        "stdout_sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 0,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-4",
+        "exit_code": 0,
+        "seconds": 0.693,
+        "stdout_sha256": "b3ee75d2eb3738b9414ba514eb3aeb5b058357007c8f55d7283622e65a3a8657",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 13,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-5",
+        "exit_code": 0,
+        "seconds": 0.122,
+        "stdout_sha256": "0a3516b2468f5ee0d75ebe69f645e104198ba29c060af3f13ee6a87e018c8d74",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 8,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-6",
+        "exit_code": 0,
+        "seconds": 0.019,
+        "stdout_sha256": "376d61beb23e0a0d66ed57fce3a61811872ad1d9c60082b44597f2006b7273b9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 14,
+        "tests_failed": 0
+      },
+      {
+        "name": "core-7",
+        "exit_code": 0,
+        "seconds": 0.088,
+        "stdout_sha256": "d063b66f719df008318789a589bd5352bfce4c9bdb031100700d0d97be50f41b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests_passed": 8,
+        "tests_failed": 0
+      }
+    ],
+    "all_commands_passed": true,
+    "raw_log_hashes_verified": true,
+    "proof_sha256": "93b060d67b2ebf8d8b7c7d03b47ebb4ec3610445b05d527b5cee900db69b6a13",
+    "summary_sha256": "c73245d4f45542448a75325b09082b8da9be136dd353e2ffecb09a5c76dcfbc1",
+    "controlled_provider_sha256": "fea3e410cdcefc3d217b3dce44d2cc0bf0ec21e24d81786a137d89bc9e03ffff",
+    "cleanup": {
+      "owned_native_processes_before_cleanup": 0,
+      "owned_native_processes_after_cleanup": 0,
+      "temporary_test_directories_remaining": 0
+    },
+    "scope": "actual isolated Linux x86_64 host; controlled providers only; no real OAuth, inference or production pool/services/binary changes"
+  },
+  "limits": {
+    "windows_native_acceptance": false,
+    "real_oauth_during_patch_validation": false,
+    "reporters_original_failure_cause_proven": false,
+    "installation_or_production_changes_during_validation": false,
+    "public_release_published": false,
+    "cold_build_reproducibility_proven": false,
+    "ci": "all three GitHub workflows remain deliberately disabled; checks here are manual/native"
+  }
+}
