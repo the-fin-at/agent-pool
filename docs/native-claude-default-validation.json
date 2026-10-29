@@ -248,6 +248,10 @@
     {
       "artifact": "execution-summary.json",
       "sha256": "d94b09c3fb32b7180fa8b0fd7144deb741090cd4c4a992cf11ab421fd7b864fd"
+    },
+    {
+      "artifact": "independent-postcheck.json",
+      "sha256": "bd64b1e5e1ceee398af9649f68eb0a5182d4ccddfb560b42bc4e383a77ab21b7"
     }
   ],
   "reviews": {
@@ -294,7 +298,52 @@
       "app_sha256": "b7cea76c0c8af17140dd0960d510667570be9615e6964bdfaa089ddd4b562ff9",
       "ordinary_bundle_launch_and_native_ui_seen": true,
       "installation_preservation": "passed by independent E2E/installation validator",
-      "independent_postcheck": "additional separate read-only check running; no result claimed",
+      "independent_postcheck": {
+        "passed": true,
+        "observed_at_utc": "2026-10-29T20:44:29.488206+00:00",
+        "baseline_observed_at_utc": "2026-10-29T20:38:14.523146+00:00",
+        "checks_passed": 31,
+        "checks": {
+          "fresh_baseline_utc_203814": true,
+          "all_original_five_profile_identities_enabled_and_authdirs_preserved": true,
+          "original_connected_profiles_still_connected": true,
+          "exactly_one_new_profile": true,
+          "all_preexisting_job_rows_and_results_preserved": true,
+          "real_pool_job_count_unchanged_zero": true,
+          "workspaces_preserved": true,
+          "remotes_preserved": true,
+          "login_sessions_preserved": true,
+          "no_active_login": true,
+          "browser_handlers_preserved": true,
+          "managed_auth_preserved": true,
+          "default_auth_preserved": true,
+          "database_integrity": true,
+          "installed_cli_version_and_hash": true,
+          "installed_app_version_hash_and_signature": true,
+          "only_installed_app_running": true,
+          "app_parent_is_system": true,
+          "running_text_path_and_inode_match_installed_binary": true,
+          "ordinary_launch_without_home_override": true,
+          "one_native_default_row": true,
+          "native_default_references_existing_global_dir": true,
+          "native_default_did_not_copy_auth_into_pool": true,
+          "legacy_profiles_keep_directory_auth_mode": true,
+          "default_and_managed_connected_without_error": true,
+          "default_and_managed_verified_same_identity": true,
+          "default_and_managed_enabled": true,
+          "additional_disconnected_profile_stays_disabled": true,
+          "public_cached_status_default_connected_enabled": true,
+          "public_cached_status_managed_alias_of_default": true,
+          "installed_ui_expected_state": true
+        },
+        "baseline_sha256": "823050d1ac05395eaac51441b76a66f4efec64c31859e47b146a5108ce22578f",
+        "inventory_sha256": "35689ec994ebf9fb17dbe7fcf6bb33ee853542a6cb27d571acee66b4727aecca",
+        "proof_sha256": "bd64b1e5e1ceee398af9649f68eb0a5182d4ccddfb560b42bc4e383a77ab21b7",
+        "read_only": true,
+        "refresh": false,
+        "inference": false,
+        "production_mutations": false
+      },
       "preservation_checks": {
         "all_five_existing_profiles_preserved": true,
         "exactly_one_new_profile": true,
@@ -380,7 +429,8 @@
     "pending_job_completed_exactly_once_under_old_runtime": true,
     "managed_directory_preserved": true,
     "default_not_reenabled_after_upgrade_back": true,
-    "proof_sha256": "c848a0dba46311be236b06f301f9ea991c23b6b369803b39ad997610802cc71d"
+    "proof_sha256": "c848a0dba46311be236b06f301f9ea991c23b6b369803b39ad997610802cc71d",
+    "return_to_052": "native_default stays disabled after rollback; explicitly enable its actual profile name only if desired; never override manual activation automatically"
   },
   "open_boundaries": {
     "github_ci": "deliberately disabled, not a green CI pass",
