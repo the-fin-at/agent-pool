@@ -46,7 +46,7 @@ The delayed endpoint uses a uniquely generated private directory next to the sel
 
 ## Evidence recorded on 29 October 2026
 
-The initial actual SSH run against the newly upgraded native 0.5 production server passed at p95 **537.9 ms**. A rerun using public CLI fixture configuration passed at p95 **560.4 ms** (20 samples, maximum 602.6 ms). These are historical intermediate measurements. The final SSH-only run of the hardened harness passed at p95 **652.8 ms**, maximum **686.2 ms**; all 20 responses reported native 0.5.0. Its raw samples and nonidentifying load context are in [native-performance-validation.json](native-performance-validation.json).
+The initial actual SSH run against the newly upgraded native 0.5 production server passed at p95 **537.9 ms**. A rerun using public CLI fixture configuration passed at p95 **560.4 ms** (20 samples, maximum 602.6 ms). These are historical intermediate measurements. The final SSH-only run of the hardened harness passed at p95 **652.8 ms**, maximum **686.2 ms**; all 20 responses reported native 0.5.0. The `historical_ssh_only` entry in [native-performance-validation.json](native-performance-validation.json) preserves that run's summary; the file's raw samples and load context belong to the later full run described below.
 
 The first UI preflight reported `screen_locked: true`, `console_session: true`, using the corrected `kCGSSessionOnConsoleKey`. It exited 77 before any app or provider started. That was a genuine locked screen, separate from the earlier corrected console-key typo. At that historical checkpoint, the native gate remained open; SSH success alone did not satisfy it.
 
