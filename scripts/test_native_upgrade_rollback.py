@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in pending-work programme handover acceptance in one newly created private pool."""
+"""Opt-in pending/active programme handover acceptance in one newly created private pool."""
 import argparse
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -254,16 +254,28 @@ class Handover:
             time.sleep(.05)
         raise ValueError("Controlled timeout descendant remains active")
 
-    def run(self):
+    def prepare_pool(self, names=("runner", "blocked"), disabled=()):
+        self.profile_names = names
         self.switch("old")
         self.call("workspace", "add", "fixture", "--path", str(self.workspace))
-        for name in ("runner", "blocked"):
+        for name in names:
             auth = self.root / "auth" / name
             auth.mkdir(mode=0o700, parents=True)
             (auth / "sentinel").write_text("controlled attached account; not a credential")
             (auth / "fixture-accepted").write_text("controlled fixture only")
             self.call("profile", "add", name, "--provider", "codex", "--binary", str(self.programs["provider"]), "--auth-home", str(auth))
-            self.call("profile", "enable", name)
+            self.call("profile", "disable" if name in disabled else "enable", name)
+
+    def invocation_prompts(self):
+        trace = []
+        for name in self.profile_names:
+            path = self.root / "auth" / name / "fixture-executions.jsonl"
+            if path.exists():
+                trace.extend(json.loads(line)["prompt"] for line in path.read_text().splitlines())
+        return trace
+
+    def run(self):
+        self.prepare_pool()
         self.windows(blocked=True)
         self.submit("completed-before-upgrade")
         self.call("work", "--once")
@@ -330,11 +342,7 @@ class Handover:
                 job = final[item["id"]]
                 self.check(job["status"] == "succeeded" and job["attempts"] == 1 and job["result"] == "read-only: " + item["prompt"],
                            "Final result and one attempt retained for " + label)
-        trace = []
-        for name in ("runner", "blocked"):
-            path = self.root / "auth" / name / "fixture-executions.jsonl"
-            if path.exists():
-                trace.extend(json.loads(line)["prompt"] for line in path.read_text().splitlines())
+        trace = self.invocation_prompts()
         self.check(Counter(trace) == Counter(value["prompt"] for value in self.jobs.values()),
                    "Controlled invocation inventory contains each job once including the quarantined timeout")
         self.check(self.identities() == profiles and self.auth_inventory() == auth, "Final profile identities/auth sentinels remain intact")
@@ -426,16 +434,7 @@ class ActiveHandover(Handover):
 
     def run(self):
         self.report["scope"] = "isolated exclusive fixture old-to-native WAIT and native-to-old INTERRUPT; not symmetric coverage or a production pause API"
-        self.profile_names = ("runner", "blocked", "dormant")
-        self.switch("old")
-        self.call("workspace", "add", "fixture", "--path", str(self.workspace))
-        for name in self.profile_names:
-            auth = self.root / "auth" / name
-            auth.mkdir(mode=0o700, parents=True)
-            (auth / "sentinel").write_text("controlled attached account; not a credential")
-            (auth / "fixture-accepted").write_text("controlled fixture only")
-            self.call("profile", "add", name, "--provider", "codex", "--binary", str(self.programs["provider"]), "--auth-home", str(auth))
-            self.call("profile", "disable" if name == "dormant" else "enable", name)
+        self.prepare_pool(("runner", "blocked", "dormant"), disabled=("dormant",))
         profiles, auth = self.identities(), self.auth_inventory()
         self.windows(blocked=True)
         waiting = self.submit("active-wait-quota", profile="blocked")
@@ -518,11 +517,7 @@ class ActiveHandover(Handover):
                 self.check(row["status"] == "succeeded" and row["attempts"] == 1
                            and row["result"] == "read-only: " + item["prompt"],
                            "Final result and single attempt retained for " + label)
-        trace = []
-        for name in ("runner", "blocked"):
-            path = self.root / "auth" / name / "fixture-executions.jsonl"
-            if path.exists():
-                trace.extend(json.loads(line)["prompt"] for line in path.read_text().splitlines())
+        trace = self.invocation_prompts()
         self.check(Counter(trace) == Counter(value["prompt"] for value in self.jobs.values()),
                    "Controlled invocation inventory contains every active and pending job once")
         self.check(self.identities() == profiles and self.auth_inventory() == auth,
