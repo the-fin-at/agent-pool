@@ -116,3 +116,19 @@ Die direkt gelesenen [finalen Abnahmequellen](../docs/rust-tauri-validation.json
 | 1.0 | Windows, gehostete CI, messbare Performance sowie gezielter Upgrade-/Rollback-/Vertriebsnachweis bleiben geplante gesonderte Arbeit |
 
 Der gemeinsame Checkout wurde anschließend unmittelbar auf erwarteten Branch `fix/native-lock-queue-progress@b27267e`, sauberen Bestand, lokalen `main@c5c141e` und `origin/main@9f018a1` geprüft. Nach erneuter Prüfung wurde ausschließlich auf `main` gewechselt und per Fast-forward auf `9f018a1` aktualisiert; der Checkout war danach sauber. Keine Reset-/Clean-/Stash-Aktion, keine Branchlöschung und keine Änderung an der separaten Migrationsarbeitskopie erfolgte. Die frühere Wiki-Sicherung blieb erhalten. Quelle: direkte Ausführungs-/Verifikationsnachweise im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` und Abschluss des Migrationschats `01a18220-ca9a-7490-a64f-6cebc721d916`.
+
+## Produktion 0.5 und parallele 1.0-Gates: Checkpoint vom 2026-10-29
+
+Der neue direkte Nutzerauftrag im Chief-of-Staff-Chat `01a18453-50f4-7463-a3a6-9a45c56297d7` erlaubte den produktiven Linux-Wechsel mit Erhalt des Bestands und anschließende 1.0-Arbeit. Der Wechsel und ein unabhängiger Read-only-Postcheck sind abgeschlossen: [Runbook](../docs/production-upgrade-2026-10-29.md), [Upgrade-Provenienz](../docs/production-upgrade-2026-10-29-validation.json). Ein früher Stop-Guard-Abbruch mit Wiederanlauf vor Binärersatz bleibt explizit dokumentiert; der erfolgreiche Guard-bis-Heartbeat-Zeitraum betrug beobachtet 0,546081 s. Die Service-Unit blieb unverändert.
+
+Nach dem unabhängigen Postcheck liefen genau zwei echte begrenzte Providerjobs über den Produktions-Rustworker. Beide bestanden in einem Versuch, alle sieben alten vollständigen Jobs blieben erhalten; der dokumentierte Post-Smoke-Snapshot ist neun `succeeded`. Keine neuen Logins, Auth-Kopien oder Änderungen der Profil-/Servicekonfiguration wurden durch diese Smokes vorgenommen. Quelle: [Provider-Abnahme](../docs/native-provider-smokes-validation.json). Das ersetzt die früheren Aussagen „nur isolierter Rust auf Linux“ für diesen späteren Produktionszeitpunkt; es erklärt keine weiteren 1.0-Gates als bestanden.
+
+| Arbeit am 29.10.2026 | Zuständigkeit / beobachteter Status | Nächster belegbarer Schritt |
+| --- | --- | --- |
+| Produktionsupgrade und zwei echte native Adapter-Smokes | Chief of Staff / Upgradeausführung plus unabhängiger Postcheck; abgeschlossen | Datierte normalisierte Belege unabhängig prüfen; bei späteren Zustandsänderungen neu inventarisieren |
+| Befüllte isolierte Upgrade-/Rollbackkampagne | Separater Rollbackworker, [Issue #24](https://github.com/the-fin-at/agent-pool/issues/24); in Bearbeitung | Geprüfter Commit und nachgewiesene Erhaltung aktueller Jobs bei Upgrade, Restart, Fehlerfall und programmbezogener Rücknahme |
+| Native Performancegates | Separater Performanceworker, [Issue #25](https://github.com/the-fin-at/agent-pool/issues/25); in Bearbeitung | Tatsächliche Messungen/Resultate zum konkreten nativen Kandidaten, getrennt von den zwei Provider-Smokelaufzeiten |
+| Windows | Johannes meldete noch keine verfügbare Maschine und beauftragte die übrigen Gates weiter | Zugang später klären; native Windows-Abnahme bleibt offen, kein Ersatz durch Mac-/Linux-Nachweise |
+| Hosted CI / Vertrieb | Billing-Startblock und offene Vertriebs-/Signierentscheidung | Tatsächlich startende Matrix bzw. klar abgegrenzte Paket-/Vertriebsnachweise; keine grüne CI behaupten |
+
+Die beiden Implementierungsworker haben getrennte Datei-/Dokumentverantwortung. Dieser Dokumentationsworker pflegt nur Wiki und Produktions-/Provider-Nachweise in einer neuen isolierten Arbeitskopie; er verändert weder ihren Code noch den produktiven Pool oder den gemeinsamen Checkout. Es wurde kein neuer Fleet-Jobschlüssel für diese Dokumentationsarbeit erfunden.
