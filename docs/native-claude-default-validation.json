@@ -251,7 +251,15 @@
     },
     {
       "artifact": "independent-postcheck.json",
-      "sha256": "bd64b1e5e1ceee398af9649f68eb0a5182d4ccddfb560b42bc4e383a77ab21b7"
+      "sha256": "1d7d0ac5a9427bbd129c5640071735a174247a769f4f03562ff2d7b105bf75ec"
+    },
+    {
+      "artifact": "independent-executor-proof-bindings.json",
+      "sha256": "6b0929a4d461354ea7aa7bcd1555ebfc8da2924c3739dafdd1bd1941411898fd"
+    },
+    {
+      "artifact": "cleanup.json",
+      "sha256": "d87fdb27333adc99405743d531b396084f9203be0ff94cc85c9fe3ab4389ec1c"
     }
   ],
   "reviews": {
@@ -338,7 +346,7 @@
         },
         "baseline_sha256": "823050d1ac05395eaac51441b76a66f4efec64c31859e47b146a5108ce22578f",
         "inventory_sha256": "35689ec994ebf9fb17dbe7fcf6bb33ee853542a6cb27d571acee66b4727aecca",
-        "proof_sha256": "bd64b1e5e1ceee398af9649f68eb0a5182d4ccddfb560b42bc4e383a77ab21b7",
+        "proof_sha256": "1d7d0ac5a9427bbd129c5640071735a174247a769f4f03562ff2d7b105bf75ec",
         "read_only": true,
         "refresh": false,
         "inference": false,
@@ -374,7 +382,21 @@
       "proof_sha256": "e593bc9d581acdcb7df0040cea41ee4170599ef7adbd5092398ec1e4ae774948",
       "user_provider_filter_and_show_all_restored": true
     },
-    "distinct_account_switch_logout_boundaries": "controlled-provider tests only; real provider jobs used same verified account"
+    "distinct_account_switch_logout_boundaries": "controlled-provider tests only; real provider jobs used same verified account",
+    "executor_bindings_independently_verified": true,
+    "cleanup": {
+      "observed_at_utc": "2026-10-29T20:46:27.000001+00:00",
+      "passed": true,
+      "only_owned_keeper_targeted": true,
+      "command_and_start_record_matched": true,
+      "keeper_terminated": true,
+      "known_test_app_pids_exited": true,
+      "own_pool_worker_pids_remaining": [],
+      "own_native_window_awake_pids_remaining": [],
+      "installed_app_left_running": true,
+      "execution_summary_modified": false,
+      "proof_sha256": "d87fdb27333adc99405743d531b396084f9203be0ff94cc85c9fe3ab4389ec1c"
+    }
   },
   "isolated_linux": {
     "status": "passed",
