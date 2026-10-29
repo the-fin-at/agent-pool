@@ -437,5 +437,13 @@
     "public_release_published": false,
     "cold_build_reproducibility_proven": false,
     "ci": "all three GitHub workflows remain deliberately disabled; checks here are manual/native"
+  },
+  "upstream_protocol": {
+    "provider": "Claude Code",
+    "version": "2.1.312",
+    "native_binary_sha256": "6b5ec691195e551b02c41df9f7d723f4ea61eaa03c2df90acefe3736f1aeb620",
+    "static_handler_byte_offset": 246102598,
+    "static_evidence_sha256": "da14dcaae493f8f488bc93823d449221d8425f1d51f417ac9975fae2a052f51b",
+    "scope": "verified installed native readline rejection behavior; no new real OAuth during patch validation"
   }
 }
