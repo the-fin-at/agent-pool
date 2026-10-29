@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "scope": "Authorized production Linux programme upgrade; sanitized historical acceptance record, not a public release",
+  "source": {
+    "reviewed_product_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "product_merge_commit": "9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7",
+    "documentation_base_commit": "79f2199b7d1201bd3ac12d178dcf82d143c387b5",
+    "release_validation": "rust-tauri-validation.json",
+    "release_validation_sha256": "16ec12e2808cdf9619ee8443c5f64602e13eb739099c5506cd7c79ec7e6b7681",
+    "artifacts": [
+      {
+        "artifact": "result.json",
+        "sha256": "8ab496638718c8d0b63136e9d6753f45a3bce018ddbd40393d1c72903f5ff7a6"
+      },
+      {
+        "artifact": "events.json",
+        "sha256": "572f110cd6e7cbbfc48039166f1a3ece79b88dc6138b890674875f0c0e94e7b3"
+      },
+      {
+        "artifact": "initial-inventory.json",
+        "sha256": "b1b794084600d572c7ec166a93dcea40aec930e8a9832597f99b49fd35df9b5c"
+      },
+      {
+        "artifact": "stopped-inventory.json",
+        "sha256": "b15f83af76d7f21f022aece2d847bb964f075a32c9ae41a4b87258a7d8aa867a"
+      },
+      {
+        "artifact": "after-inventory.json",
+        "sha256": "866b45951915f9c8d1425d2c2d14a03985a26c0b760abd4118c68aeb4e802b58"
+      },
+      {
+        "artifact": "client-rpc-verification.json",
+        "sha256": "a10b27cabee81d86e245e891d914ab8bc69b5d72481cfa9fc5f94d8ddef8955e"
+      },
+      {
+        "artifact": "backup_verification.json",
+        "sha256": "4fef9fefb7f143cd596062153e40f477f4b951e1bf2bf019adf5c51865f3e79f"
+      },
+      {
+        "artifact": "cutover.py",
+        "sha256": "ec36a83a2b2746c6191b28bc01036cfced2a8d8eb4cb6a6b5ed4a307ba14469f"
+      },
+      {
+        "artifact": "fleet-production-independent-_b2x8jwi/verification.json",
+        "sha256": "9a4b86f235d7a98b49c5f24bd564024dcda466f88a08caf4dc2af5c8f9d7f787"
+      }
+    ],
+    "coordinator_chat": "01a18453-50f4-7463-a3a6-9a45c56297d7"
+  },
+  "authorization": {
+    "date": "2026-10-29",
+    "scope": "Existing production Linux pool upgraded to 0.5 with accounts and jobs preserved; further 1.0 work authorized"
+  },
+  "target": {
+    "connection": "claw-remote",
+    "unix_user": "clawadmin",
+    "project_scoped": true,
+    "existing_home_and_auth_directories_reused": true,
+    "new_network_service": false
+  },
+  "runtime": {
+    "before": "0.4.2",
+    "after": "0.5.0",
+    "native_elf": true,
+    "installed_and_running_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+    "release_hash_matches": true,
+    "worker_pid_after": 3543607,
+    "unit_sha256": "4aa9065f3fe4e9a469cca7d56b7265da213b24d220d3e5641b683afd67b5f0e3",
+    "unit_unchanged": true,
+    "unit_contents_included": false,
+    "same_pid_two_advancing_heartbeats": true,
+    "only_expected_worker_in_service_cgroup": true
+  },
+  "preservation": {
+    "profiles": 6,
+    "enabled_profiles": 4,
+    "connected_enabled_profiles": 4,
+    "profile_metadata_fingerprint_equal": true,
+    "auth_directories_checked": 6,
+    "auth_paths_inodes_devices_modes_unchanged": true,
+    "credential_directories_copied": false,
+    "workspaces_unchanged": true,
+    "original_jobs": 7,
+    "full_original_job_rows_equal_to_backup": true,
+    "all_original_ids_results_attempts_preserved": true,
+    "initial_stopped_after_fingerprints_equal": true,
+    "cutover_job_count_before": 7,
+    "cutover_job_count_after_before_smokes": 7,
+    "sqlite_live_integrity": "ok",
+    "sqlite_backup_integrity": "ok",
+    "other_openclaw_and_voxstt_service_states_and_pids_unchanged": true
+  },
+  "backup": {
+    "server_directory": "~/.local/share/agent-fleet-upgrade-backups/20261029T062424Z",
+    "directory_mode": "0700",
+    "sqlite_file": "queue.sqlite3",
+    "sqlite_mode": "0600",
+    "sqlite_sha256": "9f240151362fd4e65a05ba51961da265e9d5bf4ff94255a02beb41a38208b9ac",
+    "saved_programme": "agent-fleet.0.4.2",
+    "saved_programme_version": "0.4.2",
+    "saved_programme_sha256": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+    "saved_programme_reads_backup_job_count": 7,
+    "credential_directories_included": false,
+    "rollback_rule": "Restore saved programme only after controlled quiescence; retain live SQLite and all later arrivals. Never automatically restore this old database snapshot.",
+    "sqlite_backup_count": 1
+  },
+  "timeline": {
+    "earlier_guard_abort": {
+      "source_kind": "Coordinator execution record, not successful events.json",
+      "date": "2026-10-29",
+      "zone": "Europe/Vienna",
+      "guard_begin": "07:23:36.276",
+      "old_programme_resumed": "07:23:36.768",
+      "reported_upper_bound_seconds": 0.492,
+      "reason": "Old Python SIGTERM exit130 made systemd state failed rather than inactive; narrow first stop guard aborted",
+      "programme_replaced": false,
+      "sqlite_backup_stage_reached": false,
+      "old_programme_resumed_before_replacement": true
+    },
+    "successful_attempt": {
+      "source_kind": "events.json with SHA256 in source.artifacts",
+      "guard_begin_utc": "2026-10-29T06:24:24.916494+00:00",
+      "native_healthy_utc": "2026-10-29T06:24:25.462575+00:00",
+      "guard_begin_vienna": "2026-10-29T07:24:24.916494+01:00",
+      "native_healthy_vienna": "2026-10-29T07:24:25.462575+01:00",
+      "observed_guard_to_health_seconds": 0.546081,
+      "source_rounded_bound_seconds": 0.546,
+      "conservative_millisecond_bound_seconds": 0.547,
+      "interpretation": "Guard-to-fresh-heartbeat interval, not model inference latency; source bound is rounded",
+      "expected_python_sigterm_exit130": true,
+      "acceptance_conditions": [
+        "old Python service failed/exit-code/ExecMainCode1/ExecMainStatus130 only",
+        "MainPID0, old PID absent and empty service cgroup",
+        "no running jobs or active native login helper",
+        "not a generic acceptance of failed services"
+      ],
+      "completed_at_utc": "2026-10-29T06:24:25.512298+00:00"
+    }
+  },
+  "independent_audit": {
+    "passed": true,
+    "read_only": true,
+    "production_mutations": false,
+    "provider_inference": false,
+    "full_job_rows_compared": 7,
+    "client_rpc_results_and_ids_match": true,
+    "workspace_rpc_matches": true,
+    "live_and_single_backup_integrity": "ok"
+  },
+  "subsequent_real_provider_acceptance": {
+    "evidence": "native-provider-smokes-validation.json",
+    "new_jobs": 2,
+    "preserved_original_jobs": 7,
+    "snapshot_total_jobs": 9,
+    "snapshot_states": {
+      "succeeded": 9
+    },
+    "cutover_itself_used_provider_inference": false
+  },
+  "limits": [
+    "No new provider login or credential copying",
+    "No broad schema/data reset or production database rollback",
+    "No full populated upgrade/rollback fault campaign is claimed here; isolated gate work remains in progress",
+    "Native Windows remains deferred/open; hosted CI remains blocked before start by billing",
+    "No 1.0 release or public signing/notarization decision is implied"
+  ]
+}
