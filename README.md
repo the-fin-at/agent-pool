@@ -22,6 +22,10 @@ Ein Agent vergibt einen Auftrag. Agent Fleet wählt ein verfügbares Profil, sta
 
 Agent Fleet ist eine Auftragsschicht um die offiziellen CLIs. Es stellt keinen OpenAI-kompatiblen HTTP-Endpunkt bereit. Die Kontingente bleiben pro Account getrennt; die Anbieterbedingungen gelten weiter. Die [Bauentscheidung](docs/research-2026-10-28.md) erklärt den Vergleich mit CLIProxyAPI und tcr.
 
+## Neu in 0.5.2: vorhandenen Claude-Login verwenden
+
+Die lokale Übersicht erkennt deine bestehende normale Claude-CLI-Anmeldung automatisch als **Claude CLI**; ein erneuter Browserlogin ist dafür nicht nötig. Zusätzliche Accounts behalten ihre eigenen Anmeldeverzeichnisse. Profile derselben bestätigten Identität teilen Kontingent-/Busy-Grenzen; eine ausdrückliche Profilwahl bleibt verbindlich. Die normale CLI verwaltet Accountwechsel und Logout. [Verhalten, Nachweise und Rücknahme auf 0.5.1](docs/native-claude-default.md).
+
 ## Neuer Desktop
 
 Die Seitenleiste filtert nach Codex und Claude. Die Kreise zeigen den freien Anteil im 5-Stunden-Fenster, die Balken das Wochenkontingent. Der obere Kontextwechsler trennt lokale Accounts und Remote-Verbindungen. Neue Accounts werden innerhalb der App angemeldet. Schrift und Icons liegen im App-Paket.

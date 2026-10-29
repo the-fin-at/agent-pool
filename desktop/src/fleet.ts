@@ -68,6 +68,8 @@ export function parseAccount(value: unknown): Account | null {
     name,
     provider: kind,
     managed: a.managed !== false,
+    ...(a.auth_mode === 'native_default' ? { auth_mode: 'native_default' as const } : {}),
+    ...(kind === 'claude' && text(a.alias_of) ? { alias_of: text(a.alias_of)! } : {}),
     enabled: Boolean(a.enabled),
     connected: Boolean(a.connected),
     email: text(a.email),

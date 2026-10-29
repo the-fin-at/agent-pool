@@ -221,6 +221,8 @@ fn doctor(db: &Db) -> Result<Value> {
 }
 
 fn interactive_login(db: &mut Db, name: &str, device_auth: bool) -> Result<Value> {
+    ensure!(!crate::monitor::native_default(&db.profile(name)?), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");
+    crate::monitor::coalesce_claude(db)?;
     let dir = db.authdir(name)?;
     let _lock = Lease::acquire(&dir.join(".native.lock"))?;
     let profile = db.profile(name)?;
@@ -250,11 +252,11 @@ fn interactive_login(db: &mut Db, name: &str, device_auth: bool) -> Result<Value
     if let Some(cached) =
         login::verify(&profile, &dir).map_err(|e| anyhow!("{e}; profile was not enabled"))?
     {
-        db.cache(name, &cached)?;
+        monitor::publish_claude_identity(db, name, &cached)?;
     }
     db.update_profile(
         name,
-        json!({"enabled": true, "hold_until": null, "hold_reason": null, "observed_at": null, "checked_at": null}),
+        if codex {json!({"enabled": true, "hold_until": null, "hold_reason": null, "observed_at": null, "checked_at": null})}else{json!({"enabled":true})},
     )?;
     Ok(json!({"profile": name, "enabled": true}))
 }
@@ -625,7 +627,7 @@ fn work(mut db: Db, args: &Args) -> Result<Reply> {
             }
         }
         if !run && Instant::now() >= next_monitor {
-            let _ = monitor::collect(&db.home, false);
+            let _ = monitor::refresh_codex(&db.home);
             next_monitor = Instant::now() + Duration::from_secs(60);
         }
         let did_work =

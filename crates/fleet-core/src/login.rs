@@ -235,11 +235,13 @@ pub fn start_with(
     }
     let existing = db.profiles()?.into_iter().find(|p| p["name"] == name);
     if let Some(e) = &existing {
+        ensure!(!crate::monitor::native_default(e), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");
         ensure!(
             e["provider"] == provider,
             "This profile belongs to a different provider"
         );
     }
+    crate::monitor::coalesce_claude(&mut db)?;
     // Resolve before modifying the profile registry.
     executable(
         existing
@@ -413,9 +415,17 @@ fn native_status(profile: &Value, dir: &Path) -> Result<crate::provider::Capture
 /// Older Claude CLIs ignore CLAUDE_CONFIG_DIR for status; refuse to log into the wrong directory.
 pub fn check_claude_directory(profile: &Value, dir: &Path) -> Result<Value> {
     let done = native_status(profile, dir)?;
+    ensure!(
+        !done.timed_out && !done.overflow && matches!(done.code, 0 | 1),
+        "Der Claude-CLI-Status konnte nicht zuverlässig geprüft werden"
+    );
     let data: Value = serde_json::from_str(done.out.trim()).map_err(|_| {
         anyhow!("Bitte die native Claude-CLI aktualisieren; ihr Profilstatus konnte nicht geprüft werden.")
     })?;
+    ensure!(
+        data["loggedIn"] != true || done.code == 0,
+        "Die Claude-CLI meldet einen widersprüchlichen Status-Exitcode"
+    );
     let ok = data["configDirectory"]
         .as_str()
         .filter(|s| !s.is_empty())
@@ -689,11 +699,11 @@ fn run_session(
             drop(stdin.take());
             let cached = verify(&profile, &authdir)?;
             if let Some(cached) = cached {
-                db.cache(&name, &cached)?;
+                crate::monitor::publish_claude_identity(db, &name, &cached)?;
             }
             db.update_profile(
                 &name,
-                json!({"enabled": true, "hold_until": null, "hold_reason": null, "checked_at": null, "observed_at": null}),
+                if provider=="claude" {json!({"enabled":true})}else{json!({"enabled": true, "hold_until": null, "hold_reason": null, "checked_at": null, "observed_at": null})},
             )?;
             session.update(
                 json!({"state": "verifying", "message": "Account-Daten werden abgerufen …"}),

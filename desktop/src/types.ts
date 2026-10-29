@@ -29,6 +29,10 @@ export interface Account {
   provider: Provider;
   /** false for the native default Codex login shown for monitoring only. */
   managed: boolean;
+  /** A registered reference to the user's ordinary Claude CLI login. */
+  auth_mode?: 'native_default';
+  /** Another verified directory for the native default subscription, not extra capacity. */
+  alias_of?: string;
   enabled: boolean;
   connected: boolean;
   email: string | null;

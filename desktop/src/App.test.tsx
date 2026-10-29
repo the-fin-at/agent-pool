@@ -8,6 +8,24 @@ import { claudeAccount, codexAccount, deferred, fakeTransport, FAST, status } fr
 const cardNames = () => within(screen.getByRole('list', { name: 'Accounts' })).getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
 
 describe('account overview', () => {
+  it('uses the external Claude CLI login automatically while keeping additional account sign-in separate', async () => {
+    const user = userEvent.setup();
+    const { transport, commands } = fakeTransport(() => status([
+      claudeAccount('claude-default', { auth_mode: 'native_default', enabled: true, display_name: 'Claude CLI' }),
+      claudeAccount('alias', { alias_of: 'claude-default', enabled: true }),
+      claudeAccount('zusatz', { connected: false, windows: [] }),
+    ]));
+    render(<App transport={transport} timing={FAST} />);
+    expect(await screen.findByText('1 Account verbunden')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Details zu Claude CLI' }));
+    expect(screen.getByText(/Anmeldung wird von deiner normalen Claude-CLI verwaltet/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Erneut anmelden' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Für Aufträge deaktivieren' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Zurück' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Alle Profile anzeigen' }));
+    expect(screen.getByRole('button', { name: 'zusatz anmelden' })).toBeInTheDocument();
+    expect(commands(null).some(command => command.startsWith('auth start'))).toBe(false);
+  });
   it('shows local accounts with 5-hour ring, weekly bar and the default Codex login', async () => {
     const local = status([
       codexAccount('@codex-default', { managed: false, enabled: false, email: 'privat@example.com' }),

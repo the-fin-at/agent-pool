@@ -319,6 +319,12 @@ impl Db {
             if !columns.iter().any(|c| c == "auth_home") {
                 tx.execute("ALTER TABLE profiles ADD COLUMN auth_home TEXT", [])?;
             }
+            if !columns.iter().any(|c| c == "auth_mode") {
+                tx.execute(
+                    "ALTER TABLE profiles ADD COLUMN auth_mode TEXT NOT NULL DEFAULT 'directory'",
+                    [],
+                )?;
+            }
             tx.commit()?;
         }
         private_file(&path)?;
@@ -474,6 +480,46 @@ impl Db {
         self.profile(name)?;
         self.update("profiles", "name", name, &values, PROFILE_FIELDS, None)?;
         Ok(())
+    }
+
+    /// References the native default account; never creates or changes its directory.
+    pub fn add_native_claude(&mut self, dir: &Path) -> Result<String> {
+        let dir = canonical(dir)?;
+        ensure!(dir.is_dir(), "Native Claude directory is unavailable");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+            ensure!(
+                dir.metadata()?.uid() == unsafe { libc::getuid() },
+                "Native Claude directory must belong to the current user"
+            );
+        }
+        let tx = self
+            .conn
+            .transaction_with_behavior(TransactionBehavior::Immediate)?;
+        let existing: Option<String> = tx
+            .query_row(
+                "SELECT name FROM profiles WHERE auth_mode='native_default' AND provider='claude'",
+                [],
+                |r| r.get(0),
+            )
+            .optional()?;
+        if let Some(name) = existing {
+            return Ok(name);
+        }
+        let mut name = "claude-default".to_string();
+        let mut suffix = 2;
+        while tx
+            .query_row("SELECT 1 FROM profiles WHERE name=?", [&name], |_| Ok(()))
+            .optional()?
+            .is_some()
+        {
+            name = format!("claude-default-{suffix}");
+            suffix += 1;
+        }
+        tx.execute("INSERT INTO profiles(name,provider,binary,auth_home,auth_mode,enabled) VALUES(?,'claude','claude',?,'native_default',1)", params![name,dir.to_string_lossy()])?;
+        tx.commit()?;
+        Ok(name)
     }
 
     fn update(

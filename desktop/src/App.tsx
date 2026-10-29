@@ -11,7 +11,7 @@ import { TopBar, type Scope } from './components/TopBar';
 import { Button } from './components/ui';
 import { Fleet } from './fleet';
 import { useMediaQuery, useNow } from './hooks';
-import { formatClock } from './quota';
+import { connectedAccountCount, formatClock } from './quota';
 import type { Account, RemoteMap, StatusData, Target } from './types';
 
 export interface Timing {
@@ -185,7 +185,7 @@ export function App({ transport, timing: override }: { transport: Transport; tim
       let summary: ConnectionSummary;
       try {
         const data = await fleet.remoteStatus(name);
-        summary = { state: 'ok', connected: data.accounts.filter((a) => a.connected).length, workerOnline: data.worker?.online ?? null };
+        summary = { state: 'ok', connected: connectedAccountCount(data.accounts), workerOnline: data.worker?.online ?? null };
       } catch (error) {
         summary = { state: 'error', error: errorMessage(error) };
       }
@@ -278,7 +278,7 @@ export function App({ transport, timing: override }: { transport: Transport; tim
   const onConnectionSaved = (origin: number, name: string, status: StatusData) => {
     void reloadRemotes();
     probeTokens.current[name] = ++probeSeq.current;
-    setSummaries((s) => ({ ...s, [name]: { state: 'ok', connected: status.accounts.filter((a) => a.connected).length, workerOnline: status.worker?.online ?? null } }));
+    setSummaries((s) => ({ ...s, [name]: { state: 'ok', connected: connectedAccountCount(status.accounts), workerOnline: status.worker?.online ?? null } }));
     if (pageRef.current === 'connect' && formRef.current === origin) switchContext('remote', name);
   };
 

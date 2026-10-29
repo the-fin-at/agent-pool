@@ -21,6 +21,14 @@
     assert(document.body.textContent.includes('Agent Fleet'), 'Product name rendered in native WebView');
     assert(!document.body.textContent.includes('Vorschaudaten'), 'Production transport has no demo fallback');
     assert(document.querySelectorAll('article.card').length >= 3, 'Existing profiles rendered from legacy SQLite');
+    await wait(() => [...document.querySelectorAll('h3')].some(h => h.textContent === 'Claude CLI'), 'automatic native Claude discovery');
+    const discovered = await invoke('fleet_request', {target:null, argv:['overview']});
+    const defaultAccount = discovered.accounts.find(a => a.auth_mode === 'native_default');
+    assert(defaultAccount?.connected && defaultAccount?.enabled, 'Existing CLI login is discovered and enabled automatically');
+    await click('Details zu Claude CLI');
+    assert(document.body.textContent.includes('Anmeldung wird von deiner normalen Claude-CLI verwaltet'), 'Default login ownership and shared logout are visible');
+    assert(button('Erneut anmelden') === undefined && button('Für Aufträge deaktivieren') !== undefined, 'Default CLI login has scheduling control without global reauthentication');
+    await click('Zurück');
     assert(document.documentElement.scrollWidth <= window.innerWidth + 2, 'Native overview has no horizontal overflow');
     const accounts = await invoke('fleet_request', {target:null, argv:['overview']});
     for (const account of accounts.accounts.filter(a => a.connected)) {
@@ -29,8 +37,15 @@
       const card = [...document.querySelectorAll('article.card')].find(c => c.querySelector('h3')?.textContent === account.name);
       assert(card?.querySelector('[role="img"]')?.getAttribute('aria-label')?.startsWith((100-window.used)+' % frei'), 'Rust quota matches native UI percentage for '+account.name);
     }
-    const ringTops = [...document.querySelectorAll('article.card [role="img"]')].map(e => Math.round(e.getBoundingClientRect().top));
-    assert(ringTops.length >= 3 && Math.max(...ringTops)-Math.min(...ringTops) <= 2, 'Native quota circles stay aligned with long account email addresses');
+    // Capture the actual overview even if a later geometry assertion fails.
+    await delay(13000);
+    const rows = new Map();
+    for (const card of document.querySelectorAll('article.card')) {
+      const row = Math.round(card.getBoundingClientRect().top);
+      const ring = card.querySelector('[role="img"]');
+      if (ring) rows.set(row, [...(rows.get(row) || []), Math.round(ring.getBoundingClientRect().top)]);
+    }
+    assert([...rows.values()].every(tops => Math.max(...tops)-Math.min(...tops) <= 2), 'Native quota circles stay aligned within each grid row');
     const original = await invoke('fleet_request', {target:null, argv:['job','list']});
     assert(original.length === 1, 'Real Rust IPC reads existing queue');
     const detail = await invoke('fleet_request', {target:null, argv:['job','get', original[0].id]});
@@ -41,11 +56,9 @@
     refused = false;
     try { await invoke('open_login_url', {url:'https://claude.com.attacker.invalid/'}); } catch { refused = true; }
     assert(refused, 'Native bridge rejects unofficial login URLs');
-    // Keep overview visible long enough for an actual window capture.
-    await delay(13000);
     await click('Claude');
-    await wait(() => document.querySelectorAll('article.card').length === 1, 'Claude provider filter');
-    assert(document.querySelector('article.card').textContent.includes('team'), 'Provider filter shows existing Claude profile');
+    await wait(() => document.querySelectorAll('article.card').length === 2, 'Claude provider filter');
+    assert([...document.querySelectorAll('article.card')].some(card => card.textContent.includes('team')), 'Provider filter retains the separate managed Claude profile');
     await click('Alle Accounts');
     const search = await wait(() => document.querySelector('[aria-label="Accounts durchsuchen"]'), 'search');
     setInput(search, 'nothing-matches-native-fixture');
@@ -96,8 +109,12 @@
     profiles = await invoke('fleet_request', {target:null, argv:['profile','list']});
     assert(Boolean(profiles.find(p => p.name === 'login-claude').enabled), 'Provider-confirmed Claude login enables the existing profile');
     await click('Zur Übersicht');
+    const finalAccounts = await invoke('fleet_request', {target:null, argv:['overview','--refresh']});
+    assert(finalAccounts.accounts.filter(a => a.auth_mode === 'native_default').length === 1, 'Additional native login leaves exactly one connected default reference');
+    assert(finalAccounts.accounts.find(a => a.auth_mode === 'native_default')?.connected, 'Additional Claude login preserves the original default CLI authentication');
     await invoke('test_report', {result:{passed:true, platform:'macOS WKWebView + Rust IPC', checks, viewport:{width:innerWidth,height:innerHeight}}});
   } catch (error) {
-    await invoke('test_report', {result:{passed:false, checks, error:String(error), text:document.body.innerText.slice(0,6000)}});
+    const geometry = [...document.querySelectorAll('article.card')].map(card => ({name:card.querySelector('h3')?.textContent,top:card.getBoundingClientRect().top,identityHeight:card.querySelector('.identity')?.getBoundingClientRect().height,ringTop:card.querySelector('[role="img"]')?.getBoundingClientRect().top}));
+    await invoke('test_report', {result:{passed:false, checks, error:String(error), geometry, text:document.body.innerText.slice(0,6000)}});
   }
 })();

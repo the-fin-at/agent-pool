@@ -170,7 +170,7 @@ button:disabled { cursor: default; }
   .card-grid > li:first-child { border-top: 0; padding-top: 0; }
 }
 .card { display: flex; flex-direction: column; gap: 14px; height: 100%; }
-.identity { display: flex; gap: 14px; align-items: flex-start; min-height: 112px; }
+.identity { display: flex; gap: 14px; align-items: flex-start; min-height: 144px; }
 .avatar { width: 68px; height: 68px; flex: none; border-radius: 50%; background: var(--raised); display: grid; place-items: center; }
 .identity-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .account-name { font-size: 23px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }

@@ -175,6 +175,11 @@ export function providerLabel(provider: string): string {
   return provider === 'codex' ? 'Codex' : provider === 'claude' ? 'Claude' : provider;
 }
 
+/** Verified aliases of a native Claude login share one subscription. */
+export function connectedAccountCount(accounts: Account[]): number {
+  return new Set(accounts.filter(account => account.connected).map(account => `${account.provider}:${account.alias_of ?? account.name}`)).size;
+}
+
 /** Same ordering as 0.4.1: connected first, the monitor-only default before profiles, then name. */
 export function sortAccounts(accounts: Account[]): Account[] {
   return [...accounts].sort((a, b) =>

@@ -1,12 +1,351 @@
 //! Account read model. Cached observations stay explicit when a refresh fails.
-use crate::db::{now, truth, Db, ATTACHED_PROFILE_UNAVAILABLE};
+use crate::db::{now, row_json, truth, Db, ATTACHED_PROFILE_UNAVAILABLE};
 use crate::provider::{codex_status, redact};
-use anyhow::Result;
+use anyhow::{ensure, Result};
+use rusqlite::OptionalExtension;
 use serde_json::{json, Map, Value};
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 pub const DEFAULT_SOURCE: &str = "@codex-default";
+
+pub fn native_default(profile: &Value) -> bool {
+    profile["provider"] == "claude" && profile["auth_mode"] == "native_default"
+}
+
+/// Only verified Claude subscription identities can associate a default with its aliases.
+pub fn identity(data: &Value) -> Option<String> {
+    if data["connected"] != true {
+        return None;
+    }
+    data["email"]
+        .as_str()
+        .map(|s| s.trim().to_lowercase())
+        .filter(|s| !s.is_empty())
+}
+
+pub fn claude_group(db: &Db, profile: &Value) -> Result<Vec<Value>> {
+    if profile["provider"] != "claude" {
+        return Ok(vec![profile.clone()]);
+    }
+    let Some(account) = identity(&db.cached(profile["name"].as_str().unwrap_or_default())?) else {
+        return Ok(vec![profile.clone()]);
+    };
+    let profiles = db.profiles()?;
+    let mut group = Vec::new();
+    for other in profiles.into_iter().filter(|p| p["provider"] == "claude") {
+        if identity(&db.cached(other["name"].as_str().unwrap_or_default())?)
+            == Some(account.clone())
+        {
+            group.push(other);
+        }
+    }
+    if group.iter().any(native_default) {
+        Ok(group)
+    } else {
+        Ok(vec![profile.clone()])
+    }
+}
+
+/// Preserve known subscription constraints before any alias can change identity.
+/// All reads/writes share one SQLite transaction; timestamps remain observations,
+/// not the time this metadata is copied. No credentials or activation flags change.
+pub fn coalesce_claude(db: &mut Db) -> Result<()> {
+    if !db.profiles()?.iter().any(native_default) {
+        return Ok(());
+    }
+    let tx = db
+        .conn
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+    coalesce_in_transaction(&tx)?;
+    tx.commit()?;
+    Ok(())
+}
+
+fn coalesce_in_transaction(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+    let profiles = {
+        let mut stmt =
+            tx.prepare("SELECT * FROM profiles WHERE provider='claude' ORDER BY name")?;
+        let rows = stmt.query_map([], row_json)?;
+        rows.collect::<rusqlite::Result<Vec<_>>>()?
+    };
+    let caches: HashMap<String, Value> = {
+        let mut stmt = tx.prepare("SELECT source,data FROM monitor_cache")?;
+        let rows = stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?;
+        rows.map(|row| {
+            let (name, raw) = row?;
+            Ok((name, serde_json::from_str(&raw)?))
+        })
+        .collect::<Result<_>>()?
+    };
+    let Some(account) = profiles
+        .iter()
+        .find(|p| native_default(p))
+        .and_then(|p| caches.get(p["name"].as_str().unwrap_or_default()))
+        .and_then(identity)
+    else {
+        return Ok(());
+    };
+    let group: Vec<_> = profiles
+        .iter()
+        .filter(|p| {
+            caches
+                .get(p["name"].as_str().unwrap_or_default())
+                .and_then(identity)
+                == Some(account.clone())
+        })
+        .collect();
+    if group.len() < 2 {
+        return Ok(());
+    }
+    let at = now();
+    let strength = |window: &Value| {
+        (
+            window["reset"].as_f64().is_none_or(|reset| reset > at),
+            window["used"].as_f64().unwrap_or(-1.0),
+            window["reset"].as_f64().unwrap_or(f64::INFINITY),
+        )
+    };
+    let mut windows: BTreeMap<String, (Value, Option<f64>)> = BTreeMap::new();
+    let mut hold: Option<(&str, Option<f64>)> = None;
+    for profile in &group {
+        let name = profile["name"].as_str().unwrap_or_default();
+        let observed = profile["observed_at"].as_f64();
+        let mut stmt = tx.prepare("SELECT key,data FROM windows WHERE profile=?")?;
+        let rows = stmt.query_map([name], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })?;
+        for row in rows {
+            let (key, raw) = row?;
+            let window: Value = serde_json::from_str(&raw)?;
+            if windows
+                .get(&key)
+                .is_none_or(|(old, _)| strength(&window) > strength(old))
+            {
+                windows.insert(key, (window, observed));
+            }
+        }
+        if let Some(reason) = profile["hold_reason"]
+            .as_str()
+            .filter(|reason| matches!(*reason, "quota" | "quota_reset_unknown"))
+        {
+            let until = profile["hold_until"].as_f64();
+            if until.is_none_or(|until| until > at)
+                && hold.is_none_or(|(_, old)| {
+                    until.unwrap_or(f64::INFINITY) > old.unwrap_or(f64::INFINITY)
+                })
+            {
+                hold = Some((reason, until));
+            }
+        }
+    }
+    let observed = windows
+        .values()
+        .map(|(_, time)| *time)
+        .try_fold(f64::INFINITY, |old, time| time.map(|time| old.min(time)))
+        .filter(|time| time.is_finite());
+    let values: Vec<_> = windows.values().map(|(window, _)| window.clone()).collect();
+    for profile in group {
+        let name = profile["name"].as_str().unwrap_or_default();
+        let mut changed = false;
+        for (key, (window, _)) in &windows {
+            let existing: Option<String> = tx
+                .query_row(
+                    "SELECT data FROM windows WHERE profile=? AND key=?",
+                    rusqlite::params![name, key],
+                    |r| r.get(0),
+                )
+                .optional()?;
+            if existing
+                .as_ref()
+                .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
+                .as_ref()
+                != Some(window)
+            {
+                tx.execute(
+                    "INSERT OR REPLACE INTO windows(profile,key,data) VALUES(?,?,?)",
+                    rusqlite::params![name, key, window.to_string()],
+                )?;
+                changed = true;
+            }
+        }
+        if changed {
+            tx.execute(
+                "UPDATE profiles SET observed_at=? WHERE name=?",
+                rusqlite::params![observed, name],
+            )?;
+        }
+        if let Some((reason, until)) = hold {
+            if profile["hold_reason"].is_null()
+                || matches!(
+                    profile["hold_reason"].as_str(),
+                    Some("quota" | "quota_reset_unknown")
+                )
+            {
+                tx.execute(
+                    "UPDATE profiles SET hold_reason=?,hold_until=? WHERE name=?",
+                    rusqlite::params![reason, until, name],
+                )?;
+            }
+        }
+        if let Some(mut cache) = caches.get(name).cloned() {
+            cache["windows"] = json!(values);
+            cache["observed_at"] = json!(observed);
+            tx.execute(
+                "INSERT OR REPLACE INTO monitor_cache(source,data) VALUES(?,?)",
+                rusqlite::params![name, cache.to_string()],
+            )?;
+        }
+    }
+    Ok(())
+}
+
+/// Publish verified native Claude metadata through the same identity transition
+/// for refreshes and both login paths. Old-account limits stay with its aliases;
+/// the changed directory never inherits them. Reauthentication is not a quota reset.
+pub fn publish_claude_identity(db: &mut Db, name: &str, data: &Value) -> Result<Value> {
+    ensure!(
+        data["connected"].is_boolean(),
+        "Die Claude-CLI bestätigt keinen gültigen Anmeldestatus"
+    );
+    ensure!(
+        data["connected"] != true || identity(data).is_some(),
+        "Die Claude-CLI bestätigt keine Accountidentität; bitte aktualisieren"
+    );
+    let tx = db
+        .conn
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+    coalesce_in_transaction(&tx)?;
+    let raw: Option<String> = tx
+        .query_row(
+            "SELECT data FROM monitor_cache WHERE source=?",
+            [name],
+            |r| r.get(0),
+        )
+        .optional()?;
+    let old: Value = raw
+        .map(|raw| serde_json::from_str(&raw))
+        .transpose()?
+        .unwrap_or(json!({}));
+    let same = identity(&old).is_some() && identity(&old) == identity(data);
+    let changed = data["connected"] == false || (old["email"].is_string() && !same);
+    let profile = tx.query_row("SELECT * FROM profiles WHERE name=?", [name], row_json)?;
+    ensure!(
+        profile["provider"] == "claude",
+        "Claude identity transition requires a Claude profile"
+    );
+    if changed {
+        tx.execute("DELETE FROM windows WHERE profile=?", [name])?;
+        tx.execute("UPDATE profiles SET observed_at=NULL,checked_at=NULL,quota_error=NULL,hold_until=CASE WHEN hold_reason IN ('quota','quota_reset_unknown') THEN NULL ELSE hold_until END,hold_reason=CASE WHEN hold_reason IN ('quota','quota_reset_unknown') THEN NULL ELSE hold_reason END WHERE name=?",[name])?;
+    }
+    let mut fresh = Map::new();
+    for key in [
+        "connected",
+        "email",
+        "plan",
+        "account_type",
+        "error",
+        "checked_at",
+    ] {
+        fresh.insert(key.into(), data.get(key).cloned().unwrap_or(Value::Null));
+    }
+    let windows = if !changed {
+        let mut stmt = tx.prepare("SELECT data FROM windows WHERE profile=? ORDER BY key")?;
+        let rows = stmt.query_map([name], |r| r.get::<_, String>(0))?;
+        rows.map(|row| Ok(serde_json::from_str::<Value>(&row?)?))
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        vec![]
+    };
+    fresh.insert("windows".into(), json!(windows));
+    fresh.insert(
+        "observed_at".into(),
+        if changed {
+            Value::Null
+        } else {
+            profile["observed_at"].clone()
+        },
+    );
+    let fresh = Value::Object(fresh);
+    tx.execute(
+        "INSERT OR REPLACE INTO monitor_cache(source,data) VALUES(?,?)",
+        rusqlite::params![name, fresh.to_string()],
+    )?;
+    tx.commit()?;
+    Ok(fresh)
+}
+
+/// Refresh identity before claiming work, never import an undiscovered account here.
+pub fn refresh_claude(home: &Path) -> Result<()> {
+    let mut db = Db::open(home)?;
+    if !db.profiles()?.iter().any(native_default) {
+        return Ok(());
+    }
+    coalesce_claude(&mut db)?;
+    let items = sources(&db, false)?
+        .into_iter()
+        .filter(|p| p["provider"] == "claude")
+        .collect();
+    refresh_sources(home, items, &*native_probe());
+    Ok(())
+}
+
+/// Preserve the worker's metadata-only Codex refresh; Claude is checked before Claude work.
+pub fn refresh_codex(home: &Path) -> Result<()> {
+    let db = Db::open(home)?;
+    let items = sources(&db, false)?
+        .into_iter()
+        .filter(|p| p["provider"] == "codex")
+        .collect();
+    refresh_sources(home, items, &*native_probe());
+    Ok(())
+}
+
+/// Local desktop discovery only. A logged-out/missing default never creates a profile or directory.
+fn discover_claude(home: &Path) -> Result<()> {
+    let mut db = Db::open(home)?;
+    if db.profiles()?.iter().any(native_default) {
+        return Ok(());
+    }
+    let dir = dirs::home_dir().unwrap_or_default().join(".claude");
+    if !dir.is_dir() {
+        return Ok(());
+    }
+    let source = json!({"provider":"claude","binary":"claude","auth_mode":"native_default"});
+    let Ok(data) = claude_status(&source, &dir) else {
+        return Ok(());
+    };
+    if truth(&data["connected"]) {
+        let name = db.add_native_claude(&dir)?;
+        publish_claude_identity(&mut db, &name, &data)?;
+    }
+    Ok(())
+}
+
+fn claude_status(profile: &Value, dir: &Path) -> Result<Value> {
+    let data = crate::login::check_claude_directory(profile, dir)?;
+    let logged_in = data["loggedIn"]
+        .as_bool()
+        .ok_or_else(|| anyhow::anyhow!("Die Claude-CLI bestätigt keinen gültigen Anmeldestatus"))?;
+    let method = data["authMethod"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| anyhow::anyhow!("Die Claude-CLI bestätigt keine gültige Anmeldemethode"))?;
+    ensure!(
+        logged_in == (method != "none"),
+        "Die Claude-CLI meldet einen widersprüchlichen Anmeldestatus"
+    );
+    let connected = logged_in && method == "claude.ai";
+    ensure!(
+        !connected || data["email"].as_str().is_some_and(|s| !s.trim().is_empty()),
+        "Die Claude-CLI bestätigt keine Accountidentität; bitte aktualisieren"
+    );
+    Ok(
+        json!({"connected":connected,"email":if connected { data["email"].clone() }else{Value::Null},
+        "plan":if connected {data["subscriptionType"].clone()}else{Value::Null},"account_type":"claude.ai","error":null}),
+    )
+}
 
 pub type Probe = dyn Fn(&Value, &Path) -> Result<Value> + Send + Sync;
 
@@ -68,7 +407,7 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
         } else {
             PathBuf::from(source["authdir"].as_str().unwrap_or_default())
         };
-        if source["provider"] == "claude" {
+        if source["provider"] == "claude" && !db.profiles()?.iter().any(native_default) {
             // A restored directory retires only its own registration error.
             if old["error"] == ATTACHED_PROFILE_UNAVAILABLE {
                 old["error"] = Value::Null;
@@ -76,7 +415,17 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             }
             return Ok(old.clone());
         }
+        let _lease = if source["provider"] == "claude" {
+            Some(crate::db::Lease::acquire(&authdir.join(".native.lock"))?)
+        } else {
+            None
+        };
         let data = probe(source, &authdir)?;
+        let same_account = if source["provider"] == "claude" {
+            identity(&old).is_some() && identity(&old) == identity(&data)
+        } else {
+            old.get("email") == data.get("email") && truth(get(&old, "connected"))
+        };
         let mut fresh = Map::new();
         for k in ["connected", "email", "plan", "account_type", "error"] {
             fresh.insert(k.into(), get(&data, k).clone());
@@ -93,10 +442,15 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
                 }
             }
         } else if truth(&fresh["connected"]) {
-            let same = old.get("email") == fresh.get("email") && truth(get(&old, "connected"));
+            let same = same_account;
+            let worker_newer = managed
+                && source["observed_at"].as_f64().unwrap_or(0.0)
+                    > old["checked_at"].as_f64().unwrap_or(0.0);
             fresh.insert(
                 "windows".into(),
-                if same {
+                if same && worker_newer {
+                    json!(db.windows(&name)?)
+                } else if same {
                     old.get("windows").cloned().unwrap_or(json!([]))
                 } else {
                     json!([])
@@ -104,7 +458,9 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             );
             fresh.insert(
                 "observed_at".into(),
-                if same {
+                if same && worker_newer {
+                    source["observed_at"].clone()
+                } else if same {
                     get(&old, "observed_at").clone()
                 } else {
                     Value::Null
@@ -115,8 +471,12 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             fresh.insert("observed_at".into(), Value::Null);
         }
         let fresh = Value::Object(fresh);
-        db.cache(&name, &fresh)?;
-        Ok(fresh)
+        if source["provider"] == "claude" {
+            publish_claude_identity(&mut db, &name, &fresh)
+        } else {
+            db.cache(&name, &fresh)?;
+            Ok(fresh)
+        }
     })();
     match attempt {
         Ok(v) => Ok(v),
@@ -137,15 +497,27 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
 }
 
 pub fn native_probe() -> Box<Probe> {
-    Box::new(|source: &Value, dir: &Path| codex_status(source, dir))
+    Box::new(|source: &Value, dir: &Path| {
+        if source["provider"] == "claude" {
+            claude_status(source, dir)
+        } else {
+            codex_status(source, dir)
+        }
+    })
 }
 
 /// Refreshes all sources with at most three concurrent metadata reads.
 pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result<Vec<Value>> {
     let items = {
-        let db = Db::open(home)?;
+        let mut db = Db::open(home)?;
+        coalesce_claude(&mut db)?;
         sources(&db, include_default)?
     };
+    refresh_sources(home, items, probe);
+    snapshot(home, include_default)
+}
+
+fn refresh_sources(home: &Path, items: Vec<Value>, probe: &Probe) {
     let queue = Arc::new(Mutex::new(items));
     std::thread::scope(|scope| {
         for _ in 0..3 {
@@ -157,10 +529,12 @@ pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result
             });
         }
     });
-    snapshot(home, include_default)
 }
 
 pub fn collect(home: &Path, include_default: bool) -> Result<Vec<Value>> {
+    if include_default {
+        discover_claude(home)?;
+    }
     collect_with(home, include_default, &*native_probe())
 }
 
@@ -196,6 +570,13 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
             "checked_at": get(&cached, "checked_at"), "error": get(&cached, "error"),
             "hold_reason": source["hold_reason"], "hold_until": source["hold_until"],
         }));
+        if native_default(&source) {
+            let account = result.last_mut().unwrap();
+            account["auth_mode"] = json!("native_default");
+            account["display_name"] = json!("Claude CLI");
+        } else if let Some(default) = claude_group(&db, &source)?.into_iter().find(native_default) {
+            result.last_mut().unwrap()["alias_of"] = default["name"].clone();
+        }
     }
     Ok(result)
 }

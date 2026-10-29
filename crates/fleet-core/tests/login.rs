@@ -185,7 +185,13 @@ fn device_login_round_trip_enables_and_refreshes_read_model() {
         .unwrap();
     let k = key();
     login::start_with(&pool.home, "test-codex", "codex", &k, &in_process).unwrap();
-    let data = wait_state(&pool, &k, &["awaiting_browser"]);
+    // The CLI publishes URL and device code on separate lines. Await the
+    // complete public instruction rather than its intermediate URL-only state.
+    let mut data = json!(null);
+    assert!(wait_until(15.0, || {
+        data = login::status(&pool.home, &k).unwrap();
+        data["state"] == "awaiting_browser" && data["device_code"].is_string()
+    }));
     assert_eq!(data["device_code"], "ABCD-EFGHI");
     assert!(!db.profile("test-codex").unwrap()["enabled"]
         .as_i64()
