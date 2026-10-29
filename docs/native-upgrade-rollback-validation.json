@@ -32,18 +32,19 @@
     "Final profile identities/auth sentinels remain intact"
   ],
   "database_restored": false,
-  "elapsed_seconds": 12.009,
+  "elapsed_seconds": 9.597,
   "host": "claw-remote",
   "identities_preserved": true,
   "invocation_count": 5,
   "job_count": 5,
   "limits": [
+    "Pending-work handover with idle workers; no actively executing-job transition",
     "Standalone owned workers, not a systemd service transition",
     "Controlled provider only; no real inference or credentials",
     "Linux x86_64 execution; not native Windows acceptance",
     "Programme-only rollback of the same pool; no database snapshot restore"
   ],
-  "observed_at": "2026-10-29T06:40:03.749608+00:00",
+  "observed_at": "2026-10-29T06:50:42.151195+00:00",
   "passed": true,
   "phases": [
     {
@@ -76,14 +77,15 @@
   "public_cli_safety_tests": {
     "failed": 0,
     "initial_red": "existing-pool ancestor was incorrectly accepted by the initial preflight-only scaffold",
-    "passed": 6
+    "passed": 7,
+    "review_regression_red": "lease-only pool ancestor containing the runtime worker.lock was incorrectly accepted before the guard correction"
   },
   "schema_version": 1,
-  "scope": "isolated controlled-provider CLI handover; no production state or real inference",
+  "scope": "isolated pending-work controlled-provider CLI handover; no active-job transition, production state or real inference",
   "source": {
     "base": "79f2199b7d1201bd3ac12d178dcf82d143c387b5",
-    "implementation_commit": "4982d889d1be4fc4ce3533ce5b951c558d45021f",
-    "script_sha256": "b1208404519a4c16c2396724274bc9c9434ae7f453a585a66d82801faebbd5f5"
+    "implementation_commit": "4368c158a467c30de1b5d4cb2a725201e5240b7b",
+    "script_sha256": "31ba170a12551ceeff29cc60cd4bee1cce01367bc4a7a26c70e20005f86ad9cc"
   },
   "terminal_counts": {
     "needs_review": 1,

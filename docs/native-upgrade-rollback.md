@@ -1,7 +1,7 @@
 # Actual-programme upgrade and rollback acceptance
 
 On 29 October 2026, the opt-in harness at implementation commit
-`4982d889d1be4fc4ce3533ce5b951c558d45021f` completed an isolated round trip on
+`4368c158a467c30de1b5d4cb2a725201e5240b7b` completed an isolated round trip on
 Linux x86_64. The [normalized evidence](native-upgrade-rollback-validation.json)
 binds the source hash and actual executable hashes. This closes the pending-work
 binary-handover proof in the [1.0 plan](../wiki/release-1.0.md); it is not a claim
@@ -23,7 +23,7 @@ private store methods. It runs the **actual programme backed up during the
 production cutover**, rather than rebuilding the current Python oracle (which
 contains later fixes). Both versions use one newly created disposable pool.
 
-The measured round trip passed 30 checks in 12.009 seconds:
+The measured round trip passed 30 checks in 9.597 seconds:
 
 - All five job IDs and idempotency keys survived. Completed results and attempts
   were retained; the native result remained readable through old RPC v1.
@@ -67,7 +67,8 @@ environment points HOME, CODEX_HOME and CLAUDE_CONFIG_DIR into the new scratch
 area and removes ambient API billing configuration and PYTHONPATH.
 
 The harness rejects reused scratch paths, an ancestor containing `queue.sqlite3`
-or `.worker.lock`, binary-hash/version mismatch, and an ordinary provider CLI.
+or `worker.lock` (the lease filename used by both runtimes), binary-hash/version
+mismatch, and an ordinary provider CLI.
 Source executables are read, not replaced; private active copies are switched
 atomically. Known controlled processes are stopped; pool data, logs and
 `report.json` remain for inspection. Remove only that explicitly selected test
@@ -80,15 +81,21 @@ python3 tests/real-host/test_native_upgrade_rollback.py
 python3 -m py_compile scripts/test_native_upgrade_rollback.py
 ```
 
-The six safety cases use version-only executable fixtures. They prove the
+The seven safety cases use version-only executable fixtures. They prove the
 harness's rejection/no-write behavior, not binary compatibility. The actual
 Linux integration run supplies that separate evidence. The first safety case was
 red against the initial preflight-only scaffold and green after path isolation
-was implemented.
+was implemented. Review found that a lease-only pool ancestor was incorrectly
+accepted because the guard used a different filename. A public CLI regression
+test reproduced that failure with the actual `worker.lock` contract, then passed
+after the guard was corrected; the lease contents, inode, modification time and
+directory inventory remain unchanged.
 
 ## Boundaries
 
 This probe does not stop or change a systemd unit and does not use the live pool.
+It covers pending-work handover with owned idle workers. It does not transition
+an actively executing job between programmes; that remains a separate 1.0 gate.
 The production cutover's service, backup and original-account/job verification
 are separate operational evidence. This Linux result does not establish native
 Windows installation, timeout/descendant behavior or GUI acceptance, and it does
