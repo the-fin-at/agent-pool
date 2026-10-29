@@ -1,0 +1,148 @@
+{
+  "recorded_on": "2026-10-29",
+  "repository_reference": "the-fin-at/agent-pool@ada7c015fbd697d6cda94b312d11a19c8d60d3dd",
+  "issue": "https://github.com/the-fin-at/agent-pool/issues/35",
+  "issue_state_at_checkpoint": "open",
+  "original_attempt": {
+    "source": "Human confirmation and saved-session diagnosis in Chief-of-Staff chat 01a18453-50f4-7463-a3a6-9a45c56297d7",
+    "code_entered_in_app_and_finish_clicked_human_confirmed": true,
+    "saved_terminal_state": "cancelled",
+    "cancellation_caller_known": false,
+    "native_response_retained": false,
+    "exact_historical_cause_proven": false
+  },
+  "invalid_code_diagnosis": {
+    "scope": "controlled-provider protocol through actual public native Fleet CLI; not real-provider OAuth or GUI reproduction",
+    "fleet_version": "0.5.0",
+    "fleet_cli_sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+    "product_source_review_reference": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "upstream_claude_version": "2.1.312",
+    "upstream_claude_binary_sha256": "6b5ec691195e551b02c41df9f7d723f4ea61eaa03c2df90acefe3736f1aeb620",
+    "upstream_static_branch": "missing code/state component reports rejection and waits for corrected stdin without repeating prompt",
+    "upstream_static_only_no_oauth": true,
+    "independent_review_confirmed": true,
+    "runs": [
+      {
+        "fleet_version": "0.5.0",
+        "input_accepted": true,
+        "states_observed_after_input": [
+          "verifying"
+        ],
+        "second_input_exit": 1,
+        "second_input_blocked_by_state": true,
+        "provider_continues_waiting": true,
+        "expected_retryable_state": "awaiting_code",
+        "actual_state": "verifying",
+        "assertion_passed": false,
+        "cleanup": {
+          "session_state": "cancelled",
+          "provider_running": false,
+          "only_owned_pool_touched": true,
+          "real_claude_oauth_started": false,
+          "runtime_removed": true
+        }
+      },
+      {
+        "fleet_version": "0.5.0",
+        "input_accepted": true,
+        "states_observed_after_input": [
+          "verifying"
+        ],
+        "second_input_exit": 1,
+        "second_input_blocked_by_state": true,
+        "provider_continues_waiting": true,
+        "expected_retryable_state": "awaiting_code",
+        "actual_state": "verifying",
+        "assertion_passed": false,
+        "cleanup": {
+          "session_state": "cancelled",
+          "provider_running": false,
+          "only_owned_pool_touched": true,
+          "real_claude_oauth_started": false,
+          "runtime_removed": true
+        }
+      }
+    ],
+    "source_bindings": [
+      {
+        "artifact": "static-proof.json",
+        "sha256": "da14dcaae493f8f488bc93823d449221d8425f1d51f417ac9975fae2a052f51b"
+      },
+      {
+        "artifact": "proof-run1.json",
+        "sha256": "cb194e862807d23f9e419d57b32c51e4ccded37fdd94c8cb05725b01754e4049"
+      },
+      {
+        "artifact": "proof-run2.json",
+        "sha256": "cb194e862807d23f9e419d57b32c51e4ccded37fdd94c8cb05725b01754e4049"
+      }
+    ]
+  },
+  "actual_successful_login": {
+    "source_binding": {
+      "artifact": "actual-flow-2-success-proof.json",
+      "sha256": "b572959b11d0daa9c26ef01e9e850b70a736e9dd274841a1d7b054c5913a851d"
+    },
+    "observed_at_utc": "2026-10-29T15:45:18.926132+00:00",
+    "final_verified_at_utc": "2026-10-29T15:46:52.231136+00:00",
+    "installed_version": "0.5.0",
+    "installed_desktop_sha256": "8d38dbaff79a2cfb8f63cee88d8543e89e1c9b2447284641360d12a85951af5c",
+    "installed_cli_sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+    "existing_local_profile_reused": true,
+    "official_browser_authorization_completed": true,
+    "full_return_code_format": {
+      "contains_separator": true,
+      "both_parts_present": true
+    },
+    "code_transfer": "Official browser copy action to masked native app field; no code retained in evidence",
+    "finish_clicked": true,
+    "app_success_message_seen": true,
+    "app_connected_claude_count": 1,
+    "intended_profile_enabled": true,
+    "quota": "unknown",
+    "completion_probe": {
+      "session_state": "succeeded",
+      "cached_connected": true,
+      "fleet_connected": true,
+      "fleet_enabled": true,
+      "native_loggedIn": true,
+      "native_authMethod": "claude.ai",
+      "native_config_matches": true,
+      "native_exit": 0,
+      "fleet_status_exit": 0,
+      "login_visible_success_contract": true
+    },
+    "verifying_to_succeeded_seconds": 7.072296857833862,
+    "existing_default_auth": {
+      "exit": 0,
+      "loggedIn": true,
+      "subscription_auth": true,
+      "config_directory_matches_default": true
+    },
+    "doctor_exit": 0,
+    "monitor_refresh_exit": 0,
+    "monitor_claude_connected_count": 1,
+    "monitor_claude_known_window_count": 0,
+    "cleanup": {
+      "watcher_ended_normally": true,
+      "watcher_process_no_longer_running": true,
+      "own_empty_brave_tab_closed": true,
+      "safari_tabs_left_untouched": true,
+      "clipboard_not_read_or_cleared": true,
+      "actual_agent_fleet_overview_raised": true,
+      "app_code_changed": false,
+      "provider_default_directory_changed_by_us": false,
+      "paid_inference_jobs_started": 0,
+      "linux_production_actions": false,
+      "ci_setting_actions": false
+    }
+  },
+  "limitations": [
+    "Successful valid-code login does not disprove the separately reproduced invalid-code retry lockout.",
+    "No app code or binary change was made; issue35 remains unresolved.",
+    "Original failure cause was not reproduced or proven.",
+    "No inference job, Linux production action or CI-setting change occurred.",
+    "Zero known Claude quota windows means unknown quota, not failed authentication.",
+    "Windows, final distribution/signing and 1.0 release decisions remain separate open gates."
+  ]
+}

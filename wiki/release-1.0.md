@@ -186,3 +186,9 @@ Der Produktcode blieb `c47144087d3d7f665600ef0183af1c94dcd5180d`; aus dem Perfor
 | Abschließende 1.0-Entscheidung / offen | Scope/Support, README/Skills/Hilfe, finale Pakete/Installationsbelege und unabhängige Reviews am freizugebenden Kandidaten gemeinsam abgleichen und gesondert freigeben |
 
 Die zuvor abgenommenen Übergabe-/Produktions-/Paketierungsgates bleiben in ihren dokumentierten Grenzen erhalten. Gehostete CI bleibt bewusst deaktiviert und ist kein erneut eingeführtes Pflichtgate. Dieser spätere Performance-Pass veröffentlicht weder den privaten 0.5-Entwurf noch einen 1.0-Release.
+
+## Zusätzlicher Claude-Login-Befund: 2026-10-29
+
+Am unveränderten Produktstand `the-fin-at/agent-pool@ada7c015fbd697d6cda94b312d11a19c8d60d3dd` bestand ein späterer echter Browser→maskiertes-App-Feld→Abschluss-Login mit bestätigter nativer Subscription-Authentifizierung, exaktem Profilpfad, Sitzung `succeeded` und sichtbarem verbundenem/aktiviertem Claude-Account. Zugleich blieb der unabhängig validierte Fehler [Issue #35](https://github.com/the-fin-at/agent-pool/issues/35) offen: Nach sicher zurückgewiesener Codeeingabe ohne neuen Prompt blieb Fleet in zwei isolierten Protokollläufen `verifying` und blockierte korrigierte Eingabe. Der positive vollständige Codepfad ist kein Fix oder Gegenbeweis für diesen Fehler und beweist die Ursache des früheren tatsächlichen Versuchs nicht.
+
+[Incident-Notiz](claude-login-2026-10-29.md) und [normalisierter Nachweis](../docs/claude-login-2026-10-29-validation.json) ergänzen die Matrixgrenze „Native Login/UI“ und den abschließenden 1.0-Befundabgleich. Eine Korrektur samt gezielter Regression ist durch diese Diagnose noch nicht geliefert. Native Windows-Abnahme, endgültiger Vertriebsweg/Signierung und gesonderte Releaseentscheidung bleiben offen; CI bleibt bewusst deaktiviert. Keine kostenpflichtige Inferenz und keine Produktions-Linux-/Programmänderung erfolgte.
