@@ -1,0 +1,109 @@
+{
+  "checks": [
+    "Old worker timeout reaped its controlled descendant",
+    "Old programme created all four required durable states",
+    "Old RPC v1 exposes the completed result before upgrade",
+    "Native programme reads every old job field/result unchanged",
+    "Native RPC v1 retains the old completed job/result",
+    "Native programme retains attached profile identities and directory sentinels",
+    "Native identical retry retains the old job ID",
+    "Native worker executes queued old work exactly once",
+    "Native worker preserves completed-before-upgrade",
+    "Native worker preserves uncertain-before-upgrade",
+    "Native worker retains quota-waiting work without an execution",
+    "Native lease rejects a second worker",
+    "Native lease retains jobs while another runtime owns the lease",
+    "native worker stopped with an expected signal status",
+    "Programme-only rollback retains every pending job/result without DB restore",
+    "Old RPC v1 reads the result written by the native worker",
+    "Rollback retains attached profile mappings and sentinels without re-login",
+    "Old identical retry retains the native-completed job ID",
+    "Old idle worker observes the disabled fixture before lease comparison",
+    "Old lease rejects a second worker",
+    "Old lease retains jobs while another runtime owns the lease",
+    "old worker stopped with an expected signal status",
+    "Rollback never replays needs_review work",
+    "All five durable IDs survive upgrade and rollback",
+    "Final result and one attempt retained for completed-before-upgrade",
+    "Final result and one attempt retained for waiting-across-upgrade",
+    "Final result and one attempt retained for queued-across-upgrade",
+    "Final result and one attempt retained for queued-across-rollback",
+    "Controlled invocation inventory contains each job once including the quarantined timeout",
+    "Final profile identities/auth sentinels remain intact"
+  ],
+  "database_restored": false,
+  "elapsed_seconds": 9.597,
+  "host": "claw-remote",
+  "identities_preserved": true,
+  "invocation_count": 5,
+  "job_count": 5,
+  "limits": [
+    "Pending-work handover with idle workers; no actively executing-job transition",
+    "Standalone owned workers, not a systemd service transition",
+    "Controlled provider only; no real inference or credentials",
+    "Linux x86_64 execution; not native Windows acceptance",
+    "Programme-only rollback of the same pool; no database snapshot restore"
+  ],
+  "observed_at": "2026-10-29T06:50:42.151195+00:00",
+  "passed": true,
+  "phases": [
+    {
+      "programme": "old",
+      "sha256": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+      "version": "0.4.2"
+    },
+    {
+      "programme": "new",
+      "sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+      "version": "0.5.0"
+    },
+    {
+      "programme": "old",
+      "sha256": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+      "version": "0.4.2"
+    }
+  ],
+  "platform": "Linux x86_64",
+  "programme_sha256": {
+    "new": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+    "old": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+    "provider": "ea467ac993276d90f2804f38d8b1ab08964619c658b727faf3bafb34a612c1f6"
+  },
+  "provenance": {
+    "new": "native 0.5 executable matching merged release proof",
+    "old": "actual backed-up production 0.4.2 executable; not rebuilt from current Python source",
+    "provider": "compiled controlled-native-provider-0.5"
+  },
+  "public_cli_safety_tests": {
+    "failed": 0,
+    "initial_red": "existing-pool ancestor was incorrectly accepted by the initial preflight-only scaffold",
+    "passed": 7,
+    "review_regression_red": "lease-only pool ancestor containing the runtime worker.lock was incorrectly accepted before the guard correction"
+  },
+  "schema_version": 1,
+  "scope": "isolated pending-work controlled-provider CLI handover; no active-job transition, production state or real inference",
+  "source": {
+    "base": "79f2199b7d1201bd3ac12d178dcf82d143c387b5",
+    "implementation_commit": "4368c158a467c30de1b5d4cb2a725201e5240b7b",
+    "script_sha256": "31ba170a12551ceeff29cc60cd4bee1cce01367bc4a7a26c70e20005f86ad9cc"
+  },
+  "terminal_counts": {
+    "needs_review": 1,
+    "succeeded": 4
+  },
+  "uncertain_replayed": false,
+  "versions": {
+    "new": "0.5.0",
+    "old": "0.4.2"
+  },
+  "worker_stops": [
+    {
+      "exit_code": 130,
+      "programme": "native"
+    },
+    {
+      "exit_code": 130,
+      "programme": "old"
+    }
+  ]
+}
