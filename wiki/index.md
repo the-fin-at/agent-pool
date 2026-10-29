@@ -71,3 +71,7 @@ Johannes ließ alle drei GitHub-CI-Workflows ausdrücklich deaktivieren. Die fr�
 ## Claude-Anmeldung: Diagnose und erfolgreicher Folgelauf vom 2026-10-29
 
 Die [datierte Incident-Notiz](claude-login-2026-10-29.md) trennt den früheren tatsächlichen Versuch mit ungeklärter Ursache, den unabhängig bestätigten offenen Retry-Lockout [Issue #35](https://github.com/the-fin-at/agent-pool/issues/35) und einen später tatsächlich erfolgreichen Browser→App-Login ohne Codeänderung. [Sanitisierte Belege](../docs/claude-login-2026-10-29-validation.json) binden die beiden isolierten roten Reproduktionen und den positiven nativen Nachcheck.
+
+## 0.5.1-Fix und Installation: späterer Checkpoint vom 2026-10-29
+
+Der [datierte Rolloutcheckpoint](rollout-0.5.1-2026-10-29.md) dokumentiert den gemergten Claude-Retry-Fix PR #37 und die danach tatsächlich installierten Mac-/Linux-Programme 0.5.1 mit erhaltenen Accounts/Aufträgen. [Normalisierte Belege](../docs/rollout-0.5.1-2026-10-29-validation.json) trennen Ausführung und unabhängige Nachkontrollen von den bereits verlinkten Fixregressionen. Die historische ursprüngliche Loginursache bleibt unbewiesen; Windows und die endgültige 1.0-Freigabe bleiben offen.
