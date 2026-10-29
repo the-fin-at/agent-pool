@@ -58,6 +58,12 @@ pub fn coalesce_claude(db: &mut Db) -> Result<()> {
     let tx = db
         .conn
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+    coalesce_in_transaction(&tx)?;
+    tx.commit()?;
+    Ok(())
+}
+
+fn coalesce_in_transaction(tx: &rusqlite::Transaction<'_>) -> Result<()> {
     let profiles = {
         let mut stmt =
             tx.prepare("SELECT * FROM profiles WHERE provider='claude' ORDER BY name")?;
@@ -79,7 +85,6 @@ pub fn coalesce_claude(db: &mut Db) -> Result<()> {
         .and_then(|p| caches.get(p["name"].as_str().unwrap_or_default()))
         .and_then(identity)
     else {
-        tx.commit()?;
         return Ok(());
     };
     let group: Vec<_> = profiles
@@ -92,7 +97,6 @@ pub fn coalesce_claude(db: &mut Db) -> Result<()> {
         })
         .collect();
     if group.len() < 2 {
-        tx.commit()?;
         return Ok(());
     }
     let at = now();
@@ -194,8 +198,74 @@ pub fn coalesce_claude(db: &mut Db) -> Result<()> {
             )?;
         }
     }
-    tx.commit()?;
     Ok(())
+}
+
+/// Publish verified native Claude metadata through the same identity transition
+/// for refreshes and both login paths. Old-account limits stay with its aliases;
+/// the changed directory never inherits them. Reauthentication is not a quota reset.
+pub fn publish_claude_identity(db: &mut Db, name: &str, data: &Value) -> Result<Value> {
+    let tx = db
+        .conn
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+    coalesce_in_transaction(&tx)?;
+    let raw: Option<String> = tx
+        .query_row(
+            "SELECT data FROM monitor_cache WHERE source=?",
+            [name],
+            |r| r.get(0),
+        )
+        .optional()?;
+    let old: Value = raw
+        .map(|raw| serde_json::from_str(&raw))
+        .transpose()?
+        .unwrap_or(json!({}));
+    let same = identity(&old).is_some() && identity(&old) == identity(data);
+    let changed = data["connected"] == false || (old["email"].is_string() && !same);
+    let profile = tx.query_row("SELECT * FROM profiles WHERE name=?", [name], row_json)?;
+    ensure!(
+        profile["provider"] == "claude",
+        "Claude identity transition requires a Claude profile"
+    );
+    if changed {
+        tx.execute("DELETE FROM windows WHERE profile=?", [name])?;
+        tx.execute("UPDATE profiles SET observed_at=NULL,checked_at=NULL,quota_error=NULL,hold_until=CASE WHEN hold_reason IN ('quota','quota_reset_unknown') THEN NULL ELSE hold_until END,hold_reason=CASE WHEN hold_reason IN ('quota','quota_reset_unknown') THEN NULL ELSE hold_reason END WHERE name=?",[name])?;
+    }
+    let mut fresh = Map::new();
+    for key in [
+        "connected",
+        "email",
+        "plan",
+        "account_type",
+        "error",
+        "checked_at",
+    ] {
+        fresh.insert(key.into(), data.get(key).cloned().unwrap_or(Value::Null));
+    }
+    let windows = if !changed {
+        let mut stmt = tx.prepare("SELECT data FROM windows WHERE profile=? ORDER BY key")?;
+        let rows = stmt.query_map([name], |r| r.get::<_, String>(0))?;
+        rows.map(|row| Ok(serde_json::from_str::<Value>(&row?)?))
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        vec![]
+    };
+    fresh.insert("windows".into(), json!(windows));
+    fresh.insert(
+        "observed_at".into(),
+        if changed {
+            Value::Null
+        } else {
+            profile["observed_at"].clone()
+        },
+    );
+    let fresh = Value::Object(fresh);
+    tx.execute(
+        "INSERT OR REPLACE INTO monitor_cache(source,data) VALUES(?,?)",
+        rusqlite::params![name, fresh.to_string()],
+    )?;
+    tx.commit()?;
+    Ok(fresh)
 }
 
 /// Refresh identity before claiming work, never import an undiscovered account here.
@@ -240,7 +310,7 @@ fn discover_claude(home: &Path) -> Result<()> {
     };
     if truth(&data["connected"]) {
         let name = db.add_native_claude(&dir)?;
-        db.cache(&name, &data)?;
+        publish_claude_identity(&mut db, &name, &data)?;
     }
     Ok(())
 }
@@ -348,17 +418,6 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
         } else {
             old.get("email") == data.get("email") && truth(get(&old, "connected"))
         };
-        if source["provider"] == "claude"
-            && (data["connected"] == false || (old["email"].is_string() && !same_account))
-        {
-            db.set_windows(&name, &[], true)?;
-            if matches!(
-                source["hold_reason"].as_str(),
-                Some("quota" | "quota_reset_unknown")
-            ) {
-                db.update_profile(&name, json!({"hold_until":null,"hold_reason":null}))?;
-            }
-        }
         let mut fresh = Map::new();
         for k in ["connected", "email", "plan", "account_type", "error"] {
             fresh.insert(k.into(), get(&data, k).clone());
@@ -404,8 +463,12 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             fresh.insert("observed_at".into(), Value::Null);
         }
         let fresh = Value::Object(fresh);
-        db.cache(&name, &fresh)?;
-        Ok(fresh)
+        if source["provider"] == "claude" {
+            publish_claude_identity(&mut db, &name, &fresh)
+        } else {
+            db.cache(&name, &fresh)?;
+            Ok(fresh)
+        }
     })();
     match attempt {
         Ok(v) => Ok(v),

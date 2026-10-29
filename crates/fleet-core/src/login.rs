@@ -699,11 +699,11 @@ fn run_session(
             drop(stdin.take());
             let cached = verify(&profile, &authdir)?;
             if let Some(cached) = cached {
-                db.cache(&name, &cached)?;
+                crate::monitor::publish_claude_identity(db, &name, &cached)?;
             }
             db.update_profile(
                 &name,
-                json!({"enabled": true, "hold_until": null, "hold_reason": null, "checked_at": null, "observed_at": null}),
+                if provider=="claude" {json!({"enabled":true})}else{json!({"enabled": true, "hold_until": null, "hold_reason": null, "checked_at": null, "observed_at": null})},
             )?;
             session.update(
                 json!({"state": "verifying", "message": "Account-Daten werden abgerufen …"}),

@@ -280,6 +280,61 @@ class RustCompatibility(unittest.TestCase):
         self.assertEqual(profile['hold_reason'],'quota_reset_unknown')
         self.assertTrue(profile['enabled'])
 
+    def test_managed_login_account_switch_does_not_inherit_previous_account_limits(self):
+        import uuid
+        self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.set_windows(default,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(default,hold_reason='quota_reset_unknown',hold_until=None)
+        (self.db.authdir(alias)/'fixture-email').write_text('new-account@example.invalid')
+        key=uuid.uuid4().hex;self.sessions.append(key)
+        self.call('auth','start',alias,'--provider','claude','--key',key)
+        self.wait_login(key,{'awaiting_code'})
+        self.call('auth','input',key,'--code=fixture-authorized-code')
+        self.wait_login(key,{'succeeded'})
+        self.assertEqual(self.call('quota','show',alias)[0]['windows'],[])
+        self.assertIsNone(self.call('quota','show',alias)[0]['hold_reason'])
+        self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
+        self.assertEqual(self.call('quota','show',default)[0]['hold_reason'],'quota_reset_unknown')
+        job=self.db.submit('new managed identity is free',self.workspace,'claude',profile=alias)
+        self.call('work','--drain')
+        self.assertEqual(self.call('job','get',job['id'])['chosen_profile'],alias)
+
+    def test_same_managed_identity_reauthentication_preserves_its_quota_hold(self):
+        import uuid
+        self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        self.call('overview','--refresh')
+        self.db.set_windows(alias,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(alias,hold_reason='quota_reset_unknown',hold_until=None)
+        key=uuid.uuid4().hex;self.sessions.append(key)
+        self.call('auth','start',alias,'--provider','claude','--key',key)
+        self.wait_login(key,{'awaiting_code'})
+        self.call('auth','input',key,'--code=fixture-authorized-code')
+        self.wait_login(key,{'succeeded'})
+        self.assertEqual(self.call('quota','show',alias)[0]['windows'][0]['used'],100)
+        self.assertEqual(self.call('quota','show',alias)[0]['hold_reason'],'quota_reset_unknown')
+
+    def test_interactive_claude_login_uses_the_same_identity_transition(self):
+        self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.set_windows(alias,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(alias,hold_reason='quota_reset_unknown',hold_until=None)
+        def login():
+            done=subprocess.run([str(BINARY),'--home',str(self.home),'login',alias],env=self.env,input='fixture-authorized-code\n',capture_output=True,text=True,timeout=15)
+            self.assertEqual(done.returncode,0,done.stderr+done.stdout)
+        login()
+        self.assertEqual(self.call('quota','show',alias)[0]['windows'][0]['used'],100)
+        self.assertEqual(self.call('quota','show',alias)[0]['hold_reason'],'quota_reset_unknown')
+        (self.db.authdir(alias)/'fixture-email').write_text('new-account@example.invalid')
+        login()
+        self.assertEqual(self.call('quota','show',alias)[0]['windows'],[])
+        self.assertIsNone(self.call('quota','show',alias)[0]['hold_reason'])
+        self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
+        self.assertEqual(self.call('quota','show',default)[0]['hold_reason'],'quota_reset_unknown')
+
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')
         self.db.update_job(old['id'], status='succeeded', result='Existing report 🧭', chosen_profile='legacy')

@@ -252,11 +252,11 @@ fn interactive_login(db: &mut Db, name: &str, device_auth: bool) -> Result<Value
     if let Some(cached) =
         login::verify(&profile, &dir).map_err(|e| anyhow!("{e}; profile was not enabled"))?
     {
-        db.cache(name, &cached)?;
+        monitor::publish_claude_identity(db, name, &cached)?;
     }
     db.update_profile(
         name,
-        json!({"enabled": true, "hold_until": null, "hold_reason": null, "observed_at": null, "checked_at": null}),
+        if codex {json!({"enabled": true, "hold_until": null, "hold_reason": null, "observed_at": null, "checked_at": null})}else{json!({"enabled":true})},
     )?;
     Ok(json!({"profile": name, "enabled": true}))
 }
