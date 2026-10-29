@@ -205,6 +205,14 @@ fn coalesce_in_transaction(tx: &rusqlite::Transaction<'_>) -> Result<()> {
 /// for refreshes and both login paths. Old-account limits stay with its aliases;
 /// the changed directory never inherits them. Reauthentication is not a quota reset.
 pub fn publish_claude_identity(db: &mut Db, name: &str, data: &Value) -> Result<Value> {
+    ensure!(
+        data["connected"].is_boolean(),
+        "Die Claude-CLI bestätigt keinen gültigen Anmeldestatus"
+    );
+    ensure!(
+        data["connected"] != true || identity(data).is_some(),
+        "Die Claude-CLI bestätigt keine Accountidentität; bitte aktualisieren"
+    );
     let tx = db
         .conn
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;

@@ -335,6 +335,44 @@ class RustCompatibility(unittest.TestCase):
         self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
         self.assertEqual(self.call('quota','show',default)[0]['hold_reason'],'quota_reset_unknown')
 
+    def test_session_login_rejects_missing_null_blank_and_nonstring_identity_without_losing_limits(self):
+        import uuid
+        self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        self.call('overview','--refresh')
+        self.db.set_windows(alias,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(alias,hold_reason='quota_reset_unknown',hold_until=None)
+        for invalid in [{},{'email':None},{'email':'  '},{'email':42}]:
+            (self.db.authdir(alias)/'fixture-status.json').write_text(json.dumps({'loggedIn':True,'authMethod':'claude.ai','configDirectory':str(self.db.authdir(alias)),**invalid}))
+            key=uuid.uuid4().hex;self.sessions.append(key)
+            self.call('auth','start',alias,'--provider','claude','--key',key)
+            self.wait_login(key,{'awaiting_code'})
+            self.call('auth','input',key,'--code=fixture-authorized-code')
+            failed=self.wait_login(key,{'failed','succeeded'})
+            self.assertEqual(failed['state'],'failed')
+            self.assertIn('Accountidentität',failed['message'])
+            profile=self.call('quota','show',alias)[0]
+            self.assertEqual(profile['windows'][0]['used'],100)
+            self.assertEqual(profile['hold_reason'],'quota_reset_unknown')
+            account=next(a for a in self.call('monitor') if a['name']==alias)
+            self.assertEqual(account['email'],'rust-fixture@example.invalid')
+
+    def test_interactive_login_rejects_ambiguous_identity_without_losing_limits(self):
+        self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        self.call('overview','--refresh')
+        self.db.set_windows(alias,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(alias,hold_reason='quota_reset_unknown',hold_until=None)
+        for invalid in [{},{'email':None},{'email':'  '},{'email':42}]:
+            (self.db.authdir(alias)/'fixture-status.json').write_text(json.dumps({'loggedIn':True,'authMethod':'claude.ai','configDirectory':str(self.db.authdir(alias)),**invalid}))
+            done=subprocess.run([str(BINARY),'--home',str(self.home),'login',alias],env=self.env,input='fixture-authorized-code\n',capture_output=True,text=True,timeout=15)
+            self.assertEqual(done.returncode,1,done.stderr+done.stdout)
+            self.assertIn('Accountidentität',done.stdout)
+            profile=self.call('quota','show',alias)[0]
+            self.assertEqual(profile['windows'][0]['used'],100)
+            self.assertEqual(profile['hold_reason'],'quota_reset_unknown')
+            self.assertEqual(next(a for a in self.call('monitor') if a['name']==alias)['email'],'rust-fixture@example.invalid')
+
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')
         self.db.update_job(old['id'], status='succeeded', result='Existing report 🧭', chosen_profile='legacy')
