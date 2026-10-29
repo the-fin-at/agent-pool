@@ -70,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix='fleet-tauri-native-') as tmp:
     with (args.output/'native-app.log').open('w') as log:
         app = subprocess.Popen([str(args.desktop.resolve()), '--home', str(home)], env=env, stdout=log, stderr=subprocess.STDOUT)
         (args.output/'native-process.json').write_text(json.dumps({'pid':app.pid,'binary':str(args.desktop.resolve()),'binary_sha256':hashlib.sha256(args.desktop.read_bytes()).hexdigest(),'mode':'debug-custom-protocol'},indent=2)+'\n')
-        awake = subprocess.Popen(['/usr/bin/caffeinate','-d','-u','-w',str(app.pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        awake = subprocess.Popen(['/usr/bin/caffeinate','-d','-i','-w',str(app.pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         until = time.monotonic()+90
         captured = False
         try:

@@ -349,6 +349,19 @@ pub fn observe(provider: &str, raw: &str) -> serde_json::Map<String, Value> {
         .get_or_init(|| Regex::new(r"\x1b\[[0-?]*[ -/]*[@-~]").unwrap())
         .replace_all(&raw, "")
         .into_owned();
+    if provider == "claude"
+        && raw.contains("Invalid code. Please make sure the full code was copied.")
+    {
+        // The native CLI keeps waiting for another line without repeating its
+        // paste prompt. Persist only this fixed instruction, never diagnostics.
+        return serde_json::Map::from_iter([
+            ("state".into(), json!("awaiting_code")),
+            (
+                "message".into(),
+                json!("Claude hat den Code nicht akzeptiert. Kopiere den vollständigen Code aus dem Browser und versuche es erneut."),
+            ),
+        ]);
+    }
     let urls: Vec<String> = URL
         .get_or_init(|| Regex::new(r#"https://[^\s\x1b<>"']+"#).unwrap())
         .find_iter(&raw)
@@ -642,7 +655,9 @@ fn run_session(
         if last_write.is_none_or(|t| t.elapsed() > Duration::from_millis(300)) {
             let text = String::from_utf8_lossy(&raw).into_owned();
             let mut changes = observe(&provider, &text);
-            if session.state() == "verifying" && !paste_prompt(&text) {
+            if session.state() == "verifying"
+                && changes.get("state").and_then(Value::as_str) != Some("awaiting_code")
+            {
                 changes.remove("state");
                 changes.remove("message");
             }

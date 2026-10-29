@@ -80,7 +80,17 @@
     await click('Anmeldung starten');
     const code = await wait(() => document.querySelector('#login-code'), 'real native Claude code input');
     assert(code.type === 'password', 'Native Claude authorization input is masked');
-    setInput(code, 'fixture-authorized-code');
+    setInput(code, 'fixture-rejected-code');
+    await click('Anmeldung abschließen');
+    await wait(() => document.querySelector('.login-message')?.textContent.includes('nicht akzeptiert'), 'safe native Claude rejection feedback');
+    const corrected = await wait(() => document.querySelector('#login-code:not(:disabled)'), 'retryable native Claude code input');
+    assert(corrected.type === 'password', 'Rejected native code returns a masked editable input');
+    assert(document.body.textContent.includes('vollständigen Code'), 'Native rejection explains how to retry');
+    assert(!document.body.textContent.includes('fixture-rejected-code'), 'Native rejection never exposes the submitted code');
+    profiles = await invoke('fleet_request', {target:null, argv:['profile','list']});
+    assert(!profiles.find(p => p.name === 'login-claude').enabled, 'Rejected native login does not enable the profile');
+    assert(button('Zur Übersicht') === undefined, 'Rejected native login is not reported as success');
+    setInput(corrected, 'fixture-authorized-code');
     await click('Anmeldung abschließen');
     await wait(() => button('Zur Übersicht'), 'provider-confirmed native Claude login');
     profiles = await invoke('fleet_request', {target:null, argv:['profile','list']});

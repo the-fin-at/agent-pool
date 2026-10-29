@@ -60,6 +60,27 @@ fn observer_extracts_only_public_instructions() {
 }
 
 #[test]
+fn claude_rejection_is_retryable_without_persisting_native_diagnostics() {
+    let data = observe(
+        "claude",
+        "\x1b[31mInvalid code. Please make sure the full code was copied.\x1b[0m\nBearer secret-token\nhttps://claude.ai/oauth/callback?code=secret-return-code",
+    );
+    assert_eq!(data["state"], "awaiting_code");
+    assert_eq!(
+        data["message"],
+        "Claude hat den Code nicht akzeptiert. Kopiere den vollständigen Code aus dem Browser und versuche es erneut."
+    );
+    assert_eq!(data.len(), 2);
+    let serialized = serde_json::to_string(&data).unwrap();
+    assert!(!serialized.contains("secret-token") && !serialized.contains("secret-return-code"));
+    assert!(observe(
+        "codex",
+        "Invalid code. Please make sure the full code was copied."
+    )
+    .is_empty());
+}
+
+#[test]
 fn invalid_session_ids_rejected() {
     let pool = Pool::new();
     let values = [
