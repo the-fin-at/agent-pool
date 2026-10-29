@@ -6,7 +6,7 @@ Recorded on 29 October 2026 for [issue #35](https://github.com/the-fin-at/agent-
 
 Claude Code 2.1.312 can reject an authorization-code line while continuing to wait for another line, without repeating its paste prompt. Fleet 0.5.0 stayed in `verifying`, hid the code field and refused another input until cancellation or the 900-second expiry.
 
-The patch recognizes that verified native diagnostic, returns a fixed safe instruction and restores `awaiting_code`. The user can submit a corrected code to the same session, profile and native process. The profile remains unconfirmed and disabled until the native CLI exits successfully and verifies the exact configuration directory, `loggedIn` and the `claude.ai` subscription method. Cancellation, expiry and credential storage retain their existing behavior.
+The patch recognizes that verified native diagnostic, returns a fixed safe instruction and restores `awaiting_code`. The user can submit a corrected code to the same session, profile and native process. The rejection does not enable an unconfirmed profile; existing activation is preserved. Successful login still requires the native CLI to exit successfully and verify the exact configuration directory, `loggedIn` and the `claude.ai` subscription method. Cancellation, expiry and credential storage retain their existing behavior.
 
 Raw provider diagnostics, codes and secret-bearing return URLs are not copied into the new feedback. This change adds no credential import, default-Claude discovery or background-login navigation policy.
 
