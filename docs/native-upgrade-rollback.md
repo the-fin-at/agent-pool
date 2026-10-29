@@ -101,3 +101,11 @@ are separate operational evidence. This Linux result does not establish native
 Windows installation, timeout/descendant behavior or GUI acceptance, and it does
 not replace the native responsiveness, packaging or hosted CI gates. Those
 limits remain in the [release plan](../wiki/release-1.0.md).
+
+### Later CI decision — 29 October 2026
+
+The user's subsequent instruction disabled all GitHub CI workflows. The earlier
+reference above to a hosted CI gate is superseded by that explicit decision;
+manual/native acceptance and independent reviews remain required. See the
+[dated decision](../wiki/entscheidungen.md) and
+[normalized GitHub evidence](release-operations-2026-10-29-validation.json).

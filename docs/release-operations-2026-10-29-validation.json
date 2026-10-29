@@ -1,0 +1,318 @@
+{
+  "recorded_on": "2026-10-29",
+  "repository": "the-fin-at/agent-pool",
+  "documentation_base_commit": "9a3bda9d55a92e8f5c7904d71ed6dcd3be0afce5",
+  "ci_decision": {
+    "user_instruction": "Disable all ci checks in gh dann mach weiter",
+    "source_chat": "01a18453-50f4-7463-a3a6-9a45c56297d7",
+    "verified_at": "2026-10-29T07:10:49.354972+00:00",
+    "workflows": [
+      {
+        "id": 399330712,
+        "name": "legacy-python-desktop",
+        "path": ".github/workflows/desktop.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399963221,
+        "name": "native-rust-tauri",
+        "path": ".github/workflows/rust.yml",
+        "state": "disabled_manually"
+      },
+      {
+        "id": 399330714,
+        "name": "tests",
+        "path": ".github/workflows/test.yml",
+        "state": "disabled_manually"
+      }
+    ],
+    "active_runs": {
+      "queued": 0,
+      "in_progress": 0,
+      "waiting": 0,
+      "requested": 0,
+      "pending": 0
+    },
+    "canceled_runs": 0,
+    "main": {
+      "name": "main",
+      "protected": false,
+      "protection": {
+        "enabled": false,
+        "required_status_checks": {
+          "checks": [],
+          "contexts": [],
+          "enforcement_level": "off"
+        }
+      }
+    },
+    "required_check_mutations": 0,
+    "ruleset_enumeration": {
+      "http_status": 403,
+      "reason": "GitHub plan limitation",
+      "independent_requirement_count_verified": false
+    },
+    "effective_branch_rules": {
+      "http_status": 403,
+      "reason": "GitHub plan limitation",
+      "independent_requirement_count_verified": false
+    },
+    "historical_check_results_unchanged": true,
+    "automatic_reenable_authorized": false,
+    "manual_native_acceptance_still_required": true
+  },
+  "private_draft_release": {
+    "all_uploaded_bytes_match_reviewed_local_inputs": true,
+    "assets": [
+      {
+        "bytes": 104,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:eb4c8cb775a63ece8c3d966c99c42445af4c5d9b647238e6d23111c3bb18965c",
+        "id": 687688844,
+        "name": "agent-fleet-0.5.0-linux-x86_64.SHA256SUMS",
+        "sha256": "eb4c8cb775a63ece8c3d966c99c42445af4c5d9b647238e6d23111c3bb18965c"
+      },
+      {
+        "bytes": 1416,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:da39d79c659ebd53bbcae496c5b8fe6413d64a3ae5ad1414c52ef878322646f1",
+        "id": 687688804,
+        "name": "agent-fleet-0.5.0-linux-x86_64.manifest.json",
+        "sha256": "da39d79c659ebd53bbcae496c5b8fe6413d64a3ae5ad1414c52ef878322646f1"
+      },
+      {
+        "bytes": 2583987,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:3b69407f5b1e80172dc5508fee47f5e1bbf78fa061304f4507f787d3484d36b5",
+        "id": 687688803,
+        "name": "agent-fleet-0.5.0-linux-x86_64.tar.gz",
+        "sha256": "3b69407f5b1e80172dc5508fee47f5e1bbf78fa061304f4507f787d3484d36b5"
+      },
+      {
+        "bytes": 103,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:4f71df8004f5db5f7052962f2e783e49832355ab92a9d68c7002a9fdff01d64b",
+        "id": 687688807,
+        "name": "agent-fleet-0.5.0-macos-arm64.SHA256SUMS",
+        "sha256": "4f71df8004f5db5f7052962f2e783e49832355ab92a9d68c7002a9fdff01d64b"
+      },
+      {
+        "bytes": 3324,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:21f2c39be37cd1b2078f0d92b122da4fbab593017bf4ae4952fdd6ac093ef121",
+        "id": 687688805,
+        "name": "agent-fleet-0.5.0-macos-arm64.manifest.json",
+        "sha256": "21f2c39be37cd1b2078f0d92b122da4fbab593017bf4ae4952fdd6ac093ef121"
+      },
+      {
+        "bytes": 8320663,
+        "download_bytes_equal_reviewed_input": true,
+        "github_digest": "sha256:2c13e5567ca22a2119fbae6f0bb56f8979ca30681f8e18baf1528a12d0c58ac4",
+        "id": 687688806,
+        "name": "agent-fleet-0.5.0-macos-arm64.tar.gz",
+        "sha256": "2c13e5567ca22a2119fbae6f0bb56f8979ca30681f8e18baf1528a12d0c58ac4"
+      }
+    ],
+    "checksum_and_manifest_archive_references_verified": true,
+    "draft": true,
+    "published_at": null,
+    "published_latest_before_and_after": "v0.3.0",
+    "published_latest_id": 426757596,
+    "release_id": 427556636,
+    "repository_private": true,
+    "tag_name": "v0.5.0",
+    "target_commitish": "9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7",
+    "url": "https://github.com/the-fin-at/agent-pool/releases/tag/untagged-1a61c45f5d211320096b"
+  },
+  "limitations": [
+    "Disabled workflows are not passing checks.",
+    "The private draft is not published or a 1.0 release.",
+    "Archive packaging repeatability does not establish cold compiler reproducibility.",
+    "Native Windows acceptance and native Mac responsiveness remain open at this checkpoint."
+  ],
+  "final_read_only_production_check": {
+    "observed_at_utc": "2026-10-29T07:19:53.414743+00:00",
+    "passed": true,
+    "raw_sanitized_verification_sha256": "c52b1e130cecd660eaad22abd7924d608f24d35b052086e6eaf770196704846c",
+    "version": "0.5.0",
+    "binary_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+    "running_binary_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+    "service_pid_unchanged_from_cutover": true,
+    "service": {
+      "ActiveState": "active",
+      "MainPID": "3543607",
+      "SubState": "running"
+    },
+    "worker": {
+      "age_seconds": 2.158,
+      "pid": 3543607,
+      "running": true,
+      "same_pid_as_service": true,
+      "timestamp_nondecreasing": true
+    },
+    "unit_sha256": "4aa9065f3fe4e9a469cca7d56b7265da213b24d220d3e5641b683afd67b5f0e3",
+    "unit_matches_expected": true,
+    "original_job_count": 7,
+    "original_jobs_all_present": true,
+    "original_full_rows_results_status_attempts_unchanged": true,
+    "smoke_job_count": 2,
+    "smoke_results_attempts_and_success_retained": true,
+    "job_count": 9,
+    "job_status_counts": {
+      "succeeded": 9
+    },
+    "profiles": 6,
+    "enabled_profiles": 4,
+    "profile_identity_and_enabled_map_equal": true,
+    "workspace_inventory_equal": true,
+    "sqlite_integrity": "ok",
+    "read_only": true,
+    "production_mutations": false,
+    "provider_inference": false,
+    "limits": [
+      "No new jobs or provider inference",
+      "No credentials read or copied",
+      "Native GUI/Windows acceptance not part of this production inspection",
+      "Profiles may refresh metadata; only static identity/enabled map compared"
+    ]
+  },
+  "integrated_manual_checks": {
+    "date_utc": "2026-10-29T07:21:33.716165+00:00",
+    "commit": "9a3bda9d55a92e8f5c7904d71ed6dcd3be0afce5",
+    "host": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "runtime": {
+      "python": "3.14.7",
+      "cargo": "cargo 1.96.1 (356927216 2026-06-26)",
+      "node": "v24.11.1"
+    },
+    "checks": [
+      {
+        "command": "cargo fmt --all -- --check",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-fmt.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "command": "cargo test -p fleet-core -p fleet-cli --locked",
+        "exit_code": 0,
+        "passed": 85,
+        "skipped": 0,
+        "log": "cargo-core-cli-test.log",
+        "sha256": "438a50b844e57d38329264845ac4771663214303b220e9716ac91185fd578084"
+      },
+      {
+        "command": "cargo clippy -p fleet-core -p fleet-cli --all-targets --locked -- -D warnings",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-core-cli-clippy.log",
+        "sha256": "c5405d93db36bada5f7af87c3b38dbb9ab96382c1edc926aacf57a275bfd048e"
+      },
+      {
+        "command": "cargo build -p fleet-cli --examples --locked",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-examples-build.log",
+        "sha256": "2b34696728dc82b03cbf6311d7e3a6a41658bbde097834c3010a78bc82842c1a"
+      },
+      {
+        "command": "cargo build -p fleet-cli --locked",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-cli-build.log",
+        "sha256": "a3d05dd5e28438e2ae9be8e012ca8778e9edcf65edb94bee8a32f83d499e620f"
+      },
+      {
+        "command": "FLEET_RUST_BIN=target/debug/agent-fleet python3 scripts/test_rust_compatibility.py",
+        "exit_code": 0,
+        "passed": 23,
+        "skipped": 0,
+        "log": "rust-compatibility.log",
+        "sha256": "16345eccd90ebd08c99383b91809e2f875923e650e29d29872dd5c38ee37c46c"
+      },
+      {
+        "command": "cargo test -p agent-fleet-desktop --features custom-protocol --locked",
+        "exit_code": 0,
+        "passed": 2,
+        "skipped": 0,
+        "log": "cargo-desktop-test.log",
+        "sha256": "7f4a82712f49b904723557e1723a59e3cc4c3bc46b6ddbeaf66e702fc96f50be"
+      },
+      {
+        "command": "cargo clippy -p agent-fleet-desktop --all-targets --features custom-protocol --locked -- -D warnings",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-desktop-clippy.log",
+        "sha256": "d5927bcedd2b9e59b3bcb034d8bdd179e43b4e6c9801cdf2963e38c944221683"
+      },
+      {
+        "command": "cargo check --workspace --all-targets --features agent-fleet-desktop/custom-protocol --locked",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "cargo-check.log",
+        "sha256": "434e15cbeff908cafe93d282f86d2b4522182f7867e4caabd9240b281cb260b1"
+      },
+      {
+        "command": "cd desktop && npm run typecheck",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "frontend-typecheck.log",
+        "sha256": "df5ee7ded5dad2ab0560a211ed5742294e9db6f6419b63090964fb8322442459"
+      },
+      {
+        "command": "cd desktop && npm test",
+        "exit_code": 0,
+        "passed": 22,
+        "skipped": 0,
+        "log": "frontend-test.log",
+        "sha256": "a7dc1c3e53d80dda6ce4220168dce9501dac06a1c708116aa6de372bd9e8b31d"
+      },
+      {
+        "command": "cd desktop && npm run build",
+        "exit_code": 0,
+        "passed": null,
+        "skipped": null,
+        "log": "frontend-build.log",
+        "sha256": "581e30684386dce7c743ea60b365ee5a5a55841267ec1d4052855700c938e2bb"
+      },
+      {
+        "command": "python3 -m unittest discover -s tests -v",
+        "exit_code": 0,
+        "passed": 115,
+        "skipped": 30,
+        "log": "python-suite.log",
+        "sha256": "1519f69cce5aa231596f435edd9e9722e453b0ae00d9288acd0ba536100af598"
+      },
+      {
+        "command": "python3 tests/real-host/test_native_upgrade_rollback.py",
+        "exit_code": 0,
+        "passed": 7,
+        "skipped": 0,
+        "log": "upgrade-guards.log",
+        "sha256": "16aa63be2e0b302653b0da1a6205a1f07b398ae492107281d13478f429f6c633"
+      },
+      {
+        "command": "FLEET_PACKAGE_INPUTS=<private operator JSON> python3 tests/real-host/test_native_package.py",
+        "exit_code": 0,
+        "passed": 7,
+        "skipped": 0,
+        "log": "package-tests.log",
+        "sha256": "387f9d9f9e9663d953d0799c79b0286db4e4ddbb4b4752882034b0ab530fd0dc"
+      }
+    ],
+    "limits": [
+      "No GitHub CI run; workflows intentionally disabled by user.",
+      "Python regression discovery ran145,115passed and30TkGUI tests skipped because Homebrew interpreter lacks _tkinter. No GUI command forced in locked Mac session.",
+      "No production service or state mutation, inference job, live real-host fault rerun, Windows validation or native UI performance measurement.",
+      "Existing accepted release artifacts used only for package tests; build caches were APFS cloned into isolated worktree, original cache and performance debug artifact untouched."
+    ],
+    "raw_sanitized_summary_sha256": "8ae350966df29ae6036cb04f14f3d7fac683604fe3bd797d957cbf33951b2052"
+  }
+}
