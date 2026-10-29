@@ -221,6 +221,7 @@ fn doctor(db: &Db) -> Result<Value> {
 }
 
 fn interactive_login(db: &mut Db, name: &str, device_auth: bool) -> Result<Value> {
+    ensure!(!crate::monitor::native_default(&db.profile(name)?), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");
     let dir = db.authdir(name)?;
     let _lock = Lease::acquire(&dir.join(".native.lock"))?;
     let profile = db.profile(name)?;

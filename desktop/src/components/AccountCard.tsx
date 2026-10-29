@@ -6,6 +6,7 @@ import { QuotaBar, QuotaRing } from './Quota';
 import { Button, Chip } from './ui';
 
 export function missingQuotaText(account: Account): string {
+  if (!account.connected && account.auth_mode === 'native_default') return 'Bitte in deiner normalen Claude-CLI anmelden und hier aktualisieren.';
   if (!account.connected) return 'Verbinde diesen Account direkt in der App.';
   return account.provider === 'claude' ? 'Noch keine Kontingentdaten aus der Claude-CLI.' : 'Für diesen Account fehlen Kontingentdaten.';
 }
@@ -49,6 +50,7 @@ export function AccountCard({ view, compact, onDetails, onLogin }: {
       </div>
       {extra.map((window) => <QuotaBar key={(window.raw.key ?? '') + window.title} window={window} />)}
       {!account.windows.length && <p className="card-note">{missingQuotaText(account)}</p>}
+      {account.alias_of && <p className="card-note">Dasselbe Konto wie die CLI-Standardanmeldung. Gemeinsames Kontingent.</p>}
       {account.error && (
         <p className="card-note tone-warning">
           {account.observed_at ? 'Abfrage fehlgeschlagen. Letzter gespeicherter Stand.' : 'Abfrage fehlgeschlagen. Noch keine Kontingentdaten.'}
@@ -57,7 +59,7 @@ export function AccountCard({ view, compact, onDetails, onLogin }: {
       <div className="card-foot">
         <span className={view.stale ? 'tone-warning' : 'tone-muted'}>{view.updatedLabel}</span>
         <div className="card-actions">
-          {account.managed && !account.connected && (
+          {account.managed && !account.connected && account.auth_mode !== 'native_default' && (
             <Button variant="primary" onClick={onLogin} aria-label={`${view.displayName} anmelden`}>Anmelden</Button>
           )}
           <Button onClick={onDetails} aria-label={`Details zu ${view.displayName}`}>Details</Button>

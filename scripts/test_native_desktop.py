@@ -45,6 +45,15 @@ with tempfile.TemporaryDirectory(prefix='fleet-tauri-native-') as tmp:
     home = root/'pool'
     native = root/'provider'
     shutil.copy2(fixture, native)
+    user = root/'user'
+    default_claude = user/'.claude'
+    default_claude.mkdir(parents=True)
+    (default_claude/'fixture-accepted').write_text('controlled native default')
+    (default_claude/'fixture-default-only').write_text('requires unset config override')
+    (default_claude/'fixture-email').write_text('native-default@example.invalid')
+    binaries = root/'bin'
+    binaries.mkdir()
+    shutil.copy2(fixture, binaries/'claude')
     with closing(Store(home)) as store:
         for name, provider, used in [('privat', 'codex', 28), ('arbeit', 'codex', 8), ('team', 'claude', 82)]:
             store.add_profile(name, provider, str(native))
@@ -65,8 +74,11 @@ with tempfile.TemporaryDirectory(prefix='fleet-tauri-native-') as tmp:
     env = os.environ.copy()
     env.update(AGENT_FLEET_TEST_SCRIPT=str(script), AGENT_FLEET_TEST_REPORT=str(report))
     # A missing default provider must be harmless, and must never reach a real login.
-    env['PATH'] = '/usr/bin:/bin:/usr/sbin:/sbin'
+    env['PATH'] = str(binaries)+':/usr/bin:/bin:/usr/sbin:/sbin'
     env['CODEX_HOME'] = str(root/'absent-default-monitor-source')
+    env['HOME'] = str(root/'user')
+    env['USERPROFILE'] = env['HOME']
+    env.pop('CLAUDE_CONFIG_DIR', None)
     with (args.output/'native-app.log').open('w') as log:
         app = subprocess.Popen([str(args.desktop.resolve()), '--home', str(home)], env=env, stdout=log, stderr=subprocess.STDOUT)
         (args.output/'native-process.json').write_text(json.dumps({'pid':app.pid,'binary':str(args.desktop.resolve()),'binary_sha256':hashlib.sha256(args.desktop.read_bytes()).hexdigest(),'mode':'debug-custom-protocol'},indent=2)+'\n')
@@ -94,6 +106,11 @@ with tempfile.TemporaryDirectory(prefix='fleet-tauri-native-') as tmp:
             with closing(Store(home)) as store:
                 assert [j['id'] for j in store.jobs()] == ids_before, 'Desktop changed the job queue'
                 assert store.job(ids_before[0])['result'] == 'Preserved report from legacy database'
+                defaults = [p for p in store.profiles() if p.get('auth_mode') == 'native_default']
+                assert len(defaults) == 1
+                assert not (home/'profiles'/defaults[0]['name']).exists()
+            assert (default_claude/'fixture-accepted').read_text() == 'controlled native default'
+            assert not (default_claude/'fixture-parent.pid').exists()
             if not captured:
                 raise RuntimeError('Native checks passed but no actual window screenshot was captured')
             until = time.monotonic()+4

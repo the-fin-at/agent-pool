@@ -81,7 +81,23 @@ pub fn choose_except(
     let mut candidates: Vec<(f64, f64, String, Value)> = vec![];
     let mut reasons: Vec<String> = vec![];
     let pinned = job["profile"].as_str().filter(|p| !p.is_empty());
-    for p in db.profiles()? {
+    let profiles = db.profiles()?;
+    let has_default = profiles.iter().any(crate::monitor::native_default);
+    let mut unknown_alias = false;
+    if has_default {
+        for p in profiles
+            .iter()
+            .filter(|p| p["provider"] == "claude" && truth(&p["enabled"]))
+        {
+            let data = db.cached(p["name"].as_str().unwrap_or_default())?;
+            if !data["error"].is_null()
+                || (data["connected"] != false && crate::monitor::identity(&data).is_none())
+            {
+                unknown_alias = true;
+            }
+        }
+    }
+    for p in profiles {
         let name = p["name"].as_str().unwrap_or_default().to_string();
         if p["provider"] != job["provider"] || pinned.is_some_and(|x| x != name) {
             continue;
@@ -92,6 +108,68 @@ pub fn choose_except(
         }
         if !truth(&p["enabled"]) {
             reasons.push(format!("{name}:disabled_or_not_logged_in"));
+            continue;
+        }
+        let group = crate::monitor::claude_group(db, &p)?;
+        if has_default && p["provider"] == "claude" {
+            let data = db.cached(&name)?;
+            if data["connected"] != true
+                || !data["error"].is_null()
+                || crate::monitor::identity(&data).is_none()
+                || (crate::monitor::native_default(&p) && unknown_alias)
+            {
+                reasons.push(format!("{name}:native_login_or_identity_unavailable"));
+                continue;
+            }
+        }
+        if crate::monitor::native_default(&p) {
+            let cached = db.cached(&name)?;
+            if cached["connected"] != true || !cached["error"].is_null() {
+                reasons.push(format!("{name}:native_login_unavailable"));
+                continue;
+            }
+        }
+        if pinned.is_none()
+            && !crate::monitor::native_default(&p)
+            && group
+                .iter()
+                .any(|alias| crate::monitor::native_default(alias) && truth(&alias["enabled"]))
+        {
+            // One automatic route per subscription. Explicit pins still use their own directory.
+            continue;
+        }
+        let mut shared_block = None;
+        for alias in &group {
+            let alias_name = alias["name"].as_str().unwrap_or_default();
+            if group.len() > 1 && !db.cached(alias_name)?["error"].is_null() {
+                shared_block = Some("account_identity_unavailable".to_string());
+                break;
+            }
+            if busy.contains(alias_name) {
+                shared_block = Some("busy".to_string());
+                break;
+            }
+            if matches!(
+                alias["hold_reason"].as_str(),
+                Some("quota" | "quota_reset_unknown")
+            ) && alias["hold_until"].as_f64().is_none_or(|until| until > at)
+            {
+                shared_block = Some(alias["hold_reason"].as_str().unwrap().to_string());
+                break;
+            }
+            let state = availability(
+                &db.windows(alias_name)?,
+                at,
+                job["model"].as_str(),
+                bucket_for(alias, job).as_deref(),
+            );
+            if !state.ready {
+                shared_block = Some(state.reason.to_string());
+                break;
+            }
+        }
+        if let Some(reason) = shared_block {
+            reasons.push(format!("{name}:{reason}"));
             continue;
         }
         if let Some(reason) = p["hold_reason"].as_str().filter(|r| !r.is_empty()) {
@@ -178,6 +256,7 @@ fn tick_inner(
     if jobs.is_empty() {
         return Ok(false);
     }
+    crate::monitor::refresh_claude(&db.home)?;
     let providers: Vec<&Value> = jobs.iter().map(|j| &j["provider"]).collect();
     for p in db.profiles()? {
         // Probing is per-profile and metadata-only, with a 60-second cache.
@@ -235,6 +314,31 @@ fn tick_inner(
                 continue 'jobs;
             };
             if account_busy(db, &name) {
+                busy.insert(name);
+                continue;
+            }
+            // Hold every verified alias directory through the selected runner. Existing
+            // login/metadata locks then cover this subscription even across config dirs.
+            let mut siblings = vec![];
+            let mut sibling_dirs = HashSet::new();
+            let selected_dir = db.authdir(&name)?;
+            let mut alias_busy = false;
+            for alias in crate::monitor::claude_group(db, &profile)? {
+                let alias_name = alias["name"].as_str().unwrap_or_default();
+                let dir = db.authdir(alias_name)?;
+                if dir == selected_dir || !sibling_dirs.insert(dir.clone()) {
+                    continue;
+                }
+                match Lease::acquire(&dir.join(".native.lock")) {
+                    Ok(lease) => siblings.push(lease),
+                    Err(e) if is_busy(&e) => {
+                        alias_busy = true;
+                        break;
+                    }
+                    Err(e) => return Err(e),
+                }
+            }
+            if alias_busy {
                 busy.insert(name);
                 continue;
             }

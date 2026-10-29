@@ -31,9 +31,16 @@ fn main() {
         } else {
             "CLAUDE_CONFIG_DIR"
         })
-        .expect("isolated fixture auth directory"),
+        .unwrap_or_else(|| {
+            PathBuf::from(env::var_os("HOME").expect("isolated fixture HOME"))
+                .join(".claude")
+                .into_os_string()
+        }),
     );
+    let config_override = env::var_os("CLAUDE_CONFIG_DIR").is_some();
     let accepted = home.join("fixture-accepted");
+    let logged_in =
+        accepted.exists() && !(config_override && home.join("fixture-default-only").exists());
     if args == ["app-server"] {
         if home.join("fixture-metadata-error").exists() {
             eprintln!("Controlled metadata unavailable");
@@ -71,11 +78,15 @@ fn main() {
         std::process::exit(1);
     }
     if args == ["auth", "status"] {
+        if home.join("fixture-metadata-error").exists() {
+            eprintln!("Controlled metadata unavailable");
+            std::process::exit(2);
+        }
         println!(
             "{}",
-            json!({"loggedIn":accepted.exists(),"authMethod":if accepted.exists(){"claude.ai"}else{"none"},"email":"rust-fixture@example.invalid","subscriptionType":"max","configDirectory":fs::canonicalize(&home).unwrap()})
+            json!({"loggedIn":logged_in,"authMethod":if logged_in{"claude.ai"}else{"none"},"email":fs::read_to_string(home.join("fixture-email")).unwrap_or_else(|_|"rust-fixture@example.invalid".into()).trim(),"subscriptionType":"max","configDirectory":fs::canonicalize(&home).unwrap()})
         );
-        std::process::exit(if accepted.exists() { 0 } else { 1 });
+        std::process::exit(if logged_in { 0 } else { 1 });
     }
     if args.first().is_some_and(|s| s == "login" || s == "auth") {
         fs::write(
@@ -136,7 +147,7 @@ fn main() {
     writeln!(
         trace,
         "{}",
-        json!({"prompt":prompt,"pid":std::process::id()})
+        json!({"prompt":prompt,"pid":std::process::id(),"config_override":config_override})
     )
     .unwrap();
     drop(trace);

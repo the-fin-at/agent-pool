@@ -235,6 +235,7 @@ pub fn start_with(
     }
     let existing = db.profiles()?.into_iter().find(|p| p["name"] == name);
     if let Some(e) = &existing {
+        ensure!(!crate::monitor::native_default(e), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");
         ensure!(
             e["provider"] == provider,
             "This profile belongs to a different provider"
@@ -413,6 +414,10 @@ fn native_status(profile: &Value, dir: &Path) -> Result<crate::provider::Capture
 /// Older Claude CLIs ignore CLAUDE_CONFIG_DIR for status; refuse to log into the wrong directory.
 pub fn check_claude_directory(profile: &Value, dir: &Path) -> Result<Value> {
     let done = native_status(profile, dir)?;
+    ensure!(
+        !done.timed_out && !done.overflow && matches!(done.code, 0 | 1),
+        "Der Claude-CLI-Status konnte nicht zuverlässig geprüft werden"
+    );
     let data: Value = serde_json::from_str(done.out.trim()).map_err(|_| {
         anyhow!("Bitte die native Claude-CLI aktualisieren; ihr Profilstatus konnte nicht geprüft werden.")
     })?;

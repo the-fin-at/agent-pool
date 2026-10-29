@@ -184,7 +184,21 @@ pub fn auth_command(provider: &str, binary: &str, dir: &Path) -> Result<Command>
 pub fn profile_command(profile: &Value, dir: &Path) -> Result<Command> {
     let provider = profile["provider"].as_str().context("Missing provider")?;
     let binary = profile["binary"].as_str().unwrap_or(provider);
-    auth_command(provider, binary, dir)
+    let mut command = auth_command(provider, binary, dir)?;
+    if profile["auth_mode"] == "native_default" {
+        ensure!(
+            provider == "claude",
+            "Native default authentication requires Claude"
+        );
+        let native = dirs::home_dir().unwrap_or_default().join(".claude");
+        ensure!(
+            crate::db::resolve(&native) == crate::db::resolve(dir),
+            "Native Claude home changed; use the original local user"
+        );
+        // Unset and explicitly set-to-default are different Keychain contexts.
+        command.env_remove("CLAUDE_CONFIG_DIR");
+    }
+    Ok(command)
 }
 
 /// Kills the whole process group, then reaps the leader.

@@ -82,7 +82,7 @@ export function createDemoTransport(): Transport {
       case 'overview':
       case 'status':
         return { accounts: accounts(target), worker: { online: target !== null, age_seconds: 4 }, pending_jobs: 0,
-          features: ['native-login-sessions', 'cached-status'], version: '0.5.1' };
+          features: ['native-login-sessions', 'cached-status'], version: '0.5.2' };
       case 'remote':
         if (operation === 'discover') return { host: arg, command: '/usr/local/bin/agent-fleet', home: '/srv/agent-fleet', features: ['native-login-sessions'] };
         if (operation === 'add') {
@@ -155,7 +155,7 @@ export function createDemoTransport(): Transport {
         }
       }, 250);
     }),
-    initialConfig: async () => ({ home: '~/.agent-fleet', target: null, version: '0.5.1' }),
+    initialConfig: async () => ({ home: '~/.agent-fleet', target: null, version: '0.5.2' }),
     openLoginUrl: async () => undefined,
   };
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Icon } from '../icons';
-import { accountView, matchesSearch, sortAccounts } from '../quota';
+import { accountView, connectedAccountCount, matchesSearch, sortAccounts } from '../quota';
 import type { Account, StatusData } from '../types';
 import { AccountCard } from './AccountCard';
 import { FILTERS, type ProviderFilter } from './Sidebar';
@@ -62,7 +62,7 @@ export function AccountsView(props: {
     () => sortAccounts(inProvider.filter((a) => (showAll || a.connected) && matchesSearch(a, search))),
     [inProvider, showAll, search],
   );
-  const connected = inProvider.filter((a) => a.connected).length;
+  const connected = connectedAccountCount(inProvider);
   const title = FILTERS.find((f) => f.value === filter)?.label ?? 'Alle Accounts';
   const query = search.trim();
 

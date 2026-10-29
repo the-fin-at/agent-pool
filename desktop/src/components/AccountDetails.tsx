@@ -95,11 +95,15 @@ export function AccountDetails({ account, now, fleet, target, onBack, onLogin, o
               <p className="muted">
                 {account.enabled ? 'Agent Fleet kann diesem Profil Aufträge zuweisen.' : 'Dieses Profil erhält derzeit keine Aufträge.'}
               </p>
+              {account.auth_mode === 'native_default' && (
+                <p className="muted">Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Ein Accountwechsel oder Logout dort gilt auch hier. Zusätzliche Accounts bleiben getrennt.</p>
+              )}
+              {account.alias_of && <p className="muted">Dieses getrennte Profil verwendet dasselbe Konto wie die CLI-Standardanmeldung. Beide beachten dieselben Kontingentgrenzen. Eine ausdrückliche Profilwahl verwendet weiterhin dieses Verzeichnis.</p>}
               <div className="button-row">
                 <Button variant={account.enabled ? 'soft' : 'primary'} onClick={() => void toggle()} disabled={busy} aria-busy={busy || undefined}>
                   {busy ? 'Wird gespeichert …' : account.enabled ? 'Für Aufträge deaktivieren' : 'Für Aufträge aktivieren'}
                 </Button>
-                <Button onClick={() => onLogin(account)}>Erneut anmelden</Button>
+                {account.auth_mode !== 'native_default' && <Button onClick={() => onLogin(account)}>Erneut anmelden</Button>}
               </div>
             </>
           ) : (
