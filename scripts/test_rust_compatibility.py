@@ -130,10 +130,12 @@ class RustCompatibility(unittest.TestCase):
             self.assertEqual(current['status'],'waiting')
             self.assertEqual(current['attempts'],0)
         self.db.set_windows(alias, [], replace=True)
+        self.db.set_windows(default, [], replace=True)
         self.db.update_profile(alias,hold_reason='quota_reset_unknown',hold_until=None)
         self.call('work','--once')
         self.assertEqual(self.call('job','get',blocked['id'],code=2)['attempts'],0)
         self.db.update_profile(alias,hold_reason=None,hold_until=None)
+        self.db.update_profile(default,hold_reason=None,hold_until=None)
         with file_lock(self.db.authdir(alias)/'.native.lock'):
             self.call('work','--once')
             self.assertEqual(self.call('job','get',blocked['id'],code=2)['attempts'],0)
@@ -243,6 +245,40 @@ class RustCompatibility(unittest.TestCase):
         self.call('work','--once')
         self.assertEqual(self.call('job','get',job['id'])['chosen_profile'],codex)
         self.assertEqual((native/'fixture-status-calls').read_text(),'')
+
+    def test_default_account_switch_preserves_old_alias_quota_and_new_account_is_free(self):
+        native=self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.set_windows(default,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None},
+                                     {'key':'seven_day','bucket':'claude','minutes':10080,'used':10,'reset':time.time()+3600,'model':None}],replace=True)
+        self.db.set_windows(alias,[{'key':'seven_day','bucket':'claude','minutes':10080,'used':90,'reset':time.time()+7200,'model':None}],replace=True)
+        observed_before=max(p['observed_at'] or 0 for p in self.call('profile','list'))
+        old=self.db.submit('old account remains exhausted',self.workspace,'claude',profile=alias)
+        self.call('work','--once')
+        self.assertEqual(self.call('job','get',old['id'],code=2)['attempts'],0)
+        (native/'fixture-email').write_text('new-account@example.invalid')
+        new=self.db.submit('new account may run',self.workspace,'claude')
+        self.call('work','--drain')
+        self.assertEqual(self.call('job','get',old['id'],code=2)['attempts'],0)
+        self.assertEqual(self.call('quota','show',alias)[0]['windows'][0]['used'],100)
+        self.assertEqual(next(w['used'] for w in self.call('quota','show',alias)[0]['windows'] if w['key']=='seven_day'),90)
+        self.assertLessEqual(next(p['observed_at'] for p in self.call('profile','list') if p['name']==alias),observed_before+1e-6)
+        self.assertEqual(self.call('job','get',new['id'])['chosen_profile'],default)
+
+    def test_default_logout_retains_unknown_quota_hold_on_its_remaining_managed_alias(self):
+        native=self.default_claude_fixture()
+        alias=self.native_fixture('claude','managed-a')
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.update_profile(default,hold_reason='quota_reset_unknown',hold_until=None)
+        (native/'fixture-accepted').unlink()
+        self.call('monitor','--refresh')
+        old=self.db.submit('unknown old-account limit',self.workspace,'claude',profile=alias)
+        self.call('work','--once')
+        self.assertEqual(self.call('job','get',old['id'],code=2)['attempts'],0)
+        profile=next(p for p in self.call('profile','list') if p['name']==alias)
+        self.assertEqual(profile['hold_reason'],'quota_reset_unknown')
+        self.assertTrue(profile['enabled'])
 
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')

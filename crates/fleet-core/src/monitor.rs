@@ -1,8 +1,10 @@
 //! Account read model. Cached observations stay explicit when a refresh fails.
-use crate::db::{now, truth, Db, ATTACHED_PROFILE_UNAVAILABLE};
+use crate::db::{now, row_json, truth, Db, ATTACHED_PROFILE_UNAVAILABLE};
 use crate::provider::{codex_status, redact};
 use anyhow::{ensure, Result};
+use rusqlite::OptionalExtension;
 use serde_json::{json, Map, Value};
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
@@ -46,12 +48,163 @@ pub fn claude_group(db: &Db, profile: &Value) -> Result<Vec<Value>> {
     }
 }
 
-/// Refresh identity before claiming work, never import an undiscovered account here.
-pub fn refresh_claude(home: &Path) -> Result<()> {
-    let db = Db::open(home)?;
+/// Preserve known subscription constraints before any alias can change identity.
+/// All reads/writes share one SQLite transaction; timestamps remain observations,
+/// not the time this metadata is copied. No credentials or activation flags change.
+pub fn coalesce_claude(db: &mut Db) -> Result<()> {
     if !db.profiles()?.iter().any(native_default) {
         return Ok(());
     }
+    let tx = db
+        .conn
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+    let profiles = {
+        let mut stmt =
+            tx.prepare("SELECT * FROM profiles WHERE provider='claude' ORDER BY name")?;
+        let rows = stmt.query_map([], row_json)?;
+        rows.collect::<rusqlite::Result<Vec<_>>>()?
+    };
+    let caches: HashMap<String, Value> = {
+        let mut stmt = tx.prepare("SELECT source,data FROM monitor_cache")?;
+        let rows = stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?;
+        rows.map(|row| {
+            let (name, raw) = row?;
+            Ok((name, serde_json::from_str(&raw)?))
+        })
+        .collect::<Result<_>>()?
+    };
+    let Some(account) = profiles
+        .iter()
+        .find(|p| native_default(p))
+        .and_then(|p| caches.get(p["name"].as_str().unwrap_or_default()))
+        .and_then(identity)
+    else {
+        tx.commit()?;
+        return Ok(());
+    };
+    let group: Vec<_> = profiles
+        .iter()
+        .filter(|p| {
+            caches
+                .get(p["name"].as_str().unwrap_or_default())
+                .and_then(identity)
+                == Some(account.clone())
+        })
+        .collect();
+    if group.len() < 2 {
+        tx.commit()?;
+        return Ok(());
+    }
+    let at = now();
+    let strength = |window: &Value| {
+        (
+            window["reset"].as_f64().is_none_or(|reset| reset > at),
+            window["used"].as_f64().unwrap_or(-1.0),
+            window["reset"].as_f64().unwrap_or(f64::INFINITY),
+        )
+    };
+    let mut windows: BTreeMap<String, (Value, Option<f64>)> = BTreeMap::new();
+    let mut hold: Option<(&str, Option<f64>)> = None;
+    for profile in &group {
+        let name = profile["name"].as_str().unwrap_or_default();
+        let observed = profile["observed_at"].as_f64();
+        let mut stmt = tx.prepare("SELECT key,data FROM windows WHERE profile=?")?;
+        let rows = stmt.query_map([name], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })?;
+        for row in rows {
+            let (key, raw) = row?;
+            let window: Value = serde_json::from_str(&raw)?;
+            if windows
+                .get(&key)
+                .is_none_or(|(old, _)| strength(&window) > strength(old))
+            {
+                windows.insert(key, (window, observed));
+            }
+        }
+        if let Some(reason) = profile["hold_reason"]
+            .as_str()
+            .filter(|reason| matches!(*reason, "quota" | "quota_reset_unknown"))
+        {
+            let until = profile["hold_until"].as_f64();
+            if until.is_none_or(|until| until > at)
+                && hold.is_none_or(|(_, old)| {
+                    until.unwrap_or(f64::INFINITY) > old.unwrap_or(f64::INFINITY)
+                })
+            {
+                hold = Some((reason, until));
+            }
+        }
+    }
+    let observed = windows
+        .values()
+        .map(|(_, time)| *time)
+        .try_fold(f64::INFINITY, |old, time| time.map(|time| old.min(time)))
+        .filter(|time| time.is_finite());
+    let values: Vec<_> = windows.values().map(|(window, _)| window.clone()).collect();
+    for profile in group {
+        let name = profile["name"].as_str().unwrap_or_default();
+        let mut changed = false;
+        for (key, (window, _)) in &windows {
+            let existing: Option<String> = tx
+                .query_row(
+                    "SELECT data FROM windows WHERE profile=? AND key=?",
+                    rusqlite::params![name, key],
+                    |r| r.get(0),
+                )
+                .optional()?;
+            if existing
+                .as_ref()
+                .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
+                .as_ref()
+                != Some(window)
+            {
+                tx.execute(
+                    "INSERT OR REPLACE INTO windows(profile,key,data) VALUES(?,?,?)",
+                    rusqlite::params![name, key, window.to_string()],
+                )?;
+                changed = true;
+            }
+        }
+        if changed {
+            tx.execute(
+                "UPDATE profiles SET observed_at=? WHERE name=?",
+                rusqlite::params![observed, name],
+            )?;
+        }
+        if let Some((reason, until)) = hold {
+            if profile["hold_reason"].is_null()
+                || matches!(
+                    profile["hold_reason"].as_str(),
+                    Some("quota" | "quota_reset_unknown")
+                )
+            {
+                tx.execute(
+                    "UPDATE profiles SET hold_reason=?,hold_until=? WHERE name=?",
+                    rusqlite::params![reason, until, name],
+                )?;
+            }
+        }
+        if let Some(mut cache) = caches.get(name).cloned() {
+            cache["windows"] = json!(values);
+            cache["observed_at"] = json!(observed);
+            tx.execute(
+                "INSERT OR REPLACE INTO monitor_cache(source,data) VALUES(?,?)",
+                rusqlite::params![name, cache.to_string()],
+            )?;
+        }
+    }
+    tx.commit()?;
+    Ok(())
+}
+
+/// Refresh identity before claiming work, never import an undiscovered account here.
+pub fn refresh_claude(home: &Path) -> Result<()> {
+    let mut db = Db::open(home)?;
+    if !db.profiles()?.iter().any(native_default) {
+        return Ok(());
+    }
+    coalesce_claude(&mut db)?;
     let items = sources(&db, false)?
         .into_iter()
         .filter(|p| p["provider"] == "claude")
@@ -285,7 +438,8 @@ pub fn native_probe() -> Box<Probe> {
 /// Refreshes all sources with at most three concurrent metadata reads.
 pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result<Vec<Value>> {
     let items = {
-        let db = Db::open(home)?;
+        let mut db = Db::open(home)?;
+        coalesce_claude(&mut db)?;
         sources(&db, include_default)?
     };
     refresh_sources(home, items, probe);

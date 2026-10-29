@@ -241,6 +241,7 @@ pub fn start_with(
             "This profile belongs to a different provider"
         );
     }
+    crate::monitor::coalesce_claude(&mut db)?;
     // Resolve before modifying the profile registry.
     executable(
         existing
