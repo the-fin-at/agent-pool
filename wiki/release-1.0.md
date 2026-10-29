@@ -165,3 +165,24 @@ Bezug: gemeinsamer Repository-Stand `the-fin-at/agent-pool@9a3bda9d55a92e8f5c790
 Die CI-Entscheidung ersetzt ausdrücklich die frühere P0-Zeile „gehostete Releaseprüfung“ samt Billing-/Runnerbeschaffung als Voraussetzung. Der fachliche Maßstab wird weiterhin durch tatsächliche manuelle/native Ausführung mit Commit-/Artefaktbindung getragen. Alte Fehlchecks bleiben historische Fehlchecks. Die noch offenen nativen und Vertriebsgrenzen verhindern weiterhin eine behauptete vollständige 1.0-Abnahme.
 
 Die gemeinsame Basis `9a3bda9d55a92e8f5c7904d71ed6dcd3be0afce5` bestand am 29.10.2026 um 07:21:33 UTC außerdem 15 manuelle Prüfkommandos in einer sauberen isolierten Mac-Arbeitskopie: Rust-Format/Workspace-Check/Clippy einschließlich Desktop, 85 Kern-/CLI- und zwei Bridge-Tests, Beispiel-/CLI-Build, 23 native Kompatibilitätsfälle, Frontend-Typecheck/22 Tests/Build sowie sieben Upgrade-Safety- und sieben tatsächliche Mac-Pakettests. Die Python-Discovery fand 145 Tests: 115 bestanden, 30 Tk-GUI-Tests wurden wegen fehlendem `_tkinter` übersprungen. Das ist kein heutiger 145-Pass und keine neue GUI-Abnahme. [Kommandos, Loghashes und Grenzen](../docs/release-operations-2026-10-29-validation.json) dokumentieren den manuellen Ersatznachweis bei bewusst deaktivierter CI; Windows, native UI-Performance und Realhost-Fehlerkampagne wurden dabei nicht erneut ausgeführt.
+
+## Native Performancepflicht erfüllt: späterer Checkpoint vom 2026-10-29
+
+Die Performancezeilen „SSH-Statuslatenz / Teilnachweis“ und „Native Mac-Reaktionsfähigkeit / offen“ des vorigen Checkpoints sind für den tatsächlichen späteren Lauf überholt. [PR #27](https://github.com/the-fin-at/agent-pool/pull/27) ist bei `the-fin-at/agent-pool@f6c35ddb8c07c642c5a6aa5f4561947644d00bed` gemergt; finaler unabhängig reviewter Head `9d01343c0f3074269f6c751197467888087c37ea`. Der unveränderte Harnessstand `c6be2d9b0904685bbdfe0b11b7063ecf93bb337d` wurde am 29.10.2026 um 08:02:59 UTC auf der tatsächlich entsperrten Mac-Console ausgeführt. [Issue #25](https://github.com/the-fin-at/agent-pool/issues/25) wurde nach Anforderungsprüfung geschlossen.
+
+| Erfülltes Performancegate | Tatsächlicher Nachweis |
+| --- | --- |
+| 20 echte gecachte SSH-Statusmessungen, p95 < 3 s | p95 643,06 ms, Maximum 797,67 ms; native 0.5-Antworten, erster Aufruf enthalten |
+| Native Reaktionsfähigkeit unter mindestens 2 s echter SSH-Verzögerung | Drei erfolgreiche echte RPCs, beobachtete Verzögerungen 2.000,126 / 2.000,203 / 2.000,244 ms; Timer p95/Maximum 5/5 ms bei 335 Samples, Frames 18/54 ms bei 478 Samples |
+| Sichtbare Bedienung und unabhängige Negativkontrolle | Drei Filterreaktionen jeweils 31 ms vor Antwortende; dieselbe Messung verwirft absichtlichen Mainthread-Block mit 700-ms-Timer-/712-ms-Frame-Maximum |
+| Quellenbindung, Isolation und Review | [Roharrays/Hashes/Hostdaten](../docs/native-performance-validation.json), [Methode und Grenzen](../docs/native-performance.md); echte 0.5-Debug-WKWebView/Rust-IPC; Console vor/nachher entsperrt; eigene App und Testverzeichnisse bereinigt; keine Produktionsqueue-/Serviceänderung oder Inferenz; Standards/Spec ohne wesentlichen Befund |
+
+Der Produktcode blieb `c47144087d3d7f665600ef0183af1c94dcd5180d`; aus dem Performanceabschluss folgt kein Austausch der installierten Programme. Der Nachweis betrifft Reaktionsfähigkeit und die benannte Filterinteraktion, nicht sämtliche Verbindungsnavigation, installierte Release-GUI-Journeys oder Windows. Die früheren 30 Tk-GUI-Skips werden durch diesen anderen Test nicht zu bestandenen Tests.
+
+| Verbleibender 1.0-Abnahmeschritt am 29.10.2026 | Nächste konkrete Grenze |
+| --- | --- |
+| Native Windows-Abnahme / weiterhin offen, auf Nutzerwunsch zeitlich zurückgestellt | Erst bei verfügbarem Host Installation/CLI/UI/Login/Abbruch/Timeout/Bestandserhalt nativ prüfen; bis dahin keinen abgenommenen Windows-Support behaupten |
+| Endgültiger Vertriebsweg und dafür erforderliche Signierung / offen | Privater 0.5-Entwurf mit geprüften Mac-/Linux-Assets liegt vor; endgültigen 1.0-Vertriebsweg und Plattformumfang festlegen und dessen tatsächliche Paket-/Signieranforderungen erfüllen. Ad-hoc-Mac-Signatur ist kein Notarisierungsnachweis |
+| Abschließende 1.0-Entscheidung / offen | Scope/Support, README/Skills/Hilfe, finale Pakete/Installationsbelege und unabhängige Reviews am freizugebenden Kandidaten gemeinsam abgleichen und gesondert freigeben |
+
+Die zuvor abgenommenen Übergabe-/Produktions-/Paketierungsgates bleiben in ihren dokumentierten Grenzen erhalten. Gehostete CI bleibt bewusst deaktiviert und ist kein erneut eingeführtes Pflichtgate. Dieser spätere Performance-Pass veröffentlicht weder den privaten 0.5-Entwurf noch einen 1.0-Release.
