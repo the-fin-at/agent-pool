@@ -78,6 +78,10 @@ fn main() {
         std::process::exit(1);
     }
     if args == ["auth", "status"] {
+        if let Ok(raw) = fs::read_to_string(home.join("fixture-status.json")) {
+            println!("{raw}");
+            return;
+        }
         if home.join("fixture-metadata-error").exists() {
             eprintln!("Controlled metadata unavailable");
             std::process::exit(2);

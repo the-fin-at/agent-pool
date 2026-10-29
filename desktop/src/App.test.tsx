@@ -11,13 +11,13 @@ describe('account overview', () => {
   it('uses the external Claude CLI login automatically while keeping additional account sign-in separate', async () => {
     const user = userEvent.setup();
     const { transport, commands } = fakeTransport(() => status([
-      claudeAccount('claude-default', { auth_mode: 'native_default', enabled: true, display_name: 'Claude CLI · Standardanmeldung' }),
+      claudeAccount('claude-default', { auth_mode: 'native_default', enabled: true, display_name: 'Claude CLI' }),
       claudeAccount('alias', { alias_of: 'claude-default', enabled: true }),
       claudeAccount('zusatz', { connected: false, windows: [] }),
     ]));
     render(<App transport={transport} timing={FAST} />);
     expect(await screen.findByText('1 Account verbunden')).toBeInTheDocument();
-    await user.click(await screen.findByRole('button', { name: 'Details zu Claude CLI · Standardanmeldung' }));
+    await user.click(await screen.findByRole('button', { name: 'Details zu Claude CLI' }));
     expect(screen.getByText(/Anmeldung wird von deiner normalen Claude-CLI verwaltet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Erneut anmelden' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Für Aufträge deaktivieren' })).toBeInTheDocument();

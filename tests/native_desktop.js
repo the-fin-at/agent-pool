@@ -21,11 +21,11 @@
     assert(document.body.textContent.includes('Agent Fleet'), 'Product name rendered in native WebView');
     assert(!document.body.textContent.includes('Vorschaudaten'), 'Production transport has no demo fallback');
     assert(document.querySelectorAll('article.card').length >= 3, 'Existing profiles rendered from legacy SQLite');
-    await wait(() => [...document.querySelectorAll('h3')].some(h => h.textContent === 'Claude CLI · Standardanmeldung'), 'automatic native Claude discovery');
+    await wait(() => [...document.querySelectorAll('h3')].some(h => h.textContent === 'Claude CLI'), 'automatic native Claude discovery');
     const discovered = await invoke('fleet_request', {target:null, argv:['overview']});
     const defaultAccount = discovered.accounts.find(a => a.auth_mode === 'native_default');
     assert(defaultAccount?.connected && defaultAccount?.enabled, 'Existing CLI login is discovered and enabled automatically');
-    await click('Details zu Claude CLI · Standardanmeldung');
+    await click('Details zu Claude CLI');
     assert(document.body.textContent.includes('Anmeldung wird von deiner normalen Claude-CLI verwaltet'), 'Default login ownership and shared logout are visible');
     assert(button('Erneut anmelden') === undefined && button('Für Aufträge deaktivieren') !== undefined, 'Default CLI login has scheduling control without global reauthentication');
     await click('Zurück');

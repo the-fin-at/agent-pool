@@ -36,7 +36,7 @@ class RustCompatibility(unittest.TestCase):
         self.db = Store(self.home)
         self.db.add_workspace('project', self.workspace)
         self.db.add_profile('legacy', 'codex', str(BINARY.parent/'examples'/('controlled_provider'+('.exe' if os.name=='nt' else ''))))
-        self.db.cache_monitor('legacy', {'connected': True, 'email': 'legacy@example.invalid', 'plan': 'team', 'windows': [], 'observed_at': time.time()})
+        self.db.cache_monitor('legacy', {'connected': True, 'email': 'legacy@example.invalid', 'plan': 'team', 'windows': [], 'observed_at': 1700000000.25})
 
     def tearDown(self):
         for ident in self.sessions:
@@ -71,7 +71,7 @@ class RustCompatibility(unittest.TestCase):
         account = defaults[0]
         self.assertTrue(account['connected'])
         self.assertTrue(account['enabled'])
-        self.call('monitor', '--refresh')
+        self.call('overview', '--refresh')
         profiles = self.call('profile', 'list')
         self.assertEqual(len([p for p in profiles if p.get('auth_mode') == 'native_default']), 1)
         job = self.call('job', 'submit', '--provider', 'claude', '--workspace', 'project', '--prompt', 'default context', '--key', 'native-default')
@@ -206,6 +206,23 @@ class RustCompatibility(unittest.TestCase):
         (self.db.authdir(unknown)/'fixture-metadata-error').unlink()
         self.call('work','--drain')
         self.assertEqual(self.call('job','get',blocked['id'])['chosen_profile'],default)
+
+    def test_malformed_native_status_is_unknown_and_preserves_confirmed_identity_and_quota(self):
+        native=self.default_claude_fixture()
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.set_windows(default,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.call('monitor','--refresh')
+        for invalid in [{}, {'loggedIn':'true','authMethod':'claude.ai'}, {'loggedIn':True}, {'loggedIn':True,'authMethod':'none'}]:
+            (native/'fixture-status.json').write_text(json.dumps({'configDirectory':str(native.resolve()),**invalid}))
+            account=next(a for a in self.call('monitor','--refresh') if a['name']==default)
+            self.assertTrue(account['connected'], 'Malformed metadata is not confirmed logout')
+            self.assertEqual(account['email'],'rust-fixture@example.invalid')
+            self.assertIsNotNone(account['error'])
+            self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
+        self.db.set_windows(default,[],replace=True)
+        job=self.db.submit('unknown auth cannot run',self.workspace,'claude',profile=default)
+        self.call('work','--once')
+        self.assertEqual(self.call('job','get',job['id'],code=2)['attempts'],0)
 
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')

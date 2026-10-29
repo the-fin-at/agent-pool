@@ -421,6 +421,10 @@ pub fn check_claude_directory(profile: &Value, dir: &Path) -> Result<Value> {
     let data: Value = serde_json::from_str(done.out.trim()).map_err(|_| {
         anyhow!("Bitte die native Claude-CLI aktualisieren; ihr Profilstatus konnte nicht geprüft werden.")
     })?;
+    ensure!(
+        data["loggedIn"] != true || done.code == 0,
+        "Die Claude-CLI meldet einen widersprüchlichen Status-Exitcode"
+    );
     let ok = data["configDirectory"]
         .as_str()
         .filter(|s| !s.is_empty())

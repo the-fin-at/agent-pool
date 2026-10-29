@@ -52,23 +52,11 @@ pub fn refresh_claude(home: &Path) -> Result<()> {
     if !db.profiles()?.iter().any(native_default) {
         return Ok(());
     }
-    let queue = Arc::new(Mutex::new(
-        sources(&db, false)?
-            .into_iter()
-            .filter(|p| p["provider"] == "claude")
-            .collect::<Vec<_>>(),
-    ));
-    std::thread::scope(|scope| {
-        for _ in 0..3 {
-            let queue = Arc::clone(&queue);
-            scope.spawn(move || loop {
-                let Some(source) = queue.lock().ok().and_then(|mut q| q.pop()) else {
-                    break;
-                };
-                let _ = read_source(home, &source, &*native_probe());
-            });
-        }
-    });
+    let items = sources(&db, false)?
+        .into_iter()
+        .filter(|p| p["provider"] == "claude")
+        .collect();
+    refresh_sources(home, items, &*native_probe());
     Ok(())
 }
 
@@ -95,7 +83,18 @@ fn discover_claude(home: &Path) -> Result<()> {
 
 fn claude_status(profile: &Value, dir: &Path) -> Result<Value> {
     let data = crate::login::check_claude_directory(profile, dir)?;
-    let connected = data["loggedIn"] == true && data["authMethod"] == "claude.ai";
+    let logged_in = data["loggedIn"]
+        .as_bool()
+        .ok_or_else(|| anyhow::anyhow!("Die Claude-CLI bestätigt keinen gültigen Anmeldestatus"))?;
+    let method = data["authMethod"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| anyhow::anyhow!("Die Claude-CLI bestätigt keine gültige Anmeldemethode"))?;
+    ensure!(
+        logged_in == (method != "none"),
+        "Die Claude-CLI meldet einen widersprüchlichen Anmeldestatus"
+    );
+    let connected = logged_in && method == "claude.ai";
     ensure!(
         !connected || data["email"].as_str().is_some_and(|s| !s.trim().is_empty()),
         "Die Claude-CLI bestätigt keine Accountidentität; bitte aktualisieren"
@@ -274,6 +273,11 @@ pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result
         let db = Db::open(home)?;
         sources(&db, include_default)?
     };
+    refresh_sources(home, items, probe);
+    snapshot(home, include_default)
+}
+
+fn refresh_sources(home: &Path, items: Vec<Value>, probe: &Probe) {
     let queue = Arc::new(Mutex::new(items));
     std::thread::scope(|scope| {
         for _ in 0..3 {
@@ -285,7 +289,6 @@ pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result
             });
         }
     });
-    snapshot(home, include_default)
 }
 
 pub fn collect(home: &Path, include_default: bool) -> Result<Vec<Value>> {
@@ -330,7 +333,7 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
         if native_default(&source) {
             let account = result.last_mut().unwrap();
             account["auth_mode"] = json!("native_default");
-            account["display_name"] = json!("Claude CLI · Standardanmeldung");
+            account["display_name"] = json!("Claude CLI");
         } else if let Some(default) = claude_group(&db, &source)?.into_iter().find(native_default) {
             result.last_mut().unwrap()["alias_of"] = default["name"].clone();
         }
