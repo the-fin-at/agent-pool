@@ -1,0 +1,243 @@
+{
+  "date": "2026-10-29",
+  "distribution_policy": "private/internal draft preparation; separate approval for publication and 1.0 release",
+  "isolated_linux_artifacts": "claw-remote:/tmp/fleet-native-packaging.cVHlbQZW/run{1,2}",
+  "limits": [
+    "Packaging repeatability is established only from the same validated input binaries on each native host.",
+    "No independent cold compiler bit reproducibility claim.",
+    "No notarization, DMG, Windows artifact or Windows native acceptance.",
+    "No public release, stable latest change or 1.0 release decision.",
+    "No production services, pools, credentials, accounts or installed programs modified.",
+    "This actual app has no symlinks; archive link support is guarded, not a claim of a signed framework bundle acceptance."
+  ],
+  "linux_x86_64": {
+    "archive": {
+      "bytes": 2583987,
+      "name": "agent-fleet-0.5.0-linux-x86_64.tar.gz",
+      "sha256": "3b69407f5b1e80172dc5508fee47f5e1bbf78fa061304f4507f787d3484d36b5"
+    },
+    "members": [
+      {
+        "mode": "0o755",
+        "path": "scripts",
+        "type": "directory"
+      },
+      {
+        "bytes": 1965,
+        "mode": "0o755",
+        "path": "scripts/install_native.sh",
+        "sha256": "2b66ef613162d0c8b90d901c7c06bc4a44b95d7faed2328ddde5378182a7d0e9",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target",
+        "type": "directory"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release",
+        "type": "directory"
+      },
+      {
+        "bytes": 5849264,
+        "mode": "0o755",
+        "path": "target/release/agent-fleet",
+        "sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+        "type": "file"
+      }
+    ],
+    "platform": "linux-x86_64",
+    "reference_sha256": "16ec12e2808cdf9619ee8443c5f64602e13eb739099c5506cd7c79ec7e6b7681",
+    "roundtrip": {
+      "all_members_identical": true,
+      "cli_sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+      "cli_version_verified": true,
+      "codesign_deep_strict": null
+    },
+    "schema": 1,
+    "scope": "packaging repeatability from validated binaries; not compiler reproducibility",
+    "source_implementation_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "version": "0.5.0"
+  },
+  "local_artifacts": "/private/tmp/fleet-native-packages-20261029/{macos,linux}-run{1,2}",
+  "macos_arm64": {
+    "archive": {
+      "bytes": 8320663,
+      "name": "agent-fleet-0.5.0-macos-arm64.tar.gz",
+      "sha256": "2c13e5567ca22a2119fbae6f0bb56f8979ca30681f8e18baf1528a12d0c58ac4"
+    },
+    "members": [
+      {
+        "mode": "0o755",
+        "path": "scripts",
+        "type": "directory"
+      },
+      {
+        "bytes": 1965,
+        "mode": "0o755",
+        "path": "scripts/install_native.sh",
+        "sha256": "2b66ef613162d0c8b90d901c7c06bc4a44b95d7faed2328ddde5378182a7d0e9",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target",
+        "type": "directory"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release",
+        "type": "directory"
+      },
+      {
+        "bytes": 4794512,
+        "mode": "0o755",
+        "path": "target/release/agent-fleet",
+        "sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle",
+        "type": "directory"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos",
+        "type": "directory"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app",
+        "type": "directory"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents",
+        "type": "directory"
+      },
+      {
+        "bytes": 1078,
+        "mode": "0o644",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/Info.plist",
+        "sha256": "1f6fec7a6280fab8b72b4a4cbcfc3704ea8ca43f248db1852cc9fcc185857207",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/MacOS",
+        "type": "directory"
+      },
+      {
+        "bytes": 15227520,
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/MacOS/agent-fleet-desktop",
+        "sha256": "8d38dbaff79a2cfb8f63cee88d8543e89e1c9b2447284641360d12a85951af5c",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/Resources",
+        "type": "directory"
+      },
+      {
+        "bytes": 1114965,
+        "mode": "0o644",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/Resources/app.icns",
+        "sha256": "5b4db3470dc0b28fa3ce0ca308c39544351e12aa41441b99dfe980386af64083",
+        "type": "file"
+      },
+      {
+        "mode": "0o755",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/_CodeSignature",
+        "type": "directory"
+      },
+      {
+        "bytes": 2438,
+        "mode": "0o644",
+        "path": "target/release/bundle/macos/Agent Fleet.app/Contents/_CodeSignature/CodeResources",
+        "sha256": "00b935c2bb7061ff0e73cf1f2211193a60fc4e46b83e46700c9fc10b7099c349",
+        "type": "file"
+      }
+    ],
+    "platform": "macos-arm64",
+    "reference_sha256": "16ec12e2808cdf9619ee8443c5f64602e13eb739099c5506cd7c79ec7e6b7681",
+    "roundtrip": {
+      "all_members_identical": true,
+      "cli_sha256": "8f0205f6d14500cebec5565737f3187511ee7d4d07148f1ee23791e9847a778b",
+      "cli_version_verified": true,
+      "codesign_deep_strict": true
+    },
+    "schema": 1,
+    "scope": "packaging repeatability from validated binaries; not compiler reproducibility",
+    "source_implementation_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d",
+    "version": "0.5.0"
+  },
+  "packaging": {
+    "archives_byte_identical": true,
+    "cold_compiler_reproducibility": false,
+    "format": "sorted PAX tar + gzip; timestamp/uid/gid=0, empty owners and gzip filename; source modes and internal links preserved",
+    "linux_python": "3.14.4",
+    "mac_python": "3.14.7",
+    "mac_zlib": "1.2.12",
+    "manifests_byte_identical": true,
+    "sha256sums_byte_identical": true,
+    "two_runs_per_native_host": true
+  },
+  "source": {
+    "compiler_rebuild_performed": false,
+    "helper_sha256": "abd6eb0f00694181f89c35a02a60f0fdf375900c5cde999dd98c40bba87bff31",
+    "installer_sha256": "2b66ef613162d0c8b90d901c7c06bc4a44b95d7faed2328ddde5378182a7d0e9",
+    "integration_merge": "9f018a1ff90f9da0b8fba1a90e3ee02c67e142f7",
+    "linux_build": "previously validated Rust 1.96.1 Alpine linux/amd64 build; ELF64 x86_64 static-pie",
+    "linux_container_image_digest": "not recorded in the retained historical proof",
+    "mac_rust_build_cache": {
+      "commit": "31fca3adb283cc9dfd56b49cdee9a96eb9c96ffd",
+      "host": "aarch64-apple-darwin",
+      "llvm": "22.1.2",
+      "rustc": "1.96.1 (31fca3adb 2026-06-26)"
+    },
+    "original_rust_toolchain": "1.96.1",
+    "packaging_base": "79f2199b7d1201bd3ac12d178dcf82d143c387b5",
+    "reference": "docs/rust-tauri-validation.json",
+    "reference_sha256": "16ec12e2808cdf9619ee8443c5f64602e13eb739099c5506cd7c79ec7e6b7681",
+    "reviewed_implementation_commit": "c47144087d3d7f665600ef0183af1c94dcd5180d"
+  },
+  "status": "local private release assets staged; no release created or assets uploaded",
+  "verification": {
+    "all_extracted_members_hashes_modes_links_match": true,
+    "app_metadata_version": "0.5.0",
+    "app_started": false,
+    "codesign_before_and_after_extraction": "--verify --deep --strict passed",
+    "diff_check": "passed",
+    "linux_cli_and_extracted_cli_versions": "0.5.0",
+    "linux_tests": {
+      "passed": 5,
+      "skip_reason": "macOS-only bundle guards",
+      "skipped": 2
+    },
+    "mac_cli_and_extracted_cli_versions": "0.5.0",
+    "mac_tests": {
+      "passed": 7,
+      "skipped": 0
+    },
+    "negative_cases": [
+      "hash mismatch never executes candidate",
+      "hash-matching non-native candidate never executes",
+      "unvalidated version rejected",
+      "existing directory and symlink destination unchanged",
+      "unexpected .env bundle file rejected",
+      "escaping bundle symlink rejected",
+      "output inside input app rejected without mutation"
+    ],
+    "notarized": false,
+    "red_green": [
+      "real native roundtrip failed before helper existed, then passed",
+      "output-inside-input-app guard failed with unintended success, then rejected without mutation"
+    ],
+    "signature": "local ad-hoc",
+    "syntax": "Python py_compile passed"
+  },
+  "version": "0.5.0"
+}
