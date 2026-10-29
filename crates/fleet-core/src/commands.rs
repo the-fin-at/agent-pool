@@ -626,7 +626,7 @@ fn work(mut db: Db, args: &Args) -> Result<Reply> {
             }
         }
         if !run && Instant::now() >= next_monitor {
-            let _ = monitor::collect(&db.home, false);
+            let _ = monitor::refresh_codex(&db.home);
             next_monitor = Instant::now() + Duration::from_secs(60);
         }
         let did_work =

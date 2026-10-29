@@ -78,6 +78,16 @@ fn main() {
         std::process::exit(1);
     }
     if args == ["auth", "status"] {
+        use std::fs::OpenOptions;
+        writeln!(
+            OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(home.join("fixture-status-calls"))
+                .unwrap(),
+            "probe"
+        )
+        .unwrap();
         if let Ok(raw) = fs::read_to_string(home.join("fixture-status.json")) {
             println!("{raw}");
             return;

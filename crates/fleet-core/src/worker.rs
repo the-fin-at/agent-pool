@@ -256,7 +256,9 @@ fn tick_inner(
     if jobs.is_empty() {
         return Ok(false);
     }
-    crate::monitor::refresh_claude(&db.home)?;
+    if jobs.iter().any(|job| job["provider"] == "claude") {
+        crate::monitor::refresh_claude(&db.home)?;
+    }
     let providers: Vec<&Value> = jobs.iter().map(|j| &j["provider"]).collect();
     for p in db.profiles()? {
         // Probing is per-profile and metadata-only, with a 60-second cache.

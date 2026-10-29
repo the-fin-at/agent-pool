@@ -37,6 +37,8 @@
       const card = [...document.querySelectorAll('article.card')].find(c => c.querySelector('h3')?.textContent === account.name);
       assert(card?.querySelector('[role="img"]')?.getAttribute('aria-label')?.startsWith((100-window.used)+' % frei'), 'Rust quota matches native UI percentage for '+account.name);
     }
+    // Capture the actual overview even if a later geometry assertion fails.
+    await delay(13000);
     const rows = new Map();
     for (const card of document.querySelectorAll('article.card')) {
       const row = Math.round(card.getBoundingClientRect().top);
@@ -54,8 +56,6 @@
     refused = false;
     try { await invoke('open_login_url', {url:'https://claude.com.attacker.invalid/'}); } catch { refused = true; }
     assert(refused, 'Native bridge rejects unofficial login URLs');
-    // Keep overview visible long enough for an actual window capture.
-    await delay(13000);
     await click('Claude');
     await wait(() => document.querySelectorAll('article.card').length === 2, 'Claude provider filter');
     assert([...document.querySelectorAll('article.card')].some(card => card.textContent.includes('team')), 'Provider filter retains the separate managed Claude profile');
@@ -114,6 +114,7 @@
     assert(finalAccounts.accounts.find(a => a.auth_mode === 'native_default')?.connected, 'Additional Claude login preserves the original default CLI authentication');
     await invoke('test_report', {result:{passed:true, platform:'macOS WKWebView + Rust IPC', checks, viewport:{width:innerWidth,height:innerHeight}}});
   } catch (error) {
-    await invoke('test_report', {result:{passed:false, checks, error:String(error), text:document.body.innerText.slice(0,6000)}});
+    const geometry = [...document.querySelectorAll('article.card')].map(card => ({name:card.querySelector('h3')?.textContent,top:card.getBoundingClientRect().top,identityHeight:card.querySelector('.identity')?.getBoundingClientRect().height,ringTop:card.querySelector('[role="img"]')?.getBoundingClientRect().top}));
+    await invoke('test_report', {result:{passed:false, checks, error:String(error), geometry, text:document.body.innerText.slice(0,6000)}});
   }
 })();

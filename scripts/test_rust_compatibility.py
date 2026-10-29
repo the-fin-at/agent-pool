@@ -234,6 +234,16 @@ class RustCompatibility(unittest.TestCase):
         self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
         self.assertEqual(account['hold_reason'],'quota_reset_unknown')
 
+    def test_codex_only_queue_does_not_probe_registered_claude_accounts(self):
+        native=self.default_claude_fixture()
+        self.call('overview','--refresh')
+        codex=self.native_fixture('codex')
+        (native/'fixture-status-calls').write_text('')
+        job=self.db.submit('independent Codex work',self.workspace,'codex',profile=codex)
+        self.call('work','--once')
+        self.assertEqual(self.call('job','get',job['id'])['chosen_profile'],codex)
+        self.assertEqual((native/'fixture-status-calls').read_text(),'')
+
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')
         self.db.update_job(old['id'], status='succeeded', result='Existing report 🧭', chosen_profile='legacy')

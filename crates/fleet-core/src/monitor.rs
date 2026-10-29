@@ -60,6 +60,17 @@ pub fn refresh_claude(home: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Preserve the worker's metadata-only Codex refresh; Claude is checked before Claude work.
+pub fn refresh_codex(home: &Path) -> Result<()> {
+    let db = Db::open(home)?;
+    let items = sources(&db, false)?
+        .into_iter()
+        .filter(|p| p["provider"] == "codex")
+        .collect();
+    refresh_sources(home, items, &*native_probe());
+    Ok(())
+}
+
 /// Local desktop discovery only. A logged-out/missing default never creates a profile or directory.
 fn discover_claude(home: &Path) -> Result<()> {
     let mut db = Db::open(home)?;
