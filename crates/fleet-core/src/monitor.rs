@@ -179,9 +179,13 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             None
         };
         let data = probe(source, &authdir)?;
+        let same_account = if source["provider"] == "claude" {
+            identity(&old).is_some() && identity(&old) == identity(&data)
+        } else {
+            old.get("email") == data.get("email") && truth(get(&old, "connected"))
+        };
         if source["provider"] == "claude"
-            && (data["connected"] == false
-                || (old["email"].is_string() && old["email"] != data["email"]))
+            && (data["connected"] == false || (old["email"].is_string() && !same_account))
         {
             db.set_windows(&name, &[], true)?;
             if matches!(
@@ -207,7 +211,7 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
                 }
             }
         } else if truth(&fresh["connected"]) {
-            let same = old.get("email") == fresh.get("email") && truth(get(&old, "connected"));
+            let same = same_account;
             let worker_newer = managed
                 && source["observed_at"].as_f64().unwrap_or(0.0)
                     > old["checked_at"].as_f64().unwrap_or(0.0);

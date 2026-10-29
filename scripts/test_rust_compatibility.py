@@ -224,6 +224,16 @@ class RustCompatibility(unittest.TestCase):
         self.call('work','--once')
         self.assertEqual(self.call('job','get',job['id'],code=2)['attempts'],0)
 
+    def test_same_claude_identity_with_changed_email_case_keeps_its_quota_hold(self):
+        native=self.default_claude_fixture()
+        default=next(a['name'] for a in self.call('overview','--refresh')['accounts'] if a.get('auth_mode')=='native_default')
+        self.db.set_windows(default,[{'key':'five_hour','bucket':'claude','minutes':300,'used':100,'reset':time.time()+600,'model':None}],replace=True)
+        self.db.update_profile(default,hold_reason='quota_reset_unknown',hold_until=None)
+        (native/'fixture-email').write_text('RUST-FIXTURE@EXAMPLE.INVALID')
+        account=next(a for a in self.call('monitor','--refresh') if a['name']==default)
+        self.assertEqual(self.call('quota','show',default)[0]['windows'][0]['used'],100)
+        self.assertEqual(account['hold_reason'],'quota_reset_unknown')
+
     def test_existing_profiles_jobs_results_and_state_survive_both_runtimes(self):
         old = self.db.submit('Existing instruction', self.workspace, 'codex', key='old-key')
         self.db.update_job(old['id'], status='succeeded', result='Existing report 🧭', chosen_profile='legacy')
