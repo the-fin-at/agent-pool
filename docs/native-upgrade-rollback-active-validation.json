@@ -1,0 +1,234 @@
+{
+  "active_edges": [
+    {
+      "from": "old",
+      "mode": "WAIT",
+      "outcome": "succeeded",
+      "to": "new"
+    },
+    {
+      "from": "new",
+      "mode": "INTERRUPT",
+      "outcome": "needs_review",
+      "to": "old"
+    }
+  ],
+  "build": {
+    "application_core_changed": false,
+    "cargo_locked": true,
+    "example": "controlled_provider",
+    "image": "rust:1.96.1-alpine",
+    "offline": true,
+    "platform": "linux/amd64"
+  },
+  "checks": [
+    "wait barrier is an actual running CLI/RPC job and provider process",
+    "Exclusive fixture disables every eligible profile through public CLI",
+    "Ready and quota-waiting jobs have no attempts while old execution is held",
+    "Old active execution completes once with its ordinary result before upgrade",
+    "Old worker claims no later job after fixture profiles are disabled",
+    "old-wait worker stopped with an expected signal status",
+    "Native acquires released old lease before fixture profiles are restored",
+    "Original enabled map including disabled fixture profile is restored exactly",
+    "Native retains completed active result and quota wait without replay",
+    "Native RPC retains the completed pre-upgrade active result after pending work progresses",
+    "interrupt barrier is an actual running CLI/RPC job and provider process",
+    "Native editable execution has an observed partial workspace effect and live descendant",
+    "Exclusive fixture disables every eligible profile through public CLI",
+    "Independent work has no attempt while native execution is held",
+    "native-active-interrupt worker stopped with an expected signal status",
+    "Native active worker reports the expected interruption exit 130",
+    "Interrupted editable job is quarantined with one attempt and retained partial effect",
+    "Actual old programme reads native interruption state unchanged without database restore",
+    "Old identical retry retains the quarantined native job ID",
+    "Old worker acquires released native lease while independent work stays gated",
+    "Original enabled map including disabled fixture profile is restored exactly",
+    "old-after-interrupt worker stopped with an expected signal status",
+    "Rollback preserves quarantine and partial effect without restarting interrupted processes",
+    "All five durable IDs survive both distinct active execution edges",
+    "Final result and single attempt retained for active-wait-quota",
+    "Final result and single attempt retained for active-wait",
+    "Final result and single attempt retained for pending-after-active-wait",
+    "Final result and single attempt retained for pending-after-active-interrupt",
+    "Controlled invocation inventory contains every active and pending job once",
+    "Active handover retains profile identities and attached auth sentinels"
+  ],
+  "cleanup": {
+    "active_owned_provider_processes": 0,
+    "private_reports_retained": true
+  },
+  "database_restored": false,
+  "elapsed_seconds": 12.775,
+  "host": "claw-remote",
+  "identities_preserved": true,
+  "invocation_count": 5,
+  "job_count": 5,
+  "limits": [
+    "Exclusive controlled fixture and per-profile administrative gates, not an atomic pool-wide pause API",
+    "No concurrent administrator changes the profile enabled map",
+    "Two distinct edges only: old-to-native WAIT and native-to-old INTERRUPT",
+    "Native-to-old WAIT and old-to-native INTERRUPT remain unproven here",
+    "Standalone owned workers, not systemd or unexpected host/power loss",
+    "Controlled provider only; no real inference, credentials, production pools or profile changes",
+    "Interrupted stdout is not promised as a saved result; no exactly-once external side-effect promise",
+    "Linux x86_64, not native Windows or GUI acceptance"
+  ],
+  "observations": {
+    "native_to_old_interrupt": {
+      "child_pid": 3608874,
+      "descendant_active": false,
+      "effect_sha256": "92c0e8b83db82318bd1a3e8f8b7e3113139d8737c4df143a5288dbeed81f56a6",
+      "original_enabled": {
+        "blocked": true,
+        "dormant": false,
+        "runner": true
+      },
+      "provider_active": false,
+      "provider_pid": 3608872,
+      "quarantined": {
+        "allow_edits": 1,
+        "attempts": 1,
+        "id": "e0c251490bbd4c07bfe04d0730e0703e",
+        "result": null,
+        "status": "needs_review"
+      },
+      "running": {
+        "allow_edits": 1,
+        "attempts": 1,
+        "id": "e0c251490bbd4c07bfe04d0730e0703e",
+        "result": null,
+        "status": "running"
+      }
+    },
+    "old_to_native_wait": {
+      "completed": {
+        "allow_edits": 0,
+        "attempts": 1,
+        "id": "82470932ab754e86a01e124495447020",
+        "result": "read-only: __barrier_wait__",
+        "status": "succeeded"
+      },
+      "original_enabled": {
+        "blocked": true,
+        "dormant": false,
+        "runner": true
+      },
+      "pending_before_switch": [
+        {
+          "allow_edits": 0,
+          "attempts": 0,
+          "id": "8f33b3a66824466fa7d489c2c4000dfa",
+          "result": null,
+          "status": "waiting"
+        },
+        {
+          "allow_edits": 0,
+          "attempts": 0,
+          "id": "049ecad0cd7346b1982f73e7f26a332a",
+          "result": null,
+          "status": "waiting"
+        }
+      ],
+      "provider_pid": 3608714,
+      "running": {
+        "allow_edits": 0,
+        "attempts": 1,
+        "id": "82470932ab754e86a01e124495447020",
+        "result": null,
+        "status": "running"
+      }
+    }
+  },
+  "observed_at": "2026-10-29T07:10:42.268044+00:00",
+  "partial_effect_preserved": true,
+  "passed": true,
+  "pending_regression": {
+    "checks": 30,
+    "elapsed_seconds": 10.798,
+    "invocation_count": 5,
+    "job_count": 5,
+    "passed": true,
+    "same_script_and_provider_hashes": true,
+    "terminal_counts": {
+      "needs_review": 1,
+      "succeeded": 4
+    }
+  },
+  "phases": [
+    {
+      "programme": "old",
+      "sha256": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+      "version": "0.4.2"
+    },
+    {
+      "programme": "new",
+      "sha256": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+      "version": "0.5.0"
+    },
+    {
+      "programme": "old",
+      "sha256": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+      "version": "0.4.2"
+    }
+  ],
+  "platform": "Linux x86_64",
+  "programme_sha256": {
+    "new": "089affe0074cca081ad8b8a1190ee66c740a173573546c6a2c2aae530c6b99a8",
+    "old": "24b1736f942fa9873a54e271c2803b74383a9832829bbbc69ed6cfec133f1348",
+    "provider": "ccb904278a7bc6af0ca06b54274d89d035a059f4620ff954380fc7b09053baa7"
+  },
+  "provenance": {
+    "new": "verified installed native 0.5 executable; unchanged by this probe",
+    "old": "actual backed-up production 0.4.2 programme; not rebuilt from current Python reference",
+    "provider": "controlled example compiled offline in existing local Linux/amd64 Rust container and caches; no remote compiler installation"
+  },
+  "public_cli_safety_tests": {
+    "failed": 0,
+    "passed": 7
+  },
+  "schema_version": 1,
+  "scope": "isolated exclusive fixture old-to-native WAIT and native-to-old INTERRUPT; not symmetric coverage or a production pause API",
+  "source": {
+    "base": "f58e742ca362368b3c6bcce5a35670e06bff7304",
+    "controlled_example_source_sha256": "d2b4c13a47846731218290aef0534db976624b58944a3adce5939bb98c19f813",
+    "implementation_commit": "a31bcdd8a99fb7469349158dcfbe536516a15ba9",
+    "script_sha256": "c9a64f029c617e75c4778e7bf768ddb2b7d42e2edf8debbcd329501a3c524f28"
+  },
+  "tdd": [
+    {
+      "green_checks": 12,
+      "red": "original compiled provider completed instead of publishing its release barrier",
+      "red_exit": 1,
+      "slice": "WAIT"
+    },
+    {
+      "green_checks": 30,
+      "red": "WAIT-only compiled provider completed instead of publishing an interrupt barrier",
+      "red_exit": 1,
+      "slice": "INTERRUPT"
+    }
+  ],
+  "terminal_counts": {
+    "needs_review": 1,
+    "succeeded": 4
+  },
+  "uncertain_replayed": false,
+  "versions": {
+    "new": "0.5.0",
+    "old": "0.4.2"
+  },
+  "worker_stops": [
+    {
+      "exit_code": 130,
+      "programme": "old-wait"
+    },
+    {
+      "exit_code": 130,
+      "programme": "native-active-interrupt"
+    },
+    {
+      "exit_code": 130,
+      "programme": "old-after-interrupt"
+    }
+  ]
+}

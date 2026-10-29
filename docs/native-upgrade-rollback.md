@@ -95,7 +95,7 @@ directory inventory remain unchanged.
 
 This probe does not stop or change a systemd unit and does not use the live pool.
 It covers pending-work handover with owned idle workers. It does not transition
-an actively executing job between programmes; that remains a separate 1.0 gate.
+an actively executing job between programmes. A later [active-execution probe](native-upgrade-rollback-active.md) covers two explicitly bounded edges separately.
 The production cutover's service, backup and original-account/job verification
 are separate operational evidence. This Linux result does not establish native
 Windows installation, timeout/descendant behavior or GUI acceptance, and it does
