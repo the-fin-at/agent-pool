@@ -96,10 +96,19 @@ fn main() {
         } else {
             print!("Visit https://claude.com/oauth/authorize?state=fixture-only\nPaste code here if prompted > ");
             io::stdout().flush().unwrap();
-            let mut code = String::new();
-            io::stdin().read_line(&mut code).unwrap();
-            if code.trim() != "fixture-authorized-code" {
-                std::process::exit(1);
+            let mut input = io::stdin().lock();
+            loop {
+                let mut code = String::new();
+                if input.read_line(&mut code).unwrap() == 0 {
+                    std::process::exit(1);
+                }
+                if code.trim() == "fixture-authorized-code" {
+                    break;
+                }
+                // Claude 2.1.312 waits for another line after rejecting a code,
+                // without printing the original paste prompt again.
+                eprintln!("Invalid code. Please make sure the full code was copied.");
+                io::stderr().flush().unwrap();
             }
             fs::write(&accepted, "fixture-only").unwrap();
         }

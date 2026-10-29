@@ -171,4 +171,52 @@ describe('native sign-in', () => {
     expect(calls.find((c) => c.argv[1] === 'input')?.argv).toEqual(['auth', 'input', id, '--code=geheim-12345']);
     expect(screen.queryByRole('button', { name: 'Zur Übersicht' })).not.toBeInTheDocument();
   });
+
+  it('shows a native code rejection and accepts corrected input without starting another login', async () => {
+    const user = userEvent.setup();
+    let id = '';
+    let submissions = 0;
+    let verificationPolls = 0;
+    const rejection = 'Claude hat den Code nicht akzeptiert. Kopiere den vollständigen Code aus dem Browser und versuche es erneut.';
+    const { transport, calls } = fakeTransport((_t, argv) => {
+      if (argv[0] === 'overview') return status([]);
+      if (argv[1] === 'start') {
+        const s = session(argv, 'awaiting_code', { updated_at: 1 });
+        id = s.id;
+        return s;
+      }
+      if (argv[1] === 'input') {
+        submissions += 1;
+        return { accepted: true, id };
+      }
+      if (argv[1] === 'get') {
+        if (submissions === 0) return { id, profile: 'team', provider: 'claude', state: 'awaiting_code', updated_at: 1 };
+        if (submissions === 2) return { id, profile: 'team', provider: 'claude', state: 'succeeded', message: 'Account verbunden.', updated_at: 4 };
+        verificationPolls += 1;
+        return verificationPolls === 1
+          ? { id, profile: 'team', provider: 'claude', state: 'verifying', message: 'Anmeldung wird bestätigt …', updated_at: 2 }
+          : { id, profile: 'team', provider: 'claude', state: 'awaiting_code', message: rejection, updated_at: 3 };
+      }
+      throw new FleetError('unexpected');
+    });
+    render(<App transport={transport} timing={FAST} />);
+    await openLogin(user);
+    await user.click(screen.getByRole('radio', { name: 'Claude' }));
+    await user.type(screen.getByRole('textbox', { name: 'Name für diesen Account' }), 'team');
+    await user.click(screen.getByRole('button', { name: 'Anmeldung starten' }));
+    await user.type(await screen.findByLabelText('Code aus dem Browser'), 'fixture-rejected-code');
+    await user.click(screen.getByRole('button', { name: 'Anmeldung abschließen' }));
+    expect(await screen.findByText(rejection)).toBeInTheDocument();
+    const field = screen.getByLabelText('Code aus dem Browser');
+    expect(field).toBeEnabled();
+    expect(field).toHaveAttribute('type', 'password');
+    expect(field).toHaveValue('');
+    expect(document.body.textContent).not.toContain('fixture-rejected-code');
+    expect(screen.queryByRole('button', { name: 'Zur Übersicht' })).not.toBeInTheDocument();
+    await user.type(field, 'fixture-authorized-code');
+    await user.click(screen.getByRole('button', { name: 'Anmeldung abschließen' }));
+    expect(await screen.findByText('Account verbunden.')).toBeInTheDocument();
+    expect(calls.filter(c => c.argv[1] === 'start')).toHaveLength(1);
+    expect(calls.filter(c => c.argv[1] === 'input').map(c => c.argv[2])).toEqual([id, id]);
+  });
 });

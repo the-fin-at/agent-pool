@@ -247,6 +247,64 @@ class RustCompatibility(unittest.TestCase):
                 self.assertNotIn(b'fixture-authorized-code', path.read_bytes(), str(path))
         self.assertTrue(self.db.profile(name)['enabled'])
 
+    def test_native_claude_rejected_code_can_be_corrected_in_same_session(self):
+        import uuid
+        name = self.native_fixture('claude')
+        self.db.update_profile(name, enabled=False)
+        (self.db.authdir(name)/'fixture-accepted').unlink()
+        key = uuid.uuid4().hex
+        self.sessions.append(key)
+        self.call('auth', 'start', name, '--provider', 'claude', '--key', key)
+        self.wait_login(key, {'awaiting_code'})
+        provider_pid = (self.db.authdir(name)/'fixture-parent.pid').read_text()
+        self.call('auth', 'input', key, '--code=fixture-rejected-code')
+        until = time.monotonic()+3
+        retry = None
+        while time.monotonic() < until:
+            retry = self.call('auth', 'get', key)
+            if retry['state'] == 'awaiting_code' and 'nicht akzeptiert' in retry['message']:
+                break
+            time.sleep(.05)
+        self.assertEqual(retry['state'], 'awaiting_code', retry)
+        self.assertIn('nicht akzeptiert', retry['message'])
+        self.assertIn('vollständigen Code', retry['message'])
+        self.assertEqual(retry['id'], key)
+        self.assertEqual(retry['profile'], name)
+        self.assertEqual((self.db.authdir(name)/'fixture-parent.pid').read_text(), provider_pid)
+        profile = next(p for p in self.call('profile', 'list') if p['name'] == name)
+        self.assertFalse(profile['enabled'])
+        account = next(a for a in self.call('status')['accounts'] if a['name'] == name)
+        self.assertFalse(account['connected'])
+        self.call('auth', 'input', key, '--code=fixture-authorized-code')
+        self.wait_login(key, {'succeeded'})
+        self.assertTrue(next(p for p in self.call('profile', 'list') if p['name'] == name)['enabled'])
+        self.assertTrue(next(a for a in self.call('status')['accounts'] if a['name'] == name)['connected'])
+        for path in self.home.rglob('*'):
+            if path.is_file() and path.suffix in {'.json', '.input', '.log'}:
+                for secret in (b'fixture-rejected-code', b'fixture-authorized-code'):
+                    self.assertNotIn(secret, path.read_bytes(), str(path))
+
+    def test_native_claude_rejected_code_remains_cancellable(self):
+        import uuid
+        name = self.native_fixture('claude')
+        self.db.update_profile(name, enabled=False)
+        (self.db.authdir(name)/'fixture-accepted').unlink()
+        key = uuid.uuid4().hex
+        self.sessions.append(key)
+        self.call('auth', 'start', name, '--provider', 'claude', '--key', key)
+        self.wait_login(key, {'awaiting_code'})
+        self.call('auth', 'input', key, '--code=fixture-rejected-code')
+        until = time.monotonic()+3
+        while time.monotonic() < until:
+            state = self.call('auth', 'get', key)
+            if state['state'] == 'awaiting_code' and 'nicht akzeptiert' in state['message']:
+                break
+            time.sleep(.05)
+        self.assertEqual(state['state'], 'awaiting_code', state)
+        self.call('auth', 'cancel', key)
+        self.wait_login(key, {'cancelled'})
+        self.assertFalse(next(p for p in self.call('profile', 'list') if p['name'] == name)['enabled'])
+
     def test_native_login_cancel_is_real_and_keeps_new_profile_disabled(self):
         import uuid
         name = self.native_fixture()
