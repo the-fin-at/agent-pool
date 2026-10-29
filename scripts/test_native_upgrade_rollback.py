@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Opt-in pending-work programme handover acceptance in one newly created private pool."""
+"""Opt-in pending/active programme handover acceptance in one newly created private pool."""
 import argparse
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -22,6 +22,7 @@ def parser():
         result.add_argument("--" + name, required=True)
     result.add_argument("--old-version", default="0.4.2")
     result.add_argument("--new-version", default="0.5.0")
+    result.add_argument("--scenario", choices=("pending", "active"), default="pending")
     result.add_argument("--validate-only", action="store_true", help="Check inputs/versions without creating the scratch pool")
     return result
 
@@ -108,6 +109,7 @@ class Handover:
         self.logs = []
         self.checks = []
         self.jobs = {}
+        self.profile_names = ("runner", "blocked")
         self.report = {
             "schema_version": 1, "passed": False,
             "scope": "isolated pending-work controlled-provider CLI handover; no active-job transition, production state or real inference",
@@ -172,17 +174,19 @@ class Handover:
 
     def auth_inventory(self):
         result = {}
-        for name in ("runner", "blocked"):
+        for name in self.profile_names:
             directory = self.root / "auth" / name
             info = directory.stat()
             result[name] = {"inode": info.st_ino, "mode": stat.S_IMODE(info.st_mode),
                             "sentinel_sha256": digest(directory / "sentinel")}
         return result
 
-    def submit(self, label, profile="runner", prompt=None, timeout=15):
+    def submit(self, label, profile="runner", prompt=None, timeout=15, allow_edits=False):
         prompt = label if prompt is None else prompt
         argv = ["job", "submit", "--provider", "codex", "--profile", profile, "--workspace", "fixture",
                 "--prompt", prompt, "--key", label, "--timeout", str(timeout), "--max-attempts", "3"]
+        if allow_edits:
+            argv.append("--allow-edits")
         reply = self.call(*argv)
         self.jobs[label] = {"id": reply["id"], "argv": argv, "prompt": prompt}
         return reply["id"]
@@ -250,16 +254,28 @@ class Handover:
             time.sleep(.05)
         raise ValueError("Controlled timeout descendant remains active")
 
-    def run(self):
+    def prepare_pool(self, names=("runner", "blocked"), disabled=()):
+        self.profile_names = names
         self.switch("old")
         self.call("workspace", "add", "fixture", "--path", str(self.workspace))
-        for name in ("runner", "blocked"):
+        for name in names:
             auth = self.root / "auth" / name
             auth.mkdir(mode=0o700, parents=True)
             (auth / "sentinel").write_text("controlled attached account; not a credential")
             (auth / "fixture-accepted").write_text("controlled fixture only")
             self.call("profile", "add", name, "--provider", "codex", "--binary", str(self.programs["provider"]), "--auth-home", str(auth))
-            self.call("profile", "enable", name)
+            self.call("profile", "disable" if name in disabled else "enable", name)
+
+    def invocation_prompts(self):
+        trace = []
+        for name in self.profile_names:
+            path = self.root / "auth" / name / "fixture-executions.jsonl"
+            if path.exists():
+                trace.extend(json.loads(line)["prompt"] for line in path.read_text().splitlines())
+        return trace
+
+    def run(self):
+        self.prepare_pool()
         self.windows(blocked=True)
         self.submit("completed-before-upgrade")
         self.call("work", "--once")
@@ -326,11 +342,7 @@ class Handover:
                 job = final[item["id"]]
                 self.check(job["status"] == "succeeded" and job["attempts"] == 1 and job["result"] == "read-only: " + item["prompt"],
                            "Final result and one attempt retained for " + label)
-        trace = []
-        for name in ("runner", "blocked"):
-            path = self.root / "auth" / name / "fixture-executions.jsonl"
-            if path.exists():
-                trace.extend(json.loads(line)["prompt"] for line in path.read_text().splitlines())
+        trace = self.invocation_prompts()
         self.check(Counter(trace) == Counter(value["prompt"] for value in self.jobs.values()),
                    "Controlled invocation inventory contains each job once including the quarantined timeout")
         self.check(self.identities() == profiles and self.auth_inventory() == auth, "Final profile identities/auth sentinels remain intact")
@@ -363,6 +375,163 @@ class Handover:
             log.close()
 
 
+class ActiveHandover(Handover):
+    """Exclusive fixture workflow: per-profile gates, not an atomic pause API."""
+    def wait_for(self, condition, message, timeout=12):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if condition():
+                return
+            time.sleep(.05)
+        raise ValueError(message)
+
+    def barrier(self, ident, mode):
+        marker = self.root / "auth/runner" / ("fixture-barrier-" + mode + ".ready")
+        def ready():
+            row = self.job(ident)
+            require(row["status"] not in ("succeeded", "failed", "needs_review"),
+                    "Controlled execution ended without the " + mode + " release barrier")
+            return marker.is_file()
+        self.wait_for(ready, "Controlled execution did not publish " + mode + " barrier")
+        value = json.loads(marker.read_text())
+        row = self.rpc_job(ident)
+        self.check(row["status"] == "running" and row["attempts"] == 1
+                   and self.owned_provider_active(value["pid"]),
+                   mode + " barrier is an actual running CLI/RPC job and provider process")
+        return value
+
+    def owned_provider_active(self, pid):
+        proc = Path("/proc") / str(pid)
+        try:
+            return ((proc / "exe").resolve(strict=True) == self.programs["provider"]
+                    and (proc / "cwd").resolve(strict=True) == self.workspace
+                    and (proc / "stat").read_text().split(")", 1)[1].split()[0] != "Z")
+        except FileNotFoundError:
+            return False
+
+    def disable_profiles(self):
+        original = {row["name"]: bool(row["enabled"]) for row in self.identities()}
+        for name, enabled in original.items():
+            if enabled:
+                self.call("profile", "disable", name)
+        self.check(all(not row["enabled"] for row in self.identities()),
+                   "Exclusive fixture disables every eligible profile through public CLI")
+        return original
+
+    def restore_profiles(self, original):
+        for name, enabled in original.items():
+            self.call("profile", "enable" if enabled else "disable", name)
+        self.check({row["name"]: bool(row["enabled"]) for row in self.identities()} == original,
+                   "Original enabled map including disabled fixture profile is restored exactly")
+
+    def pending_untouched(self, identifiers):
+        return all(self.job(ident)["status"] in ("queued", "waiting")
+                   and self.job(ident)["attempts"] == 0 for ident in identifiers)
+
+    def observe_job(self, ident):
+        row = self.rpc_job(ident)
+        return {key: row[key] for key in ("id", "status", "attempts", "result", "allow_edits")}
+
+    def run(self):
+        self.report["scope"] = "isolated exclusive fixture old-to-native WAIT and native-to-old INTERRUPT; not symmetric coverage or a production pause API"
+        self.prepare_pool(("runner", "blocked", "dormant"), disabled=("dormant",))
+        profiles, auth = self.identities(), self.auth_inventory()
+        self.windows(blocked=True)
+        waiting = self.submit("active-wait-quota", profile="blocked")
+        self.call("work", "--once")
+        active = self.submit("active-wait", prompt="__barrier_wait__", timeout=45)
+        worker = self.start_worker("old-active-wait")
+        marker = self.barrier(active, "wait")
+        observed_wait = {"running": self.observe_job(active), "provider_pid": marker["pid"]}
+        queued = self.submit("pending-after-active-wait")
+        original = self.disable_profiles()
+        self.check(self.pending_untouched((waiting, queued)), "Ready and quota-waiting jobs have no attempts while old execution is held")
+        (self.root / "auth/runner/fixture-barrier-wait.release").write_text("release controlled execution")
+        self.wait_for(lambda: self.job(active)["status"] == "succeeded", "Old active job did not finish after release")
+        completed = self.rpc_job(active)
+        self.check(completed["attempts"] == 1 and completed["result"] == "read-only: __barrier_wait__",
+                   "Old active execution completes once with its ordinary result before upgrade")
+        self.wait_for(lambda: self.job(queued)["status"] == "waiting", "Old worker did not observe disabled profiles after completion")
+        self.check(self.pending_untouched((waiting, queued)) and not self.owned_provider_active(marker["pid"]),
+                   "Old worker claims no later job after fixture profiles are disabled")
+        observed_wait.update(completed=self.observe_job(active),
+                             pending_before_switch=[self.observe_job(ident) for ident in (waiting, queued)],
+                             original_enabled=original)
+        self.stop_worker(worker, "old-wait")
+        self.switch("new")
+        worker = self.start_worker("native-after-wait")
+        self.check(self.pending_untouched((waiting, queued)), "Native acquires released old lease before fixture profiles are restored")
+        self.restore_profiles(original)
+        self.wait_for(lambda: self.job(queued)["status"] == "succeeded", "Native did not finish independent ready work")
+        self.check(self.job(active) == completed and self.pending_untouched((waiting,)),
+                   "Native retains completed active result and quota wait without replay")
+        self.windows(blocked=False)
+        self.wait_for(lambda: self.job(waiting)["status"] == "succeeded", "Native did not finish released quota work")
+        self.check(self.rpc_job(active) == completed,
+                   "Native RPC retains the completed pre-upgrade active result after pending work progresses")
+
+        interrupted = self.submit("active-interrupt", prompt="__barrier_interrupt__", timeout=45, allow_edits=True)
+        marker = self.barrier(interrupted, "interrupt")
+        observed_interrupt = {"running": self.observe_job(interrupted), "provider_pid": marker["pid"],
+                              "child_pid": marker["child_pid"]}
+        effect = self.workspace / "fixture-interrupt-effect"
+        self.check(effect.read_text() == "partial controlled edit before interruption"
+                   and self.owned_provider_active(marker["child_pid"]),
+                   "Native editable execution has an observed partial workspace effect and live descendant")
+        independent = self.submit("pending-after-active-interrupt")
+        original = self.disable_profiles()
+        self.check(self.pending_untouched((independent,)), "Independent work has no attempt while native execution is held")
+        self.stop_worker(worker, "native-active-interrupt")
+        self.check(worker.returncode == 130, "Native active worker reports the expected interruption exit 130")
+        self.wait_for(lambda: not self.owned_provider_active(marker["pid"])
+                      and not self.owned_provider_active(marker["child_pid"]),
+                      "Interrupted controlled parent or descendant remains active")
+        uncertain = self.rpc_job(interrupted)
+        self.check(uncertain["status"] == "needs_review" and uncertain["attempts"] == 1
+                   and uncertain["allow_edits"] and effect.read_text() == "partial controlled edit before interruption",
+                   "Interrupted editable job is quarantined with one attempt and retained partial effect")
+        observed_interrupt.update(quarantined=self.observe_job(interrupted), effect_sha256=digest(effect),
+                                  provider_active=False, descendant_active=False, original_enabled=original)
+        before = self.inventory()
+        self.switch("old")
+        self.check(self.inventory() == before and self.rpc_job(interrupted) == uncertain,
+                   "Actual old programme reads native interruption state unchanged without database restore")
+        self.check(self.call(*self.jobs["active-interrupt"]["argv"])["id"] == interrupted,
+                   "Old identical retry retains the quarantined native job ID")
+        worker = self.start_worker("old-after-interrupt")
+        self.check(self.pending_untouched((independent,)), "Old worker acquires released native lease while independent work stays gated")
+        self.restore_profiles(original)
+        self.wait_for(lambda: self.job(independent)["status"] == "succeeded", "Old worker did not finish independent pending work")
+        self.stop_worker(worker, "old-after-interrupt")
+        self.check(self.rpc_job(interrupted) == uncertain
+                   and effect.read_text() == "partial controlled edit before interruption"
+                   and not self.owned_provider_active(marker["pid"])
+                   and not self.owned_provider_active(marker["child_pid"]),
+                   "Rollback preserves quarantine and partial effect without restarting interrupted processes")
+        final = self.inventory()
+        self.check(set(final) == {item["id"] for item in self.jobs.values()},
+                   "All five durable IDs survive both distinct active execution edges")
+        for label, item in self.jobs.items():
+            if label != "active-interrupt":
+                row = final[item["id"]]
+                self.check(row["status"] == "succeeded" and row["attempts"] == 1
+                           and row["result"] == "read-only: " + item["prompt"],
+                           "Final result and single attempt retained for " + label)
+        trace = self.invocation_prompts()
+        self.check(Counter(trace) == Counter(value["prompt"] for value in self.jobs.values()),
+                   "Controlled invocation inventory contains every active and pending job once")
+        self.check(self.identities() == profiles and self.auth_inventory() == auth,
+                   "Active handover retains profile identities and attached auth sentinels")
+        self.report.update(passed=True, job_count=len(final), invocation_count=len(trace),
+                           terminal_counts=dict(Counter(job["status"] for job in final.values())),
+                           identities_preserved=True, database_restored=False,
+                           uncertain_replayed=False, partial_effect_preserved=True,
+                           observations={"old_to_native_wait": observed_wait, "native_to_old_interrupt": observed_interrupt},
+                           active_edges=[{"from": "old", "to": "new", "mode": "WAIT", "outcome": "succeeded"},
+                                         {"from": "new", "to": "old", "mode": "INTERRUPT", "outcome": "needs_review"}])
+        return self.report
+
+
 def main():
     args = parser().parse_args()
     handover = None
@@ -371,7 +540,7 @@ def main():
         if args.validate_only:
             print(json.dumps({"mode": "preflight", "versions": versions, "programme_sha256": hashes}))
             return 0
-        handover = Handover(root, programs, versions, hashes)
+        handover = (ActiveHandover if args.scenario == "active" else Handover)(root, programs, versions, hashes)
         try:
             report = handover.run()
         finally:

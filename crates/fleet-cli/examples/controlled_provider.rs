@@ -136,6 +136,51 @@ fn main() {
         std::process::id().to_string(),
     )
     .unwrap();
+    if prompt == "__barrier_wait__" || prompt == "__barrier_interrupt__" {
+        let mode = if prompt == "__barrier_wait__" {
+            "wait"
+        } else {
+            "interrupt"
+        };
+        let mut child = if mode == "interrupt" {
+            assert!(args
+                .windows(2)
+                .any(|a| a == ["--sandbox", "workspace-write"]));
+            fs::write(
+                "fixture-interrupt-effect",
+                "partial controlled edit before interruption",
+            )
+            .unwrap();
+            let child = Command::new(env::current_exe().unwrap())
+                .arg("--sleep-child")
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+                .unwrap();
+            fs::write(home.join("fixture-child.pid"), child.id().to_string()).unwrap();
+            Some(child)
+        } else {
+            None
+        };
+        let marker = home.join(format!("fixture-barrier-{mode}.ready"));
+        let release = home.join(format!("fixture-barrier-{mode}.release"));
+        fs::write(
+            marker.with_extension("staged"),
+            json!({"pid":std::process::id(),"child_pid":child.as_ref().map(|c|c.id())}).to_string(),
+        )
+        .unwrap();
+        fs::rename(marker.with_extension("staged"), marker).unwrap();
+        let until = now() + 30.;
+        while !release.exists() && now() < until {
+            thread::sleep(Duration::from_millis(20));
+        }
+        if let Some(child) = child.as_mut() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+        assert!(release.exists(), "Controlled barrier expired");
+    }
     if prompt == "__timeout__" {
         let mut child = Command::new(env::current_exe().unwrap())
             .arg("--sleep-child")
