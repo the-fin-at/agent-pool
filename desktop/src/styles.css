@@ -74,6 +74,7 @@ button:disabled { cursor: default; }
 .scope-check { color: var(--action); }
 .brand { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 17px; flex: none; }
 .compass { color: var(--text); }
+.provider-logo { display: block; flex: none; object-fit: contain; }
 
 /* Sidebar */
 .sidebar { width: 232px; flex: none; display: flex; flex-direction: column; justify-content: space-between; background: var(--sidebar); border-right: 1px solid var(--line); padding: 26px 16px 18px; overflow-y: auto; }
@@ -93,7 +94,7 @@ button:disabled { cursor: default; }
 /* Compact navigation below 880 px */
 .compact-nav { padding: 12px 20px 4px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--line); }
 .compact-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.tab { border: 0; border-radius: 999px; background: transparent; padding: 7px 14px; font-size: 15px; }
+.tab { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: transparent; padding: 7px 14px; font-size: 15px; }
 .tab:hover:not(:disabled) { background: var(--raised); }
 .tab[aria-current] { background: var(--soft); color: var(--action); }
 .tab:disabled { color: var(--muted); opacity: .6; }
