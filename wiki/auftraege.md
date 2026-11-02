@@ -198,3 +198,17 @@ Der Implementierungsauftrag [Issue #39](https://github.com/the-fin-at/agent-pool
 | Anzeige / Integration | Root, Frontend Metadaten/Quota/Details, Version, Wiki und Installation | Mitgliedsguthaben vom Zeitlimit unterscheiden; echte Werte erhalten; Tests/Build/Review/native lokale App | Running | UI-Grundregression vor Fix rot, danach 12 gezielte Tests und gesamte 38 React-Tests grün; Build bestanden. Backend/Review/Installation abhängig |
 
 [Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) führen Quellbasis und tatsächlich ausgeführte Prüfungen. Keine Remote-Installation, öffentlichen Releases oder CI-Aktivierungen beauftragt.
+
+### Zentrale lokale Abnahme am 2026-11-02, 21:37 Wien
+
+Die obigen Running-/Review-Zustände sind für diesen späteren Checkpoint überholt. Quellcode `the-fin-at/agent-pool@e61edc9d5770db4ccecd89c63b2de1a78d315763` ist unabhängig geprüft; ein P2 zur selben E-Mail in wechselnden Workspaces wurde vor Abschluss rot reproduziert, korrigiert und unabhängig grün nachgeprüft.
+
+| Paket | Status / zentrale Entscheidung | Tatsächliche Nachweise |
+| --- | --- | --- |
+| Alias-Karten | Accepted durch Root | 38 React-Tests inklusive echter Karte/Toggles/Suche/Fallback, unabhängiges Review ohne offene Befunde; installierte native App zeigt vier Karten bei vier Accounts und nur eine Claude-Karte. Alle sieben Profile sind über All-Profile sichtbar |
+| Codex-Grund / Workspace | Accepted durch Root | 94 Rust-Workspace-Tests, keine Skips/Fehler; Format/Clippy bestanden. Neue Release-CLI bestätigt den spezifischen Anbietergrund live. Native Details zeigen Workspace THE-FIN und den Mitgliedsguthaben-Grund. Modellbucket-, Workspace-, Fehler-, Logout- und neuere Beobachtungsfälle abgedeckt |
+| Lokale Integration 0.5.3 | Accepted durch Root | Finale CLI und `.app` gebaut, Ad-hoc-Signatur tief/strikt geprüft, mit Rücknahmesicherungen installiert und Bytes verglichen. Neun native Prüfungen an tatsächlich neu gestarteter installierter App bestanden. Sechs vorhandene Profile samt Aktivierung/Auth-Kontext, leere Queue und Workspaces vor/nach Neustart unverändert; SQLite-Integrität ok |
+
+Johannes bestätigte im selben Chat, dass seine ursprüngliche Einschätzung des Verbrauchswerts ein Missverständnis war. Die Anbieterwerte bleiben unverändert; die präzisere Grundanzeige bleibt Teil des lokalen Fixes. Die frühere native Sperre durch den gesperrten Mac wurde durch die direkte Entsperrbestätigung und tatsächlich ausgeführte Sichtprüfung aufgelöst.
+
+[Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) binden Quellrevision, Reviewdiff, Programmhashes, tatsächliche CLI-/UI-Nachweise und Bestanderhaltung. Keine Server-, Windows-, Hosted-CI- oder öffentliche Releaseabnahme wird daraus abgeleitet.

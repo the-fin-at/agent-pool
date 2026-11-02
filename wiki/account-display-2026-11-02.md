@@ -20,3 +20,7 @@ Quelle: datensparsame read-only App-Server-Probes (`account/read` mit `refreshTo
 ## Abnahme
 
 Implementierungs-, Test-, Review- und Installationsstatus werden im [Auftragsregister](auftraege.md) und im [normalisierten Nachweis](../docs/account-display-2026-11-02-validation.json) datiert geführt. Ein lokaler Fix umfasst keine Serveraktualisierung, Windowsabnahme, Hosted-CI-Reaktivierung oder öffentliche Freigabe.
+
+### Lokaler Abschluss am 2026-11-02
+
+Am Quellstand `the-fin-at/agent-pool@e61edc9d5770db4ccecd89c63b2de1a78d315763` ersetzte 0.5.3 den oben beschriebenen Ausgangsfehler: 38 React- und 94 Rust-Workspace-Tests, unabhängiges Review und neun tatsächliche native Prüfungen der installierten App bestanden. Die Bestandsdaten und Auth-Kontexte blieben erhalten. Ein zusätzlicher Reviewbefund zur gleichen E-Mail in einem anderen Workspace wurde vor Abschluss korrigiert. Johannes bestätigte, dass seine Annahme über freie Kapazität ein Missverständnis war; es wurde keine positive Kapazität erfunden. [Abnahmeregister](auftraege.md) und [Nachweis](../docs/account-display-2026-11-02-validation.json) enthalten die Grenzen.
