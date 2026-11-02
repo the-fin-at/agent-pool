@@ -1,7 +1,7 @@
 {
   "name": "agent-fleet-desktop",
   "private": true,
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Agent Fleet Desktop: Account- und Kontingentübersicht, Verbindungen und native Anmeldung",
   "license": "UNLICENSED",
   "type": "module",
