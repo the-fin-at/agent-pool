@@ -212,3 +212,5 @@ Die obigen Running-/Review-Zustände sind für diesen späteren Checkpoint über
 Johannes bestätigte im selben Chat, dass seine ursprüngliche Einschätzung des Verbrauchswerts ein Missverständnis war. Die Anbieterwerte bleiben unverändert; die präzisere Grundanzeige bleibt Teil des lokalen Fixes. Die frühere native Sperre durch den gesperrten Mac wurde durch die direkte Entsperrbestätigung und tatsächlich ausgeführte Sichtprüfung aufgelöst.
 
 [Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) binden Quellrevision, Reviewdiff, Programmhashes, tatsächliche CLI-/UI-Nachweise und Bestanderhaltung. Keine Server-, Windows-, Hosted-CI- oder öffentliche Releaseabnahme wird daraus abgeleitet.
+
+Die überprüfbare Übergabe liegt als [Draft PR #42](https://github.com/the-fin-at/agent-pool/pull/42) auf Branch `fix/account-display-quota`; am 2026-11-02 war sie mergebar und noch nicht gemergt. Lokale Installation 0.5.3 ist davon getrennt abgeschlossen. Der ursprüngliche Main-Checkout blieb sauber auf `992a0f6`.
