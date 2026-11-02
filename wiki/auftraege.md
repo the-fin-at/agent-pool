@@ -214,3 +214,11 @@ Johannes bestätigte im selben Chat, dass seine ursprüngliche Einschätzung des
 [Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) binden Quellrevision, Reviewdiff, Programmhashes, tatsächliche CLI-/UI-Nachweise und Bestanderhaltung. Keine Server-, Windows-, Hosted-CI- oder öffentliche Releaseabnahme wird daraus abgeleitet.
 
 Die überprüfbare Übergabe liegt als [Draft PR #42](https://github.com/the-fin-at/agent-pool/pull/42) auf Branch `fix/account-display-quota`; am 2026-11-02 war sie mergebar und noch nicht gemergt. Lokale Installation 0.5.3 ist davon getrennt abgeschlossen. Der ursprüngliche Main-Checkout blieb sauber auf `992a0f6`.
+
+## Originale Logos und Foreground-Farben: Nachauftrag am 2026-11-02
+
+Johannes beauftragte nach der lokalen 0.5.3-Abnahme originale Codex-/Claude-Logos und präzisierte anschließend eine einfarbige Darstellung passend zur Schriftfarbe. Root setzte diesen begrenzten Asset-/Darstellungsauftrag direkt um; Subagenten waren dafür nicht nötig. Version 0.5.4 war ein farbiger Zwischenstand und wurde nach der Nutzerpräzisierung durch 0.5.5 ersetzt.
+
+Am Quellstand `the-fin-at/agent-pool@734a4c6cd441526830c4c8e0af4ed17183f6770e` sind Originalassets lokal gebündelt und folgen in Sidebar, Accountkarten und kompakter Navigation dem geerbten `currentColor`. Die bisherige PNG-Fläche wird als Maske ohne weißes Quadrat gezeichnet. [Herkunft](../desktop/src/assets/providers/README.md) und [Nachweise](../docs/provider-logos-2026-11-02-validation.json) halten Geometrie, Assethashes und begrenzte Prüfungen fest.
+
+Status **Accepted** durch Root: 38 React-Tests, TypeScript-/Vite-Build, native CLI-/App-Build und tiefe/strikte Signaturprüfung bestanden. Die tatsächlich neu gestartete installierte App zeigte Version 0.5.5, beide monochromen Logos in Navigation und Accountkarten sowie passenden Foreground im aktiven Codex-Eintrag. Gesamtübersicht wurde wiederhergestellt; sechs Profile, Jobs und Workspaces blieben unverändert. Die bisherigen 94 Rust-Tests wurden für diese reine Logo-/Versionsänderung nicht als neuer Lauf ausgegeben. Der Nachtrag gehört zu [Draft PR #42](https://github.com/the-fin-at/agent-pool/pull/42); Main und Remoteprogramme bleiben getrennt.

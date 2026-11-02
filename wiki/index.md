@@ -93,3 +93,7 @@ Am Quellstand `the-fin-at/agent-pool@ae9fc85c00bb1b6ed4b575c72912da98cce319e7` i
 [Diagnose und Fixvertrag](account-display-2026-11-02.md) dokumentieren die doppelte Alias-Karte und den vom Anbieter gemeldeten Mitgliedsguthaben-Grund auf Ausgangsstand `the-fin-at/agent-pool@992a0f6`; das [Auftragsregister](auftraege.md) führt die getrennte Abnahme.
 
 Der spätere lokale Abnahmecheckpoint am 2026-11-02 zu Code `the-fin-at/agent-pool@e61edc9` ersetzte die offene Untersuchung: Version 0.5.3 wurde lokal mit Bestanderhaltung installiert und nativ geprüft; [Diagnose](account-display-2026-11-02.md), [Aufträge](auftraege.md) und [Nachweise](../docs/account-display-2026-11-02-validation.json) halten die getrennten Fakten fest.
+
+## Originale Provider-Logos: 2026-11-02
+
+[Logoherkunft und Darstellungsvertrag](../desktop/src/assets/providers/README.md) und [lokale 0.5.5-Nachweise](../docs/provider-logos-2026-11-02-validation.json) dokumentieren den Nachauftrag auf `the-fin-at/agent-pool@734a4c6`: echte Logos als geerbte Foreground-Masken. [Aufträge](auftraege.md) hält die tatsächliche native Abnahme fest.

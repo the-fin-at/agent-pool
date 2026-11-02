@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-02",
+  "code_revision": "734a4c6cd441526830c4c8e0af4ed17183f6770e",
+  "version": "0.5.5",
+  "status": "accepted_local",
+  "verified_at": 1793653720.664387,
+  "assets": {
+    "claude.svg": "b150888bc7257af83e3b85d3c2be4294f88986026f8168f6c12fc1fde6697350",
+    "codex.png": "8c249bc2f382692491a33e80f61bd447829bd298be751af02f3b106c0b9bf41a"
+  },
+  "source_provenance": "desktop/src/assets/providers/README.md",
+  "display_contract": "Original asset geometry is rendered as an alpha mask filled with currentColor. Codex white background and terminal cutouts are transparent. No independent logo colors.",
+  "validation": {
+    "react_tests_passed": 38,
+    "typecheck_and_vite_build": "passed",
+    "native_cli_and_app_build": "passed",
+    "deep_strict_signature": "passed",
+    "native_app_version_visible": "0.5.5",
+    "native_visual_checks": [
+      "Codex and Claude marks visible in sidebar",
+      "Both marks visible in account cards in the surrounding dark foreground",
+      "No white Codex icon square",
+      "Active Codex navigation mark matches active text color",
+      "All Accounts view restored with four connected accounts"
+    ],
+    "backend_test_scope": "No Rust behavior changed for logo follow-up; previous 94-test backend acceptance remains separately recorded."
+  },
+  "installation": {
+    "profiles_unchanged": true,
+    "jobs_unchanged": true,
+    "workspaces_unchanged": true,
+    "integrity_ok": true,
+    "app_version": "0.5.5",
+    "cli_version": "0.5.5",
+    "app_sha256": "2bc636a2122115cb13937ba62e15f49d2ce9ece0f9521fac40c7dbca0d3b0e53",
+    "cli_sha256": "f669d5ba1e513ae0d68b54bca597775845ea451784e5261ea39ca70412557ab0",
+    "app_matches_build": true,
+    "cli_matches_build": true
+  },
+  "limits": [
+    "Local macOS only; no remote deployment or public release.",
+    "White-foreground behavior follows currentColor; no separate dark-mode UI acceptance claimed."
+  ]
+}
