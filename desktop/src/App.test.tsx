@@ -17,6 +17,7 @@ describe('account overview', () => {
     ]));
     render(<App transport={transport} timing={FAST} />);
     expect(await screen.findByText('1 Account verbunden')).toBeInTheDocument();
+    expect(cardNames()).toEqual(['Claude CLI']);
     await user.click(await screen.findByRole('button', { name: 'Details zu Claude CLI' }));
     expect(screen.getByText(/Anmeldung wird von deiner normalen Claude-CLI verwaltet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Erneut anmelden' })).not.toBeInTheDocument();
@@ -26,6 +27,67 @@ describe('account overview', () => {
     expect(screen.getByRole('button', { name: 'zusatz anmelden' })).toBeInTheDocument();
     expect(commands(null).some(command => command.startsWith('auth start'))).toBe(false);
   });
+
+  it('shows one card per verified account and reveals its individual profiles on request', async () => {
+    const user = userEvent.setup();
+    const { transport } = fakeTransport(() => status([
+      codexAccount('@codex-default', { managed: false, enabled: false }),
+      codexAccount('codex-2'),
+      codexAccount('codex-3'),
+      claudeAccount('claude-default', { auth_mode: 'native_default', enabled: true, display_name: 'Claude CLI', email: 'same@example.com' }),
+      claudeAccount('voxbot', { alias_of: 'claude-default', enabled: true, email: 'same@example.com' }),
+    ]));
+    render(<App transport={transport} timing={FAST} />);
+
+    expect(await screen.findByText('4 Accounts verbunden')).toBeInTheDocument();
+    expect(cardNames()).toEqual(['Standardaccount', 'Claude CLI', 'codex-2', 'codex-3']);
+
+    await user.click(screen.getByRole('checkbox', { name: 'Alle Profile anzeigen' }));
+    expect(cardNames()).toEqual(['Standardaccount', 'Claude CLI', 'codex-2', 'codex-3', 'voxbot']);
+    expect(screen.getByText('4 Accounts verbunden')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Details zu voxbot' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'voxbot' })).toBeInTheDocument();
+  });
+
+  it('searches all verified profile names while showing the canonical account card', async () => {
+    const user = userEvent.setup();
+    const { transport } = fakeTransport(() => status([
+      claudeAccount('a-managed-login', { alias_of: 'claude-default', enabled: true, email: 'same@example.com' }),
+      claudeAccount('claude-default', { auth_mode: 'native_default', enabled: true, display_name: 'Claude CLI', email: 'same@example.com' }),
+    ]));
+    render(<App transport={transport} timing={FAST} />);
+    await screen.findByText('1 Account verbunden');
+
+    await user.type(screen.getByRole('searchbox', { name: 'Accounts durchsuchen' }), 'a-managed-login');
+    expect(cardNames()).toEqual(['Claude CLI']);
+    await user.click(screen.getByRole('checkbox', { name: 'Alle Profile anzeigen' }));
+    expect(cardNames()).toEqual(['a-managed-login']);
+  });
+
+  it('keeps profiles with equal emails separate without a verified alias relationship', async () => {
+    const { transport } = fakeTransport(() => status([
+      claudeAccount('first', { email: 'same@example.com' }),
+      claudeAccount('second', { email: 'same@example.com' }),
+    ]));
+    render(<App transport={transport} timing={FAST} />);
+    expect(await screen.findByText('2 Accounts verbunden')).toBeInTheDocument();
+    expect(cardNames()).toEqual(['first', 'second']);
+  });
+
+  it.each(['missing', 'disconnected', 'disabled'] as const)(
+    'keeps a connected account visible when the canonical profile is %s',
+    async (canonicalState) => {
+      const alias = claudeAccount('voxbot', { alias_of: 'claude-default', enabled: true, email: 'same@example.com' });
+      const canonical = claudeAccount('claude-default', {
+        auth_mode: 'native_default', display_name: 'Claude CLI', email: 'same@example.com',
+        connected: canonicalState !== 'disconnected', enabled: false,
+      });
+      const { transport } = fakeTransport(() => status(canonicalState === 'missing' ? [alias] : [alias, canonical]));
+      render(<App transport={transport} timing={FAST} />);
+      expect(await screen.findByText('1 Account verbunden')).toBeInTheDocument();
+      expect(cardNames()).toEqual([canonicalState === 'disabled' ? 'Claude CLI' : 'voxbot']);
+    },
+  );
   it('shows local accounts with 5-hour ring, weekly bar and the default Codex login', async () => {
     const local = status([
       codexAccount('@codex-default', { managed: false, enabled: false, email: 'privat@example.com' }),

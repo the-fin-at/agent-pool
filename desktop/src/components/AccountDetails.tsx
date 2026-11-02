@@ -54,6 +54,8 @@ export function AccountDetails({ account, now, fleet, target, onBack, onLogin, o
     ['Datenstand', account.observed_at ? formatAbsolute(account.observed_at) : 'Noch keine Kontingentdaten'],
     ['Zuletzt geprüft', account.checked_at ? formatAbsolute(account.checked_at) : 'Noch nicht geprüft'],
   ];
+  if (account.workspace_name) rows.push(['Workspace', account.workspace_name]);
+  if (view.limitExplanation) rows.push(['Meldung von Codex', view.limitExplanation]);
   if (view.held) {
     rows.push(['Sperre', holdLabel(account.hold_reason) + (account.hold_until ? ' bis ' + formatAbsolute(account.hold_until) : '')]);
   }

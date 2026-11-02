@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "repository_revision": "992a0f6443b7852cad9c0592bc313d1dd0ee0bfe",
+  "method": "Read-only native Codex app-server initialize, account/read(refreshToken=false), account/rateLimits/read; no model turn or inference",
+  "cli_version": "0.166.0",
+  "profile": "codex-2",
+  "identity_check": {
+    "expected_email_matches": true,
+    "plan_type": "team",
+    "workspace_name": "THE-FIN"
+  },
+  "observations": [
+    {
+      "observed_at": 1793650908.347091,
+      "rate_limit_bucket_count": 1,
+      "limit_id": "codex",
+      "primary": {
+        "used_percent": 100,
+        "window_duration_minutes": 300,
+        "resets_at": 1793651872
+      },
+      "secondary": {
+        "used_percent": 16,
+        "window_duration_minutes": 10080,
+        "resets_at": 1793825531
+      },
+      "top_level_equals_codex_bucket": true
+    },
+    {
+      "observed_at": 1793650952.4685829,
+      "credits": {
+        "has_credits": false,
+        "unlimited": false
+      }
+    },
+    {
+      "observed_at": 1793650996.458721,
+      "limit_id": "codex",
+      "rate_limit_reached_type": "workspace_member_credits_depleted",
+      "spend_control_reached": false,
+      "individual_limit": null,
+      "normal_model_slug": null,
+      "primary": {
+        "used_percent": 100,
+        "window_duration_minutes": 300,
+        "resets_at": 1793651872
+      },
+      "top_level_equals_codex_bucket": true
+    }
+  ],
+  "finding": "Native provider explicitly reports workspace-member credit depletion. Fleet currently drops the cause and derives generic Limit erreicht from usedPercent >= 100. Live values do not support forced available/positive quota.",
+  "limits": [
+    "No authentication data, credit balance amounts, account IDs, or raw account responses stored.",
+    "Provider observation, not proof that user cannot run through another workspace/account or billing route.",
+    "No scheduler mutation or profile changes."
+  ],
+  "implementation_status": "in_progress",
+  "frontend_validation": {
+    "tests_passed": 38,
+    "build": "passed",
+    "native_installation": "pending"
+  }
+}

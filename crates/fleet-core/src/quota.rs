@@ -70,6 +70,27 @@ pub fn codex(payload: &Value) -> Vec<Value> {
     result
 }
 
+/// The general Codex snapshot explains an account restriction. A model bucket's
+/// reason must never be promoted to a restriction on the entire account.
+pub fn codex_reached_type(payload: &Value) -> Option<&str> {
+    let bucket = if let Some(buckets) = obj(&payload["rateLimitsByLimitId"]) {
+        buckets.get("codex").and_then(obj)?
+    } else {
+        obj(&payload["rateLimits"])?
+    };
+    if bucket
+        .get("limitId")
+        .and_then(Value::as_str)
+        .is_some_and(|id| !id.is_empty() && id != "codex")
+    {
+        return None;
+    }
+    bucket
+        .get("rateLimitReachedType")
+        .and_then(Value::as_str)
+        .filter(|reason| !reason.is_empty())
+}
+
 fn info_of(event: &Value) -> Map<String, Value> {
     obj(&event["rate_limit_info"])
         .or_else(|| obj(&event["rateLimitInfo"]))

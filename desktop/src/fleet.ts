@@ -74,6 +74,10 @@ export function parseAccount(value: unknown): Account | null {
     connected: Boolean(a.connected),
     email: text(a.email),
     plan: text(a.plan),
+    ...(kind === 'codex' ? {
+      workspace_name: text(a.workspace_name),
+      rate_limit_reached_type: text(a.rate_limit_reached_type),
+    } : {}),
     display_name: text(a.display_name),
     windows: Array.isArray(a.windows) ? a.windows.map(parseWindow).filter((w): w is QuotaWindow => w !== null) : [],
     observed_at: seconds(a.observed_at),

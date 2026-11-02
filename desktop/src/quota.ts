@@ -31,6 +31,7 @@ export interface AccountView {
   primary: WindowView | null;
   extra: WindowView[];
   statusLabel: string;
+  limitExplanation: string | null;
   tone: Tone;
   planLabel: string;
   roleLabel: string;
@@ -133,6 +134,24 @@ export function holdLabel(reason: string | null): string {
   return reason ?? '';
 }
 
+const CODEX_LIMITS: Record<string, { label: string; explanation: string }> = {
+  rate_limit_reached: {
+    label: 'Limit erreicht', explanation: 'Codex meldet ein ausgeschöpftes Zeitkontingent.',
+  },
+  workspace_owner_credits_depleted: {
+    label: 'Workspace-Guthaben aufgebraucht', explanation: 'Codex meldet aufgebrauchtes Guthaben für diesen Workspace.',
+  },
+  workspace_member_credits_depleted: {
+    label: 'Mitgliedsguthaben aufgebraucht', explanation: 'Codex meldet aufgebrauchtes Guthaben für dieses Workspace-Mitglied.',
+  },
+  workspace_owner_usage_limit_reached: {
+    label: 'Workspace-Limit erreicht', explanation: 'Codex meldet ein erreichtes Nutzungslimit für diesen Workspace.',
+  },
+  workspace_member_usage_limit_reached: {
+    label: 'Mitgliedslimit erreicht', explanation: 'Codex meldet ein erreichtes Nutzungslimit für dieses Workspace-Mitglied.',
+  },
+};
+
 export function accountView(account: Account, now: number): AccountView {
   const observed = account.observed_at;
   const windows = account.windows.map((w) => windowView(w, now));
@@ -140,12 +159,17 @@ export function accountView(account: Account, now: number): AccountView {
   const state = availability(account.windows, now, account.provider === 'codex' ? 'codex' : null);
   const held = Boolean(account.hold_reason) && (account.hold_until === null || account.hold_until > now);
   const { primary, extra } = quotaSections(account.provider, windows);
+  const reportedLimit = account.provider === 'codex' && account.rate_limit_reached_type
+    && Object.hasOwn(CODEX_LIMITS, account.rate_limit_reached_type)
+    ? CODEX_LIMITS[account.rate_limit_reached_type] : undefined;
   let statusLabel: string;
   let tone: Tone;
   if (!account.connected) {
     [statusLabel, tone] = account.error ? ['Verbindung prüfen', 'warning'] : ['Nicht verbunden', 'muted'];
   } else if (stale) {
     [statusLabel, tone] = ['Daten nicht aktuell', 'warning'];
+  } else if (reportedLimit) {
+    [statusLabel, tone] = [reportedLimit.label, 'warning'];
   } else if (held || !state.ready) {
     [statusLabel, tone] = ['Limit erreicht', 'warning'];
   } else if (!windows.length || windows.every((w) => w.used === null)) {
@@ -162,6 +186,7 @@ export function accountView(account: Account, now: number): AccountView {
     primary,
     extra,
     statusLabel,
+    limitExplanation: account.connected && !stale && reportedLimit ? reportedLimit.explanation : null,
     tone,
     planLabel: account.plan ? PLANS[account.plan] ?? account.plan : 'Tarif unbekannt',
     roleLabel: !account.managed ? 'Nur Anzeige' : account.enabled ? 'Für Aufträge aktiv' : 'Für Aufträge deaktiviert',

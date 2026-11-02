@@ -624,6 +624,8 @@ impl Db {
             "email",
             "plan",
             "account_type",
+            "workspace_name",
+            "rate_limit_reached_type",
             "windows",
             "error",
             "observed_at",

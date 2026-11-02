@@ -424,11 +424,25 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
         let same_account = if source["provider"] == "claude" {
             identity(&old).is_some() && identity(&old) == identity(&data)
         } else {
-            old.get("email") == data.get("email") && truth(get(&old, "connected"))
+            old.get("email") == data.get("email")
+                && old["workspace_name"].as_str() == data["workspace_name"].as_str()
+                && truth(get(&old, "connected"))
         };
         let mut fresh = Map::new();
         for k in ["connected", "email", "plan", "account_type", "error"] {
             fresh.insert(k.into(), get(&data, k).clone());
+        }
+        if source["provider"] == "codex" {
+            for key in ["workspace_name", "rate_limit_reached_type"] {
+                fresh.insert(
+                    key.into(),
+                    if truth(&data["connected"]) {
+                        data[key].as_str().map_or(Value::Null, |value| json!(value))
+                    } else {
+                        Value::Null
+                    },
+                );
+            }
         }
         fresh.insert("checked_at".into(), json!(checked));
         let windows = get(&data, "windows");
@@ -470,6 +484,11 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             fresh.insert("windows".into(), json!([]));
             fresh.insert("observed_at".into(), Value::Null);
         }
+        if source["provider"] == "codex" {
+            // set_windows timestamps its write. Complete this metadata check
+            // afterwards so that write is not mistaken for a later worker read.
+            fresh.insert("checked_at".into(), json!(now()));
+        }
         let fresh = Value::Object(fresh);
         if source["provider"] == "claude" {
             publish_claude_identity(&mut db, &name, &fresh)
@@ -490,6 +509,9 @@ pub fn read_source(home: &Path, source: &Value, probe: &Probe) -> Result<Value> 
             };
             stale["error"] = json!(redact(&e.to_string()));
             stale["checked_at"] = json!(checked);
+            if source["provider"] == "codex" {
+                stale["rate_limit_reached_type"] = Value::Null;
+            }
             db.cache(&name, &stale)?;
             Ok(stale)
         }
@@ -550,7 +572,9 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
         let mut observed = get(&cached, "observed_at").clone();
         // A worker observation after the metadata check belongs to the current CLI profile.
         let worker_observed = source["observed_at"].as_f64().unwrap_or(0.0);
-        if managed && (empty || worker_observed > cached["checked_at"].as_f64().unwrap_or(0.0)) {
+        let worker_newer =
+            managed && (empty || worker_observed > cached["checked_at"].as_f64().unwrap_or(0.0));
+        if worker_newer {
             windows = json!(db.windows(name)?);
             observed = source["observed_at"].clone();
         }
@@ -570,7 +594,20 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
             "checked_at": get(&cached, "checked_at"), "error": get(&cached, "error"),
             "hold_reason": source["hold_reason"], "hold_until": source["hold_until"],
         }));
-        if native_default(&source) {
+        if source["provider"] == "codex" {
+            let account = result.last_mut().unwrap();
+            account["workspace_name"] = if truth(&connected) {
+                get(&cached, "workspace_name").clone()
+            } else {
+                Value::Null
+            };
+            account["rate_limit_reached_type"] =
+                if truth(&connected) && !worker_newer && get(&cached, "error").is_null() {
+                    get(&cached, "rate_limit_reached_type").clone()
+                } else {
+                    Value::Null
+                };
+        } else if native_default(&source) {
             let account = result.last_mut().unwrap();
             account["auth_mode"] = json!("native_default");
             account["display_name"] = json!("Claude CLI");

@@ -186,3 +186,15 @@ Die tatsächliche Mac-Statusbeobachtung „Variable ungesetzt → angemeldet, di
 ## Standardanmeldung 0.5.2: Reviewcheckpoint vom 2026-10-29
 
 Der Implementierungsauftrag [Issue #39](https://github.com/the-fin-at/agent-pool/issues/39) erreichte am Quellstand `the-fin-at/agent-pool@ae9fc85c00bb1b6ed4b575c72912da98cce319e7` **Review**: kontrollierte öffentliche CLI-/native UI- und Release-Artefaktprüfungen bestanden; unabhängige Standards-/Spec-Reviews meldeten keine blockierenden Befunde. Ein P3 zur SQL-/Db-Modulgrenze blieb als akzeptierter nicht blockierender Wartungsfolgepunkt dokumentiert. [Implementierung und Grenzen](../docs/native-claude-default.md), [Nachweisdaten](../docs/native-claude-default-validation.json) und [T3-Quelle](t3-cli-auth-2026-10-29.md) halten die Übergabe fest. Die unabhängige tatsächliche Mac-Abnahme bestand 14 native Erststartschritte und zwei echte read-only Jobs mit je einem Versuch. Isoliertes Linux bestand zwölf gezielte, 42 Kompatibilitäts- und 86 Kernfälle ohne Skips; der produktive Server blieb unverändert. Lokale 0.5.2-Programme wurden ersetzt; alle 19 unabhängigen E2E-/Bestandsprüfungen bestanden. Die zentrale Abschlussannahme und der Merge blieben beim Eintrag noch offen. Aus diesem Reviewcheckpoint folgten noch kein Merge, Produktionswechsel, Windows-Pass oder 1.0-Release.
+
+## Accountanzeige: Auftrag vom 2026-11-02
+
+[Issue #41](https://github.com/the-fin-at/agent-pool/issues/41) und [Diagnose](account-display-2026-11-02.md) betreffen die lokale Mac-App auf Basis `the-fin-at/agent-pool@992a0f6`. Umsetzung in isolierter Arbeitskopie `/private/tmp/agent-fleet-account-display-20261102`, Branch `fix/account-display-quota`; Main blieb bei der Beauftragung sauber. Chief of Staff ist die zentrale Abnahmeinstanz.
+
+| Paket | Modus / Owner | Kriterien / Abhängigkeit | Beobachtung 2026-11-02, 21:27 Wien | Beleg / Entscheidung |
+| --- | --- | --- | --- | --- |
+| Alias-Karten | Subagent `fix_alias_cards`, nur AccountsView/App-Tests | Eine Karte je verifizierter Identität; All-Profile/Suche/Fallback bleiben nutzbar | Review | Rote Screenshotregression: erwartet vier, erhalten fünf; danach 13 App-Tests grün; Root prüfte Diff und gesamte 38 React-Tests. Native Integration noch offen |
+| Codex-Grund / Workspace | Subagent `fix_quota_reason`, Rust Provider/Monitor/Cache und Tests | Expliziten allgemeinen Anbietergrund erhalten; alte Formate/Refresh/Fehler sicher; keine Scheduleränderung | Running | Rote echte kontrollierte App-Server→Monitor-Reproduktion: erwarteter Grund fehlt; Korrektur läuft |
+| Anzeige / Integration | Root, Frontend Metadaten/Quota/Details, Version, Wiki und Installation | Mitgliedsguthaben vom Zeitlimit unterscheiden; echte Werte erhalten; Tests/Build/Review/native lokale App | Running | UI-Grundregression vor Fix rot, danach 12 gezielte Tests und gesamte 38 React-Tests grün; Build bestanden. Backend/Review/Installation abhängig |
+
+[Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) führen Quellbasis und tatsächlich ausgeführte Prüfungen. Keine Remote-Installation, öffentlichen Releases oder CI-Aktivierungen beauftragt.
