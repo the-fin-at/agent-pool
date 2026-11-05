@@ -1,5 +1,7 @@
 ![Agent Fleet](docs/assets/header.svg)
 
+[Agent Fleet website](https://the-fin-at.github.io/agent-pool/) · Product overview, installation, and getting started.
+
 Agent Fleet hieß bis Version 0.2 Agent Pool. Der lokale Datenordner bleibt kompatibel; der optionale native Kompatibilitätsbefehl `agent-pool` verwendet denselben Rust-Kern. Der Installer legt standardmäßig `agent-fleet` an. Die Accounts müssen nicht neu angemeldet werden.
 
 **Ein persönlicher Auftragsverteiler für Codex und Claude Code – lokal oder zentral auf Linux, mit Desktop-Manager für Mac und Windows.**
