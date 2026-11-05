@@ -37,6 +37,9 @@ export interface Account {
   connected: boolean;
   email: string | null;
   plan: string | null;
+  /** Workspace and explicit block reason reported by the native Codex provider. */
+  workspace_name?: string | null;
+  rate_limit_reached_type?: string | null;
   display_name: string | null;
   windows: QuotaWindow[];
   observed_at: number | null;

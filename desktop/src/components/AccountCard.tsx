@@ -4,6 +4,7 @@ import { providerLabel, type AccountView } from '../quota';
 import type { Account } from '../types';
 import { QuotaBar, QuotaRing } from './Quota';
 import { Button, Chip } from './ui';
+import { ProviderLogo } from './ProviderLogo';
 
 export function missingQuotaText(account: Account): string {
   if (!account.connected && account.auth_mode === 'native_default') return 'Bitte in deiner normalen Claude-CLI anmelden und hier aktualisieren.';
@@ -24,7 +25,7 @@ export function AccountCard({ view, compact, onDetails, onLogin }: {
     <article className={`card${compact ? ' card-compact' : ''}`} aria-labelledby={id}>
       <div className="card-summary">
         <div className="identity">
-          <span className="avatar" aria-hidden="true"><Icon name="person" size={compact ? 24 : 30} /></span>
+          <span className="avatar" aria-hidden="true"><ProviderLogo provider={account.provider} size={compact ? 32 : 44} /></span>
           <div className="identity-text">
             <h3 id={id} className="account-name">{view.displayName}</h3>
             <p className="account-email" title={email}>{email}</p>

@@ -186,3 +186,39 @@ Die tatsächliche Mac-Statusbeobachtung „Variable ungesetzt → angemeldet, di
 ## Standardanmeldung 0.5.2: Reviewcheckpoint vom 2026-10-29
 
 Der Implementierungsauftrag [Issue #39](https://github.com/the-fin-at/agent-pool/issues/39) erreichte am Quellstand `the-fin-at/agent-pool@ae9fc85c00bb1b6ed4b575c72912da98cce319e7` **Review**: kontrollierte öffentliche CLI-/native UI- und Release-Artefaktprüfungen bestanden; unabhängige Standards-/Spec-Reviews meldeten keine blockierenden Befunde. Ein P3 zur SQL-/Db-Modulgrenze blieb als akzeptierter nicht blockierender Wartungsfolgepunkt dokumentiert. [Implementierung und Grenzen](../docs/native-claude-default.md), [Nachweisdaten](../docs/native-claude-default-validation.json) und [T3-Quelle](t3-cli-auth-2026-10-29.md) halten die Übergabe fest. Die unabhängige tatsächliche Mac-Abnahme bestand 14 native Erststartschritte und zwei echte read-only Jobs mit je einem Versuch. Isoliertes Linux bestand zwölf gezielte, 42 Kompatibilitäts- und 86 Kernfälle ohne Skips; der produktive Server blieb unverändert. Lokale 0.5.2-Programme wurden ersetzt; alle 19 unabhängigen E2E-/Bestandsprüfungen bestanden. Die zentrale Abschlussannahme und der Merge blieben beim Eintrag noch offen. Aus diesem Reviewcheckpoint folgten noch kein Merge, Produktionswechsel, Windows-Pass oder 1.0-Release.
+
+## Accountanzeige: Auftrag vom 2026-11-02
+
+[Issue #41](https://github.com/the-fin-at/agent-pool/issues/41) und [Diagnose](account-display-2026-11-02.md) betreffen die lokale Mac-App auf Basis `the-fin-at/agent-pool@992a0f6`. Umsetzung in isolierter Arbeitskopie `/private/tmp/agent-fleet-account-display-20261102`, Branch `fix/account-display-quota`; Main blieb bei der Beauftragung sauber. Chief of Staff ist die zentrale Abnahmeinstanz.
+
+| Paket | Modus / Owner | Kriterien / Abhängigkeit | Beobachtung 2026-11-02, 21:27 Wien | Beleg / Entscheidung |
+| --- | --- | --- | --- | --- |
+| Alias-Karten | Subagent `fix_alias_cards`, nur AccountsView/App-Tests | Eine Karte je verifizierter Identität; All-Profile/Suche/Fallback bleiben nutzbar | Review | Rote Screenshotregression: erwartet vier, erhalten fünf; danach 13 App-Tests grün; Root prüfte Diff und gesamte 38 React-Tests. Native Integration noch offen |
+| Codex-Grund / Workspace | Subagent `fix_quota_reason`, Rust Provider/Monitor/Cache und Tests | Expliziten allgemeinen Anbietergrund erhalten; alte Formate/Refresh/Fehler sicher; keine Scheduleränderung | Running | Rote echte kontrollierte App-Server→Monitor-Reproduktion: erwarteter Grund fehlt; Korrektur läuft |
+| Anzeige / Integration | Root, Frontend Metadaten/Quota/Details, Version, Wiki und Installation | Mitgliedsguthaben vom Zeitlimit unterscheiden; echte Werte erhalten; Tests/Build/Review/native lokale App | Running | UI-Grundregression vor Fix rot, danach 12 gezielte Tests und gesamte 38 React-Tests grün; Build bestanden. Backend/Review/Installation abhängig |
+
+[Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) führen Quellbasis und tatsächlich ausgeführte Prüfungen. Keine Remote-Installation, öffentlichen Releases oder CI-Aktivierungen beauftragt.
+
+### Zentrale lokale Abnahme am 2026-11-02, 21:37 Wien
+
+Die obigen Running-/Review-Zustände sind für diesen späteren Checkpoint überholt. Quellcode `the-fin-at/agent-pool@e61edc9d5770db4ccecd89c63b2de1a78d315763` ist unabhängig geprüft; ein P2 zur selben E-Mail in wechselnden Workspaces wurde vor Abschluss rot reproduziert, korrigiert und unabhängig grün nachgeprüft.
+
+| Paket | Status / zentrale Entscheidung | Tatsächliche Nachweise |
+| --- | --- | --- |
+| Alias-Karten | Accepted durch Root | 38 React-Tests inklusive echter Karte/Toggles/Suche/Fallback, unabhängiges Review ohne offene Befunde; installierte native App zeigt vier Karten bei vier Accounts und nur eine Claude-Karte. Alle sieben Profile sind über All-Profile sichtbar |
+| Codex-Grund / Workspace | Accepted durch Root | 94 Rust-Workspace-Tests, keine Skips/Fehler; Format/Clippy bestanden. Neue Release-CLI bestätigt den spezifischen Anbietergrund live. Native Details zeigen Workspace THE-FIN und den Mitgliedsguthaben-Grund. Modellbucket-, Workspace-, Fehler-, Logout- und neuere Beobachtungsfälle abgedeckt |
+| Lokale Integration 0.5.3 | Accepted durch Root | Finale CLI und `.app` gebaut, Ad-hoc-Signatur tief/strikt geprüft, mit Rücknahmesicherungen installiert und Bytes verglichen. Neun native Prüfungen an tatsächlich neu gestarteter installierter App bestanden. Sechs vorhandene Profile samt Aktivierung/Auth-Kontext, leere Queue und Workspaces vor/nach Neustart unverändert; SQLite-Integrität ok |
+
+Johannes bestätigte im selben Chat, dass seine ursprüngliche Einschätzung des Verbrauchswerts ein Missverständnis war. Die Anbieterwerte bleiben unverändert; die präzisere Grundanzeige bleibt Teil des lokalen Fixes. Die frühere native Sperre durch den gesperrten Mac wurde durch die direkte Entsperrbestätigung und tatsächlich ausgeführte Sichtprüfung aufgelöst.
+
+[Normalisierte Nachweise](../docs/account-display-2026-11-02-validation.json) binden Quellrevision, Reviewdiff, Programmhashes, tatsächliche CLI-/UI-Nachweise und Bestanderhaltung. Keine Server-, Windows-, Hosted-CI- oder öffentliche Releaseabnahme wird daraus abgeleitet.
+
+Die überprüfbare Übergabe liegt als [Draft PR #42](https://github.com/the-fin-at/agent-pool/pull/42) auf Branch `fix/account-display-quota`; am 2026-11-02 war sie mergebar und noch nicht gemergt. Lokale Installation 0.5.3 ist davon getrennt abgeschlossen. Der ursprüngliche Main-Checkout blieb sauber auf `992a0f6`.
+
+## Originale Logos und Foreground-Farben: Nachauftrag am 2026-11-02
+
+Johannes beauftragte nach der lokalen 0.5.3-Abnahme originale Codex-/Claude-Logos und präzisierte anschließend eine einfarbige Darstellung passend zur Schriftfarbe. Root setzte diesen begrenzten Asset-/Darstellungsauftrag direkt um; Subagenten waren dafür nicht nötig. Version 0.5.4 war ein farbiger Zwischenstand und wurde nach der Nutzerpräzisierung durch 0.5.5 ersetzt.
+
+Am Quellstand `the-fin-at/agent-pool@734a4c6cd441526830c4c8e0af4ed17183f6770e` sind Originalassets lokal gebündelt und folgen in Sidebar, Accountkarten und kompakter Navigation dem geerbten `currentColor`. Die bisherige PNG-Fläche wird als Maske ohne weißes Quadrat gezeichnet. [Herkunft](../desktop/src/assets/providers/README.md) und [Nachweise](../docs/provider-logos-2026-11-02-validation.json) halten Geometrie, Assethashes und begrenzte Prüfungen fest.
+
+Status **Accepted** durch Root: 38 React-Tests, TypeScript-/Vite-Build, native CLI-/App-Build und tiefe/strikte Signaturprüfung bestanden. Die tatsächlich neu gestartete installierte App zeigte Version 0.5.5, beide monochromen Logos in Navigation und Accountkarten sowie passenden Foreground im aktiven Codex-Eintrag. Gesamtübersicht wurde wiederhergestellt; sechs Profile, Jobs und Workspaces blieben unverändert. Die bisherigen 94 Rust-Tests wurden für diese reine Logo-/Versionsänderung nicht als neuer Lauf ausgegeben. Der Nachtrag gehört zu [Draft PR #42](https://github.com/the-fin-at/agent-pool/pull/42); Main und Remoteprogramme bleiben getrennt.

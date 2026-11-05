@@ -42,4 +42,38 @@ describe('quota display model', () => {
     expect(relativeTime(2 * 3600 + 20 * 60)).toBe('2 Std. 20 Min.');
     expect(relativeTime(6 * 86400 + 14 * 3600)).toBe('6 Tage 14 Std.');
   });
+
+  it('distinguishes the provider-reported workspace member credit block from a time limit', () => {
+    const account = parseStatus([codexAccount('work', {
+      workspace_name: 'THE-FIN', rate_limit_reached_type: 'workspace_member_credits_depleted',
+      observed_at: NOW - 5,
+      windows: [{ bucket: 'codex', minutes: 300, used: 100, reset: NOW + 900 }],
+    })]).accounts[0];
+    expect(accountView(account, NOW).statusLabel).toBe('Mitgliedsguthaben aufgebraucht');
+    expect(accountView(account, NOW).primary?.remaining).toBe(0);
+  });
+
+  it.each([
+    ['workspace_owner_credits_depleted', 'Workspace-Guthaben aufgebraucht'],
+    ['workspace_member_credits_depleted', 'Mitgliedsguthaben aufgebraucht'],
+    ['workspace_owner_usage_limit_reached', 'Workspace-Limit erreicht'],
+    ['workspace_member_usage_limit_reached', 'Mitgliedslimit erreicht'],
+    ['rate_limit_reached', 'Limit erreicht'],
+  ])('shows the explicit provider block %s even when a reported window still has capacity', (reason, label) => {
+    const account = parseStatus([codexAccount('work', { rate_limit_reached_type: reason, observed_at: NOW - 5,
+      windows: [{ bucket: 'codex', minutes: 300, used: 28, reset: NOW + 900 }],
+    })]).accounts[0];
+    expect(accountView(account, NOW).statusLabel).toBe(label);
+  });
+
+  it('keeps old and unknown provider metadata compatible and does not call stale credit reports current', () => {
+    const current = (extra: Record<string, unknown>) => parseStatus([codexAccount('work', { observed_at: NOW - 5,
+      windows: [{ bucket: 'codex', minutes: 300, used: 28, reset: NOW + 900 }], ...extra,
+    })]).accounts[0];
+    expect(accountView(current({}), NOW).statusLabel).toBe('Verbunden');
+    expect(accountView(current({ rate_limit_reached_type: 'future_reason' }), NOW).statusLabel).toBe('Verbunden');
+    expect(accountView(current({ rate_limit_reached_type: 'constructor' }), NOW).statusLabel).toBe('Verbunden');
+    expect(accountView(current({ rate_limit_reached_type: null }), NOW).statusLabel).toBe('Verbunden');
+    expect(accountView(current({ rate_limit_reached_type: 'workspace_member_credits_depleted', observed_at: NOW - 200 }), NOW).statusLabel).toBe('Daten nicht aktuell');
+  });
 });

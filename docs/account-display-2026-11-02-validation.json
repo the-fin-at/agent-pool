@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-02",
+  "repository_revision": "992a0f6443b7852cad9c0592bc313d1dd0ee0bfe",
+  "method": "Read-only native Codex app-server initialize, account/read(refreshToken=false), account/rateLimits/read; no model turn or inference",
+  "cli_version": "0.166.0",
+  "profile": "codex-2",
+  "identity_check": {
+    "expected_email_matches": true,
+    "plan_type": "team",
+    "workspace_name": "THE-FIN"
+  },
+  "observations": [
+    {
+      "observed_at": 1793650908.347091,
+      "rate_limit_bucket_count": 1,
+      "limit_id": "codex",
+      "primary": {
+        "used_percent": 100,
+        "window_duration_minutes": 300,
+        "resets_at": 1793651872
+      },
+      "secondary": {
+        "used_percent": 16,
+        "window_duration_minutes": 10080,
+        "resets_at": 1793825531
+      },
+      "top_level_equals_codex_bucket": true
+    },
+    {
+      "observed_at": 1793650952.4685829,
+      "credits": {
+        "has_credits": false,
+        "unlimited": false
+      }
+    },
+    {
+      "observed_at": 1793650996.458721,
+      "limit_id": "codex",
+      "rate_limit_reached_type": "workspace_member_credits_depleted",
+      "spend_control_reached": false,
+      "individual_limit": null,
+      "normal_model_slug": null,
+      "primary": {
+        "used_percent": 100,
+        "window_duration_minutes": 300,
+        "resets_at": 1793651872
+      },
+      "top_level_equals_codex_bucket": true
+    }
+  ],
+  "finding": "Native provider explicitly reports workspace-member credit depletion. Fleet currently drops the cause and derives generic Limit erreicht from usedPercent >= 100. Live values do not support forced available/positive quota.",
+  "implementation_status": "accepted_local",
+  "frontend_validation": {
+    "tests_passed": 38,
+    "build": "passed",
+    "typecheck": "passed"
+  },
+  "code_revision": "e61edc9d5770db4ccecd89c63b2de1a78d315763",
+  "version": "0.5.3",
+  "rust_validation": {
+    "workspace_tests_passed": 94,
+    "failed": 0,
+    "ignored": 0,
+    "fmt": "passed",
+    "clippy_all_targets_deny_warnings": "passed"
+  },
+  "review": {
+    "unresolved_findings": 0,
+    "corrected_findings": [
+      "same-email workspace switch must not retain prior workspace quota on failed refresh"
+    ],
+    "reviewed_production_diff_sha256": "14dd41cf7b6b062ee88b78f9391a90f40da090daa9209dc196059763808aa8e8"
+  },
+  "local_installation": {
+    "profiles_unchanged": true,
+    "jobs_unchanged": true,
+    "workspaces_unchanged": true,
+    "integrity_ok": true,
+    "app_version": "0.5.3",
+    "cli_version": "0.5.3",
+    "cli_sha256": "9e057d20ef24836137ab2a98daf04f6bbb3106997c9291538766cf8b390b8f56",
+    "app_sha256": "e31507dc22dffad71d45c6fad62f1a3b4c197c37a18e63271b9eb7163029a1c6",
+    "cli_matches_build": true,
+    "app_matches_build": true,
+    "backup_cli_present": true,
+    "backup_app_present": true,
+    "verified_at": 1793651848.789699,
+    "native_ui": "passed: actual installed app via CUA",
+    "code_revision": "e61edc9d5770db4ccecd89c63b2de1a78d315763",
+    "running_installed_executable": true,
+    "restarted_pid": 66347,
+    "native_checks": {
+      "version_053": true,
+      "default_four_cards_four_accounts": true,
+      "one_claude_default_card": true,
+      "all_profile_mode_preserves_seven_profiles": true,
+      "alias_search_finds_canonical": true,
+      "clear_search_restores_overview": true,
+      "workspace_visible_in_details": true,
+      "specific_provider_reason_visible": true,
+      "returned_to_default_overview": true
+    }
+  },
+  "local_cli_live_check": {
+    "checked_at": 1793651641.289271,
+    "account": {
+      "name": "codex-2",
+      "provider": "codex",
+      "connected": true,
+      "workspace_name": "THE-FIN",
+      "rate_limit_reached_type": "workspace_member_credits_depleted",
+      "windows": [
+        {
+          "key": "codex:primary",
+          "bucket": "codex",
+          "minutes": 300,
+          "used": 100,
+          "reset": 1793651872,
+          "model": null
+        },
+        {
+          "key": "codex:secondary",
+          "bucket": "codex",
+          "minutes": 10080,
+          "used": 16,
+          "reset": 1793825531,
+          "model": null
+        }
+      ],
+      "observed_at": 1793651638.906545,
+      "error": null
+    }
+  },
+  "scope_limits": [
+    "Local macOS install and native verification only; remote programs unchanged.",
+    "No real model inference, new login or credential copying.",
+    "Hosted CI remains deliberately disabled; no public release or main merge."
+  ]
+}

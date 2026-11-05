@@ -59,7 +59,25 @@ export function AccountsView(props: {
     [state.data, filter],
   );
   const visible = useMemo(
-    () => sortAccounts(inProvider.filter((a) => (showAll || a.connected) && matchesSearch(a, search))),
+    () => {
+      if (showAll) return sortAccounts(inProvider.filter((account) => matchesSearch(account, search)));
+
+      const groups = new Map<string, Account[]>();
+      for (const account of inProvider) {
+        const key = `${account.provider}:${account.alias_of ?? account.name}`;
+        const members = groups.get(key) ?? [];
+        members.push(account);
+        groups.set(key, members);
+      }
+
+      return sortAccounts([...groups.values()].flatMap((members) => {
+        const connected = members.filter((account) => account.connected);
+        const representative = connected.find((account) => account.auth_mode === 'native_default')
+          ?? connected.find((account) => !account.alias_of)
+          ?? connected[0];
+        return representative && members.some((account) => matchesSearch(account, search)) ? [representative] : [];
+      }));
+    },
     [inProvider, showAll, search],
   );
   const connected = connectedAccountCount(inProvider);

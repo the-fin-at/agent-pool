@@ -87,3 +87,13 @@ Nach der [T3-/CLI-Untersuchung](t3-cli-auth-2026-10-29.md) beauftragte Johannes 
 ## Implementierter normaler CLI-Kontext: Prüfcheckpoint vom 2026-10-29
 
 Am Quellstand `the-fin-at/agent-pool@ae9fc85c00bb1b6ed4b575c72912da98cce319e7` implementierte 0.5.2 die in [Issue #39](https://github.com/the-fin-at/agent-pool/issues/39) beauftragte automatische Standardanmeldung. Der frühere Status „nur Vorschlag/offene Implementierung“ ist damit für den Quellcode überholt; die ursprüngliche Untersuchung und ihre A/B-Belege bleiben erhalten. [Verhaltens-/Rollbackdokumentation](../docs/native-claude-default.md) und [normalisierte Nachweise](../docs/native-claude-default-validation.json) trennen 42 kontrollierte Kompatibilitätsfälle, 32 native Mac-Schritte und Release-Artefaktprüfung von tatsächlicher Provider-Nutzung, Installation und Linux-Abnahme. Am späteren tatsächlichen Erststart bestanden 14 native Schritte; zwei echte begrenzte read-only Jobs liefen jeweils genau einmal über Standardkontext und verwalteten Pin. Isoliertes Linux bestand zwölf gezielte, 42 Kompatibilitäts- und 86 Kernfälle ohne Skips. Die lokale Installation und alle 19 unabhängigen E2E-/Bestandsprüfungen bestanden; fünf alte Profile blieben erhalten und genau eine Standardreferenz kam hinzu. Der neue Kontext kopiert keine Credentials, lässt `CLAUDE_CONFIG_DIR` ungesetzt und erhält getrennte Zusatzaccounts, bindende Pins und gemeinsame Grenzen verifizierter Aliase. Windows, Vertrieb/Signierung und vollständige 1.0-Freigabe blieben offen; CI blieb bewusst deaktiviert.
+
+## Accountanzeige: Untersuchung vom 2026-11-02
+
+[Diagnose und Fixvertrag](account-display-2026-11-02.md) dokumentieren die doppelte Alias-Karte und den vom Anbieter gemeldeten Mitgliedsguthaben-Grund auf Ausgangsstand `the-fin-at/agent-pool@992a0f6`; das [Auftragsregister](auftraege.md) führt die getrennte Abnahme.
+
+Der spätere lokale Abnahmecheckpoint am 2026-11-02 zu Code `the-fin-at/agent-pool@e61edc9` ersetzte die offene Untersuchung: Version 0.5.3 wurde lokal mit Bestanderhaltung installiert und nativ geprüft; [Diagnose](account-display-2026-11-02.md), [Aufträge](auftraege.md) und [Nachweise](../docs/account-display-2026-11-02-validation.json) halten die getrennten Fakten fest.
+
+## Originale Provider-Logos: 2026-11-02
+
+[Logoherkunft und Darstellungsvertrag](../desktop/src/assets/providers/README.md) und [lokale 0.5.5-Nachweise](../docs/provider-logos-2026-11-02-validation.json) dokumentieren den Nachauftrag auf `the-fin-at/agent-pool@734a4c6`: echte Logos als geerbte Foreground-Masken. [Aufträge](auftraege.md) hält die tatsächliche native Abnahme fest.

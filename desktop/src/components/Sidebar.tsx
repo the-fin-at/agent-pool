@@ -1,13 +1,14 @@
-import { Icon, type IconName } from '../icons';
+import { Icon } from '../icons';
 import type { Provider, WorkerState } from '../types';
 import { Toggle } from './ui';
+import { ProviderLogo } from './ProviderLogo';
 
 export type ProviderFilter = 'all' | Provider;
 
-export const FILTERS: { value: ProviderFilter; label: string; icon: IconName }[] = [
-  { value: 'all', label: 'Alle Accounts', icon: 'people' },
-  { value: 'codex', label: 'Codex', icon: 'hdd-stack' },
-  { value: 'claude', label: 'Claude', icon: 'diagram-3' },
+export const FILTERS: { value: ProviderFilter; label: string }[] = [
+  { value: 'all', label: 'Alle Accounts' },
+  { value: 'codex', label: 'Codex' },
+  { value: 'claude', label: 'Claude' },
 ];
 
 export const AUTO_REFRESH_LABEL = 'Alle 60 Sekunden aktualisieren';
@@ -49,7 +50,7 @@ export function Sidebar(props: NavProps) {
             <li key={item.value}>
               <button type="button" className="nav-item" aria-current={section === 'accounts' && filter === item.value ? 'page' : undefined}
                 onClick={() => props.onFilter(item.value)}>
-                <Icon name={item.icon} size={24} />
+                {item.value === 'all' ? <Icon name="people" size={24} /> : <ProviderLogo provider={item.value} size={24} />}
                 <span>{item.label}</span>
               </button>
             </li>
@@ -103,7 +104,10 @@ export function CompactNav(props: NavProps) {
       <div className="compact-row">
         {FILTERS.map((item) => (
           <button key={item.value} type="button" className="tab" aria-current={section === 'accounts' && filter === item.value ? 'page' : undefined}
-            onClick={() => props.onFilter(item.value)}>{item.label}</button>
+            onClick={() => props.onFilter(item.value)}>
+            {item.value !== 'all' && <ProviderLogo provider={item.value} size={18} />}
+            {item.label}
+          </button>
         ))}
         <button type="button" className="tab" aria-current={section === 'jobs' ? 'page' : undefined}
           disabled={scope === 'remote' && !remote} onClick={props.onJobs}>Aufträge</button>

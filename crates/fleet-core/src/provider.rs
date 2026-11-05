@@ -696,18 +696,19 @@ pub fn codex_status_unlocked(profile: &Value, dir: &Path) -> Result<Value> {
         );
     }
     let mut result = json!({"connected": true, "email": account["email"], "plan": account["planType"],
-        "account_type": account["type"]});
-    match session
-        .request("account/rateLimits/read", json!({}))
-        .map(|v| quota::codex(&v))
-    {
-        Ok(w) if !w.is_empty() => {
-            result["windows"] = json!(w);
-            result["error"] = Value::Null;
-        }
-        Ok(_) => {
-            result["windows"] = Value::Null;
-            result["error"] = json!("Keine Kontingent-Fenster vom Anbieter gemeldet");
+        "account_type": account["type"], "workspace_name":account["workspaceName"].as_str(),
+        "rate_limit_reached_type":null});
+    match session.request("account/rateLimits/read", json!({})) {
+        Ok(payload) => {
+            let windows = quota::codex(&payload);
+            result["rate_limit_reached_type"] = json!(quota::codex_reached_type(&payload));
+            if windows.is_empty() {
+                result["windows"] = Value::Null;
+                result["error"] = json!("Keine Kontingent-Fenster vom Anbieter gemeldet");
+            } else {
+                result["windows"] = json!(windows);
+                result["error"] = Value::Null;
+            }
         }
         Err(e) => {
             result["windows"] = Value::Null;

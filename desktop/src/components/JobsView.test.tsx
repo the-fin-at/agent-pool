@@ -38,7 +38,7 @@ describe('jobs (read-only)', () => {
     const result = await screen.findByText(/Bericht fertig/);
     expect(result.tagName).toBe('PRE');
     expect(result.textContent).toBe(RESULT);
-    expect(document.querySelector('img')).toBeNull();
+    expect(result.querySelector('img')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Alle Aufträge' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Aufträge' })).toBeInTheDocument();
