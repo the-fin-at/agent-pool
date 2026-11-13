@@ -15,6 +15,7 @@ parser.add_argument('--remote',required=True)
 parser.add_argument('--client-home',type=Path,help='Use a disposable client configuration instead of the personal pool')
 parser.add_argument('--output',type=Path,required=True)
 args=parser.parse_args()
+args.output.parent.mkdir(parents=True,exist_ok=True)
 config=RemoteConfig(args.client_home or default_home()).get(args.remote)
 def shell(argv,input=None):
     done=subprocess.run(['ssh','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ForwardAgent=no',config['host'],shlex.join(argv)],input=input,text=True,capture_output=True,timeout=20)

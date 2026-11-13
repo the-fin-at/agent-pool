@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m unittest tests.test_portability -v
+      - run: python -m unittest tests.test_portability tests.test_packaging_reference -v
       - run: python scripts/check_portability.py --report test-results/portability.json
       - uses: actions/upload-artifact@v4
         if: always()

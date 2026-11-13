@@ -10,6 +10,8 @@ The JSON report lists every reviewed path, parent directory, size, text/binary c
 
 The binary registry in `scripts/portability-assets.json` binds each asset to a SHA-256 and purpose. Review new images visually and inspect their metadata/text before declaring them; fonts and icons retain upstream licenses. Updating the registry is a review step, not a way to dismiss a failing check.
 
+The gate also inspects ignored files in package/static input directories and environment files that can affect frontend builds. Legacy Python builders run it before copying their inputs. Cache directories excluded by those builders are excluded from that supplemental scan. Every registered asset's hash is enforced even if a replacement decodes as plain text.
+
 ## Repeatable release loop
 
 1. Review the complete inventory and any changed path, including hidden files and images. Keep provider/brand identity distinct from machine-specific configuration.

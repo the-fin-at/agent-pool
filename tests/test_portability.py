@@ -2,10 +2,13 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import shutil
+import sys
 import tempfile
 import unittest
 
-from scripts.check_portability import POLICY, audit, missing_links, text_findings
+from scripts.check_portability import POLICY, audit, missing_links, source_files, text_findings
 
 
 class PortabilityTests(unittest.TestCase):
@@ -82,6 +85,50 @@ class PortabilityTests(unittest.TestCase):
             (root / 'auth.json').write_text('{}')
             result = audit(root, self.policy, {}, files=['auth.json'])
             self.assertEqual(result['findings'][0]['rule'], 'runtime-state-in-source')
+
+    def test_ignored_files_in_package_inputs_are_still_audited(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            (root / '.gitignore').write_text('.env\n*.log\n__pycache__/\n')
+            (root / 'agent_pool').mkdir()
+            (root / 'agent_pool/__init__.py').write_text('')
+            (root / 'agent_pool/.env').write_text('GENERIC=value')
+            (root / 'agent_pool/debug.log').write_text('generic log')
+            (root / 'agent_pool/__pycache__').mkdir()
+            (root / 'agent_pool/__pycache__/cache.pyc').write_bytes(b'\0cache')
+            result = audit(root, self.policy, {})
+            paths = {finding['path'] for finding in result['findings'] if finding['rule'] == 'runtime-state-in-source'}
+            self.assertEqual(paths, {'agent_pool/.env', 'agent_pool/debug.log'})
+            self.assertNotIn('agent_pool/__pycache__/cache.pyc', source_files(root))
+
+    def test_registered_asset_cannot_bypass_its_hash_by_becoming_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            image = root / 'sample.png'
+            reviewed = b'\x89PNG\0original'
+            assets = {image.name: {'sha256': hashlib.sha256(reviewed).hexdigest(), 'purpose': 'Fixture'}}
+            image.write_text('ordinary text')
+            self.assertFalse(audit(root, self.policy, assets, files=[image.name])['passed'])
+
+    def test_archive_builder_refuses_ignored_state_before_packaging(self):
+        source = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            (root / 'scripts').mkdir()
+            for name in ['build_zipapp.py', 'check_portability.py', 'portability-policy.json']:
+                shutil.copy2(source / 'scripts' / name, root / 'scripts' / name)
+            (root / 'scripts/portability-assets.json').write_text('{}')
+            (root / '.gitignore').write_text('.env\n')
+            (root / 'agent_pool').mkdir()
+            (root / 'agent_pool/__init__.py').write_text('')
+            (root / 'agent_pool/.env').write_text('GENERIC=value')
+            result = subprocess.run([sys.executable, str(root / 'scripts/build_zipapp.py')],
+                                    capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('runtime-state-in-source', result.stderr)
+            self.assertFalse((root / 'dist/agent-fleet.pyz').exists())
 
     def test_external_symlinks_are_checked_without_reading_the_target(self):
         with tempfile.TemporaryDirectory() as tmp:

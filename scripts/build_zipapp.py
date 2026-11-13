@@ -1,5 +1,7 @@
 """Build a standalone Python zipapp with no pip/runtime dependencies."""
 import shutil
+import subprocess
+import sys
 import tempfile
 import zipapp
 from pathlib import Path
@@ -7,7 +9,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def validate_source():
+    result = subprocess.run([sys.executable, str(ROOT / 'scripts/check_portability.py')],
+                            capture_output=True, text=True)
+    if result.returncode:
+        raise RuntimeError('Source portability gate failed:\n' + result.stdout + result.stderr)
+
+
 def build_archive(output):
+    validate_source()
     output = Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as folder:

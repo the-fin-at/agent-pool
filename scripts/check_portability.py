@@ -28,8 +28,19 @@ def source_files(root):
     )
     if result.returncode:
         raise RuntimeError("Run this check in a Git source checkout")
-    return sorted({p for p in result.stdout.decode().split("\0")
-                   if p and ((root / p).is_file() or (root / p).is_symlink())})
+    files = {p for p in result.stdout.decode().split("\0")
+             if p and ((root / p).is_file() or (root / p).is_symlink())}
+    # These directories are copied into distributables, even when Git ignores a file.
+    # The legacy builders exclude __pycache__; public/static assets exclude nothing.
+    for folder in ("agent_pool", "desktop/public", "site"):
+        for path in (root / folder).rglob("*"):
+            if folder == "agent_pool" and "__pycache__" in path.relative_to(root / folder).parts:
+                continue
+            if path.is_file() or path.is_symlink():
+                files.add(path.relative_to(root).as_posix())
+    for folder in (root, root / "desktop"):
+        files.update(path.relative_to(root).as_posix() for path in folder.glob(".env*") if path.is_file())
+    return sorted(files)
 
 
 def text_findings(text, policy):
@@ -124,10 +135,16 @@ def audit(root, policy, assets, files=None):
                 safe = False
             if not safe:
                 findings.append({"path": name, "line": 0, "rule": "external-or-dangling-symlink"})
+            if name.startswith(("agent_pool/", "desktop/public/", "site/")):
+                findings.append({"path": name, "line": 0, "rule": "symlinked-distribution-input"})
         else:
             data = path.read_bytes()
         digest = hashlib.sha256(data).hexdigest()
+        asset = assets.get(name)
+        if asset is not None and (asset.get("sha256") != digest or not asset.get("purpose")):
+            findings.append({"path": name, "line": 0, "rule": "changed-reviewed-asset"})
         if (name.startswith("test-results/") or path.name in {".env", "auth.json", "credentials.json"}
+                or (path.name.startswith(".env.") and path.name != ".env.example")
                 or path.suffix in {".log", ".sqlite", ".sqlite3", ".db"}):
             findings.append({"path": name, "line": 0, "rule": "runtime-state-in-source"})
         for line, rule in text_findings(name, policy):
@@ -137,8 +154,7 @@ def audit(root, policy, assets, files=None):
             if "\0" in text:
                 raise UnicodeDecodeError("utf-8", data, 0, 1, "binary NUL")
         except UnicodeDecodeError:
-            asset = assets.get(name, {})
-            if asset.get("sha256") != digest or not asset.get("purpose"):
+            if asset is None:
                 findings.append({"path": name, "line": 0, "rule": "unreviewed-binary"})
             kind = "binary"
         else:
