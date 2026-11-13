@@ -24,3 +24,6 @@ dist/
 /desktop/playwright-report/
 
 /desktop/src-tauri/gen/
+
+# Local verification reports and machine-specific evidence
+/test-results/

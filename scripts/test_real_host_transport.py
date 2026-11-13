@@ -21,7 +21,9 @@ def shell(argv,input=None):
     if done.returncode:raise RuntimeError(done.stderr[-800:])
     return done.stdout.strip()
 server_version=shell([config['command'],'--version'])
-folder=shell(['mktemp','-d',config['home']+'/../agent-fleet-validation/transport.XXXXXX'])
+folder=shell(['python3','-c',
+    'import pathlib,tempfile,sys; parent=pathlib.Path(sys.argv[1]); parent.mkdir(mode=0o700,parents=True,exist_ok=True); print(tempfile.mkdtemp(prefix="transport.",dir=parent))',
+    str(Path(config['home']).parent/'agent-fleet-validation')])
 child=None
 try:
     pool=folder+'/pool';workspace=folder+'/work';wrapper=folder+'/delayed-rpc'

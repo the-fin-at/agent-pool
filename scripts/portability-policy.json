@@ -1,0 +1,26 @@
+{
+  "blocked_identifier_sha256": [
+    "06deac5b8d4a128e257bee1443a9ce063604e9ae63620479e7161fb01a668ac1",
+    "1d4b41c9db9172e5f151e4a5fe3c57ca3f98b8e6ba807450b10d1897c84ce72b",
+    "63a0bee5c4cdec6229530a21ffb4c3dea80877873d68fc0aee5cd03988f66013",
+    "86afbfa7a9b96adca2e0e90466231bcc6186b6d2d1dc62f30e8bef7a3a3ca689",
+    "963408bb218cd5e2ffbdf6c5a4f254ebc43e93ca14148a1a39aad9afdbed52b9",
+    "96a4bc2602655473120fcc571ee3d8cfe5f8801f8038ccc06323d305e323331c",
+    "ab39be794afc3e23dde8fe87b93066d5b575d97f190f4d487020a9d2ff43bded",
+    "b50d575479828632c5dd7eb886816c43d43a122f42146803cca3bf4630c45fb9",
+    "bcf776fdd17cfdfb0daeaa0e52beb38f3d1e8b6540b5bfe68456dfaf3b6d3f00",
+    "c6538702bf3232e77a533dae2fb471296d4daa060e5eb790395c754c290cb6e5",
+    "c85bd55f1c31e63ca68fba73baa874492449a47ba6a7bd2e2e693275ecf00911",
+    "e0d5ffd5e74647c003e660e139af8aeb177baf1b0fe06f823938ce55565fb321"
+  ],
+  "generic_usernames": [
+    "user",
+    "example",
+    "agent",
+    "agentpool",
+    "fixture",
+    "test",
+    "runner",
+    "u"
+  ]
+}

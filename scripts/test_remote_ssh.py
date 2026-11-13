@@ -1,6 +1,7 @@
 """Opt-in real SSH/Linux integration. Requires Docker and OpenSSH, no personal credentials.
 Creates an isolated container and disposable key, removes both on completion.
 """
+import argparse
 import json
 import os
 import shutil
@@ -24,6 +25,9 @@ def run(argv, **kw):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=ROOT/'test-results/ssh.json')
+    args = parser.parse_args()
     if os.name == 'nt':
         raise SystemExit('Run this opt-in fixture from macOS or Linux (Windows CLI covered separately).')
     name = 'agent-pool-ssh-' + uuid.uuid4().hex[:10]
@@ -171,7 +175,8 @@ def main():
                 'native_device_login_roundtrip':True,'native_browser_code_login_roundtrip':True,
                 'native_ui_remote_login_roundtrip':ui_roundtrip}
             print(json.dumps(evidence,indent=2),flush=True)
-            (ROOT/'docs/remote-ssh-validation.json').write_text(json.dumps(evidence,indent=2)+'\n')
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(evidence,indent=2)+'\n')
         finally:
             os.environ['PATH']=oldpath
             if started:

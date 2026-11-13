@@ -56,13 +56,6 @@ agent-fleet --remote zentral auth cancel SESSION_ID
 
 Pro Versuch einen neuen zufälligen UUID-Hex-Schlüssel verwenden; das Beispiel ist nur ein Formatbeispiel. Die SSH-Kommandozeile enthält keine Login-Codes. RPC liest keine vom Client angegebenen Dateien auf dem Server. Native Anmeldedaten verbleiben im privaten Profilverzeichnis des Zielrechners.
 
-## Nachweise und Grenzen
+## Prüfung
 
-- Echte native Codex- und Claude-CLI: Start der Browser-/Device-Flows mit leeren isolierten Profilen geprüft. Claude verarbeitet einen eingegebenen Testcode ohne TTY und lehnt einen absichtlich ungültigen Code kontrolliert ab. Bestehende Logins wurden dafür nicht verändert.
-- Echte Tk-UI mit kontrollierter nativer CLI: vom Anmeldebutton bis zum verbundenen Account und seiner Identität geprüft.
-- Echte Mac-UI → OpenSSH → Linux-Container → native Provider-Test-CLI → zurück zur Account-Übersicht: Gerätecode und Claude-Code inklusive eingeschränktem SSH-Schlüssel geprüft. Siehe [maschinenlesbarer Nachweis](remote-ssh-validation.json). Die Provider-Test-CLI kontaktiert keinen Anbieter und verwendet keine echten Zugangsdaten.
-- Fensteraufnahmen und schmale Ansicht: [Design-Abnahme](../design-qa.md). Screenshots enthalten ausschließlich Beispieldaten.
-- Ein vollständiger neuer Provider-Login mit menschlicher Browser-Zustimmung auf einem konkreten produktiven Linux-Host sowie native Windows-UI-Abnahme stehen weiterhin aus. Es wurde kein persönlicher Server bereitgestellt. GitHub-CI ist separat zu betrachten.
-
-
-Die Übersicht und Anmeldung sind seit PR #2 auf `main`. Die Realserver-Korrekturen und vorhandenen nativen Profile benötigen 0.4.1. Ältere Release-Pakete unterstützen diese Korrekturen noch nicht.
+Kontrollierte Login- und SSH-Fixtures sowie native Plattformprüfungen stehen in der [Validierungsanleitung](validation.md). Screenshots und Testergebnisse gehören in ein eigenes, nicht versioniertes `test-results/`-Verzeichnis. Echte Browserzustimmung wird vom jeweiligen Accountbesitzer durchgeführt.

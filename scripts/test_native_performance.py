@@ -197,6 +197,7 @@ def main():
     parser.add_argument('--cli', type=Path, default=Path(shutil.which('agent-fleet') or 'agent-fleet'))
     parser.add_argument('--desktop', type=Path, help='Built debug desktop with custom-protocol')
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--reference', type=Path, help='Optional operator-reviewed artifact reference JSON')
     parser.add_argument('--samples', type=int, default=20)
     parser.add_argument('--delay-seconds', type=float, default=2)
     parser.add_argument('--ssh-only', action='store_true', help='Only the SSH gate; never claims a native UI pass')
@@ -227,12 +228,13 @@ def main():
         result['remote_binary'] = json.loads(ssh(config['host'], ['python3','-c',
             'import hashlib,json,pathlib,shutil,subprocess,sys; c=sys.argv[1]; p=pathlib.Path(shutil.which(c) or c); '
             'print(json.dumps({"sha256":hashlib.sha256(p.read_bytes()).hexdigest(),"version":subprocess.check_output([str(p),"--version"],text=True).strip()}))', config['command']]))
-        reference = json.loads((ROOT/'docs/rust-tauri-validation.json').read_text())
-        result['application_reviewed_commit'] = reference['reviewed_implementation_commit']
-        result['cli_matches_reference_release'] = result['cli_sha256'] == reference['release']['mac_cli_sha256']
-        result['remote_matches_reference_release'] = result['remote_binary']['sha256'] == reference['release']['linux_cli_sha256']
-        if args.desktop:
-            result['desktop_matches_reference_debug'] = sha256(args.desktop) == reference['native_gui']['debug_binary_sha256']
+        if args.reference:
+            reference = json.loads(args.reference.read_text())
+            result['application_reviewed_commit'] = reference['reviewed_implementation_commit']
+            result['cli_matches_reference_release'] = result['cli_sha256'] == reference['release']['mac_cli_sha256']
+            result['remote_matches_reference_release'] = result['remote_binary']['sha256'] == reference['release']['linux_cli_sha256']
+            if args.desktop and 'native_gui' in reference:
+                result['desktop_matches_reference_debug'] = sha256(args.desktop) == reference['native_gui']['debug_binary_sha256']
         with tempfile.TemporaryDirectory(prefix='fleet-native-performance-') as tmp:
             local_home = Path(tmp)/'pool'
             local_home.mkdir(mode=0o700)

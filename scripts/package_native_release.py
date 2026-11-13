@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage a repeatable private native package from already validated 0.5 artifacts.
+"""Stage a repeatable native package from explicitly validated artifacts.
 
 The reference is a trusted operator input, not an authenticity/signature service.
 No build, provider, pool, GUI or installation commands are run.
@@ -12,6 +12,7 @@ import os
 from pathlib import Path, PurePosixPath
 import platform
 import plistlib
+import re
 import shutil
 import stat
 import struct
@@ -19,6 +20,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 
 APP_FILES = {
     'Contents/Info.plist',
@@ -27,6 +29,17 @@ APP_FILES = {
     'Contents/_CodeSignature/CodeResources',
 }
 APP_BINARY = 'Contents/MacOS/agent-fleet-desktop'
+
+
+def load_reference(path):
+    reference = json.loads(Path(path).read_text())
+    source = Path(__file__).resolve().parents[1] / 'Cargo.toml'
+    version = tomllib.loads(source.read_text())['workspace']['package']['version']
+    if reference['version'] != version:
+        raise ValueError('reference version must match the current source version')
+    if not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', reference['reviewed_implementation_commit']):
+        raise ValueError('reference must identify the reviewed source commit')
+    return reference
 
 
 def digest(path):
@@ -172,9 +185,7 @@ def package(args):
     if not output.parent.is_dir():
         raise ValueError('output parent must already exist')
     reference_path = Path(args.reference)
-    reference = json.loads(reference_path.read_text())
-    if reference['version'] != '0.5.0':
-        raise ValueError('only the validated 0.5.0 release is supported')
+    reference = load_reference(reference_path)
     native = ('macos-arm64' if sys.platform == 'darwin' and platform.machine() == 'arm64'
               else 'linux-x86_64' if sys.platform == 'linux' and platform.machine() == 'x86_64' else None)
     if native != args.platform:
@@ -229,7 +240,7 @@ def package(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--reference', required=True, help='trusted rust-tauri-validation.json')
+    parser.add_argument('--reference', required=True, help='operator-reviewed artifact reference JSON; see docs/native-distribution.md')
     parser.add_argument('--platform', required=True, choices=['macos-arm64', 'linux-x86_64'])
     parser.add_argument('--cli', required=True)
     parser.add_argument('--app', help='validated macOS .app, never launched')

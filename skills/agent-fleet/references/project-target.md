@@ -1,6 +1,6 @@
 # Project execution target
 
-Resolve project identity and target together. An explicit user target for the current task overrides the project's established target. Otherwise use the Chief-of-Staff project handoff or a clearly established target for this same project. A connection configured on the client describes availability; it does not choose where a project runs. A machine-wide `skill-policy.json` target is not an input to this decision.
+Resolve project identity and target together. An explicit user target for the current task overrides the project's established target. Otherwise use the project-specific execution handoff or a clearly established target for this same project. A connection configured on the client describes availability; it does not choose where a project runs. A machine-wide `skill-policy.json` target is not an input to this decision.
 
 A project handoff conveys:
 
@@ -19,7 +19,7 @@ Before submitting, validate the chosen remote name with `remote list` and the wo
 | --- | --- |
 | Project A explicitly uses remote `build-server`; the next request is project B with no target | Ask for B's target before submitting. A's choice does not carry over. |
 | Project B explicitly requests local execution; a remote connection is configured | Use B's local directory. The configured remote does not override the task. |
-| Chief of Staff hands off project C with remote `build-server`, workspace `project-c`, path `/srv/projects/c` | Validate that connection and workspace/path, then submit C with `--remote build-server --workspace project-c`. |
+| A project coordinator hands off project C with remote `build-server`, workspace `project-c`, path `/srv/projects/c` | Validate that connection and workspace/path, then submit C with `--remote build-server --workspace project-c`. |
 | A same-project follow-up has a clearly established remote and workspace | Reuse them for that project, unless the current task changes the target. |
 | Project identity is unclear, two handoffs disagree, or remote target lacks a resolvable workspace/path | Ask for the missing decision before submission; continue independent work. |
 

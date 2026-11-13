@@ -1,0 +1,710 @@
+{
+  "agent_pool/assets/brand/app.icns": {
+    "sha256": "5b4db3470dc0b28fa3ce0ca308c39544351e12aa41441b99dfe980386af64083",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/brand/app.ico": {
+    "sha256": "4d143528b63e08a2755d430af501254b849f81e72af9e9029ddbeb3eb155d3a8",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/brand/app.png": {
+    "sha256": "63caa7805a967ace4f3909b2d650340d5696124c6bfc92ad25b17ff021b533c2",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/brand/compass-48.png": {
+    "sha256": "f92ad0e1952c477b5359c5e3694314477d8c8ca6637671c556f12adbbe315c8f",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/brand/compass-64.png": {
+    "sha256": "3e3db6341c6c79ee6c81909eb88147b8778d939c1823845960ed7405cad1d8d4",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/brand/compass-80.png": {
+    "sha256": "96e96639cd1b36d5fb96964c16c2049ea0e21d533e79c8a3389eb7d140e12d02",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "agent_pool/assets/controls/nav-hover.png": {
+    "sha256": "a817ecb40b0d069bb143dd9520eb3a45fa01eec29c86456edebec2a7a0fe8ed3",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/nav-selected.png": {
+    "sha256": "b303f80ac9c2842736999a9197c3430883467ff7b36a9db36b1b10f65f365cb2",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/nav.png": {
+    "sha256": "c45756c782323d802e3b26359cf53e1c73272a3c91535204391f793329f7cae6",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/primary-disabled.png": {
+    "sha256": "ea8c19583ac56566de1d8d56802fc67c40134756487b3f89b3d8489f251ff392",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/primary-hover.png": {
+    "sha256": "7e28719e39b22ada6744e5c7bb1b568ff2308dc1fa9befbab4ba75766d7b78a0",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/primary.png": {
+    "sha256": "361d2f6ef68493e4175dffdd289abead30cc6e579cac130876ed6946c1ec6048",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/soft-hover.png": {
+    "sha256": "f0014c754c78eaafe2e0bb47da14f88b668a140aaba441cb57584e99425c5d95",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/controls/soft.png": {
+    "sha256": "95a24385fefd0ce8c9dd3f045f5afe24fd8532e04e3cc93cc877886688b5c3a6",
+    "purpose": "Generic THE-FIN button background raster used by the legacy desktop"
+  },
+  "agent_pool/assets/fonts/AlbertSans-Light.ttf": {
+    "sha256": "7d5b06c4c3c6ca29d0f360970c581ec32c67550b807981574a6b19d64bb0f9eb",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "agent_pool/assets/fonts/AlbertSans-Regular.ttf": {
+    "sha256": "12b4944b5b2c7a90ac98655d89fa3b02741f6759a307d3f6f40d8fe3d03150a4",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "agent_pool/assets/fonts/AlbertSans-SemiBold.ttf": {
+    "sha256": "c0e234dff8d0ce1bc16124ea3af91c4c02009ff148db58336b9f63a08cc42f80",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-accent-20.png": {
+    "sha256": "1063e3f221d4e06f62626ca7c6a92ee191874304a2e89e833f9cbfcaf053d4f3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-accent-24.png": {
+    "sha256": "2280f4ca1b28c1b9724fcdb9f17ffdc0b06b5889be5c1fdb57dc708adacf0ba0",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-ink-20.png": {
+    "sha256": "cb2ce61ec9b2b950e6fa4cbced32b98fb52f6e78b164b31be2686fbff95ec458",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-ink-24.png": {
+    "sha256": "da5be575c349a23d2035253d707dbf7b0b9bb39ad62695a7df3f3b112511e93b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-muted-20.png": {
+    "sha256": "5ad0c970c86ef896092a6495ef41d7f73670f978beec112de3da0a2d08a558c3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-muted-24.png": {
+    "sha256": "4c57e3585c47c613946533f024280cd7d2c1b43eb5346276db5c6bfca919de5f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-white-20.png": {
+    "sha256": "e419af877e5a2db274d029d3e65c03c5b319bbef7c294f18c612deec7960ca9e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-clockwise-white-24.png": {
+    "sha256": "be5bca64cf9c1ba9bd5cd3ce8d40d20bc867b7a733f7f848347c13e77c652ac8",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-accent-20.png": {
+    "sha256": "edd84f7dc8eb6abf37d29463b5d6a9aecf5255736eb2d768b7a246c3fb433662",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-accent-24.png": {
+    "sha256": "a2288f9bb9aede151dba9e97efaf61a7403d885c0b6a265d367a69fdfb1651e0",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-ink-20.png": {
+    "sha256": "a99295417c543f640d355c12e8f6bb72801e56550a2cff5c7e95a3f3eee42262",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-ink-24.png": {
+    "sha256": "9df90e12e401b7c92275c5699c695daa694e37d0de304cb6308d04dbff48f6a9",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-muted-20.png": {
+    "sha256": "45ef5cc8744f48d0f9535b2fb9e1c157ba705980d3873f9ee1ca6cbadff534af",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-muted-24.png": {
+    "sha256": "29f1ef0c95d62c2d43bd8d7d50eb9492cc14cc9ba46a2451a804e09cca39684e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-white-20.png": {
+    "sha256": "2c14bc819e0e7512e23c4c856dd95ce3bf181be0f4c32bcbee076fe0d98a0ec3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/arrow-left-white-24.png": {
+    "sha256": "f13d7c0edfb8cb5faf854f16cb9660754c11bbf04dee04d725768c944862aeab",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-accent-20.png": {
+    "sha256": "3340f36be17233775c715ea9c6a7c5905cd65c182fa7d84821e321f186c50915",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-accent-24.png": {
+    "sha256": "91e596234a24bc7e533d823b27b8a4b03cc7a639ce24a29bf04bb82b8f9a45df",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-ink-20.png": {
+    "sha256": "99de0f9a46332bc188f575864a8f9aa7eb6ef62c67e017b72a2552c038338a64",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-ink-24.png": {
+    "sha256": "bb3ef63ed25518796207de3d11221e463042efa7d86e7328c5a3700b91df3fc0",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-muted-20.png": {
+    "sha256": "0b84c9bc795fc78eb22b353cdbd84fa0debd4243ea1be736656ef5c60e156e06",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-muted-24.png": {
+    "sha256": "8ae0ec4782f8bcbb72dbe879723248f8ac9e614fd356512ac68f63eb426b6352",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-white-20.png": {
+    "sha256": "3a11fb86e010ade830320e41daa7ed3b09947b4af71c3f783e38cd71b123e97a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/box-arrow-up-right-white-24.png": {
+    "sha256": "e9a6b659cb5360c3759b67f685ac31345ae5407431c7a47f5eb6dfd169989c40",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-accent-20.png": {
+    "sha256": "4ae9a045257af173ec11fe9541af8c48b40956374764e311286e911627494670",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-accent-24.png": {
+    "sha256": "2850091bc274cc7229d7247f155060c1c61a74ef0e227f67baa79a14b23e04ca",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-ink-20.png": {
+    "sha256": "91f71238d878927390e587d843e2882268c3156df8c2d199d91bddf6b5d522f3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-ink-24.png": {
+    "sha256": "cf7d9ad837607aef18fc462cefc9cbe3dce6c31352fd2c66da2094c2af280bb3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-muted-20.png": {
+    "sha256": "074fd541a4225691f388ebecf196fd1ad9271d9fbde6165962ecdd69f5049b2b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-muted-24.png": {
+    "sha256": "5632f09d12eb7a7f48628722c09c5bb63276620467c8e7d8b9a96924842801f3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-white-20.png": {
+    "sha256": "f9b606f178fa60edf747f4587a0a490caa728289ff3a58a5193a3bc2e2d26949",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/check2-white-24.png": {
+    "sha256": "19127748b70dc046251531b12322986f5837b62c9f0c3bc74e92aa563bf30afe",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-accent-20.png": {
+    "sha256": "8025ab2a527bce8ac3e20339d77a3d61a951780f1c04c3621836043c255c53dd",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-accent-24.png": {
+    "sha256": "f6477608554eef75b98c625dcf567b176ca30ba9d027dff883b48119b3952606",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-ink-20.png": {
+    "sha256": "24bbafb344a34f0853a93d6a731878a7190576bae754a070a0bdec31ce0bd84e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-ink-24.png": {
+    "sha256": "fb390324189f1ff69a664ebb93805f44cf01d0dd6c20d15c98b68afa7cefefe2",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-muted-20.png": {
+    "sha256": "5af84f7428d4431aa546c1788cc80c115d3a08972d3b76af88c6cd77aa49ddc5",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-muted-24.png": {
+    "sha256": "25ad5f65f6811209b37f7d4ad3bae993ca14900e18b04d32ee8a1894ba3a4f46",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-white-20.png": {
+    "sha256": "fada941acbe6ee483925b9f71132a09f54f64908178cad020b21080ea3647228",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/chevron-down-white-24.png": {
+    "sha256": "15fc6c79af2f409d5bd56d5818c739f7946305d790a49ee229b7e1e16f639349",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-accent-20.png": {
+    "sha256": "a4479affd1daf97e8a351a09383e523c38d4f1be2de8ccf6acb0ef2a804de7b5",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-accent-24.png": {
+    "sha256": "53a1d0a09552bc78d57073965c06a1c5728e47048f202240d3fb1ed0c3eb942a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-ink-20.png": {
+    "sha256": "a6594f98360fc8d14ce23762ebcaaa93836ef58e0fb9a8e2d0a3309cacde1a23",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-ink-24.png": {
+    "sha256": "1c8ce7a508d0e56a863cb6b16e16c0015cbb0116ea2a1d63e8882f276103e691",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-muted-20.png": {
+    "sha256": "9dfb95528b457563aed1dd4246ca896acc3f1195adc3c3d526261486105085fe",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-muted-24.png": {
+    "sha256": "66bc4581487d258661e73ad1cca666d67b4794173d28009903184a68e1f32bd3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-white-20.png": {
+    "sha256": "092e9d71ff70263594519b128f7b8866679d6930b402051ad06ca107f1e178e4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/diagram-3-white-24.png": {
+    "sha256": "e73fe766a16f231aac8c3b066d593715f2f4c45249eadcab8d1401af854f21f4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-accent-20.png": {
+    "sha256": "8551fb65372e5ec54036fe68257cbe60053c98c17a3a2c8714fc02efc432962c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-accent-24.png": {
+    "sha256": "4d2ce507e926d39c370d0a06166d7a4d216fb0eaa091c1aabab9fdc7d7846be3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-ink-20.png": {
+    "sha256": "d2fa1d7e76bc1f3ce60be6d165ffec1c79678c33d5a18519f11dd14bcbcde095",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-ink-24.png": {
+    "sha256": "cab2b1abc8b679d38b8da7a41bbec29c50a91335b7da35944e1a479279440216",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-muted-20.png": {
+    "sha256": "f5e1c245a3327becce5a70c36c3d1626cf8c7b6857e00769324db3c2f89dee2e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-muted-24.png": {
+    "sha256": "e3cd0e0efdf5c4d22e465f36834bd2c73e2ca5f1183e2382ab03707f90afa79b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-white-20.png": {
+    "sha256": "f8776979bb542de1113da8640906ac63ef2532e119ee933b2dcf9b9f21789288",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/exclamation-circle-white-24.png": {
+    "sha256": "3790b94373423fd787a3a402cb52b178b10533787f9e48f4956830805374a992",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-accent-20.png": {
+    "sha256": "5db0313f224d70370a90d53d5496a681ecc7bf6e685a4ba0e5b761042dfbe6a6",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-accent-24.png": {
+    "sha256": "d8f2b471ab1f121b3863a60cb5fd291e9bbdae021909df0067006464d7ec8de9",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-ink-20.png": {
+    "sha256": "f54cf56a3d7031d223da8673e6ec2e207c3bac358c1a18b8bc3438e0634cfa19",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-ink-24.png": {
+    "sha256": "93eb15fd68e921aae821a6f26534ca3f43cebb7c37b057a284a23e4dff6f6e2c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-muted-20.png": {
+    "sha256": "23ac111214e1258afec73d2027c3eb419da3e99f42452ab737db263a2f7f8b97",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-muted-24.png": {
+    "sha256": "1ea872ebc6aa856c41f88f9b3c85988f6d659459556677c14a0fe9465e1455c5",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-white-20.png": {
+    "sha256": "57a247f7a2e418233f7721e57abbe9056a46f5935a1d6bc270019ae5bcb710e8",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/globe2-white-24.png": {
+    "sha256": "d764af6561d8dcc07623d93f12f5b31a18c6668681a3db05b52c2cce711678f5",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-accent-20.png": {
+    "sha256": "cd9738582e4bf6cd8903a1aa8f287dbbfd2a097e39c084cc585fa95e94f78b9c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-accent-24.png": {
+    "sha256": "d0a95a36dec98ecf9e6ff5c8b88b5ae5b3a84e72250ec6a38506c46f6c6ca669",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-ink-20.png": {
+    "sha256": "4a4559b752d04ea9f93cc90ff2b58d7b9f7eb4575ede435c74b7b43fd0a52482",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-ink-24.png": {
+    "sha256": "6e1d2f46211dc6cdcf58f6f447354f650ec343d06bc9897d2aabaf0a7ce4c06f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-muted-20.png": {
+    "sha256": "57609457416a0674de4c6fc282b0390732bc6e780181f9d0c0d5a5a39f5bcd94",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-muted-24.png": {
+    "sha256": "9356653163c2b9316e2f1cea358476663560dc617ec77d28dbc90f4962dbff8a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-white-20.png": {
+    "sha256": "cf0e84bcf8e26afa031704ae665a2d7582311a774025c025c3810021973e9c5d",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/hdd-stack-white-24.png": {
+    "sha256": "bb0909fb925c12b264417c4900edb528247bb767a9f1066ae17a398628e78d0c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-accent-20.png": {
+    "sha256": "364ca3f98e683b7e5ceb5f4c52bc2d93cdfa6d296135e5f3fba768e6f986fe8f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-accent-24.png": {
+    "sha256": "1fed52ecbba17beccbef3d21fbdacc37387ed0359110bcfac10da679064e50bd",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-ink-20.png": {
+    "sha256": "236b38039d3a1555b67aa0646e2893dbdeacab79547a0988305bd337163a39a1",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-ink-24.png": {
+    "sha256": "2f782534921a8ae23ba87f7b9516044466b0208eac3b9e51e724e5e73e981fc8",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-muted-20.png": {
+    "sha256": "89cd1683ce203456941240fc67d2f1d68372dd52cdfc65d10a24840f6faa5252",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-muted-24.png": {
+    "sha256": "220e94ffa9f488af9522e605efc2a78a88b3716e050ad7d48cadfd1bd85f798a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-white-20.png": {
+    "sha256": "f43cb1acd30e80fcd58d79f4c95c2bf5972db52f2e6a245852b0bc1cfbc68e57",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/key-white-24.png": {
+    "sha256": "223200db031552bff94f566275cb141c9b16e0bb79a78d6031aa2f6d83b3288d",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-accent-20.png": {
+    "sha256": "d65371d4b40caa62c75bae2a5c300ef818e2294fffa4255441140858680cbe6c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-accent-24.png": {
+    "sha256": "8044944c66e705c602c91cdd72f73b737eb8151d5866a127def33eded5c74c78",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-ink-20.png": {
+    "sha256": "9988520df6906531354892c59114553d640b1ec93e89939bb86fb786fe458c0a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-ink-24.png": {
+    "sha256": "315d720b3df03d6ab9c0ab9a138ba5be355cd17d71d782d5e49e7a7c4bf4117b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-muted-20.png": {
+    "sha256": "7c4e1f0db91be36f1ee49f1c42a511ea5d32c42aee4be91833f3792215f733a6",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-muted-24.png": {
+    "sha256": "35820cdbef7237ac7e73ac670c0522941010be1ee85be4cfd43f1382a842df0f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-white-20.png": {
+    "sha256": "bcd34dd206438050ca90492f343c26bf9cb5be2b6dcecedc7f197087f4c2b4b4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/laptop-white-24.png": {
+    "sha256": "567e6e8d2fa379ffe078529a25650fc77a67913939ad33885d289bbcc902341f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-accent-20.png": {
+    "sha256": "35927de9d243bfb24e1235bd9e2a36b45188e16865f45c8583970eada349d108",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-accent-24.png": {
+    "sha256": "2678e119197cd8418c7ca67636b5a28dddaf1a3dfe2851c5287bbeb3baf42190",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-ink-20.png": {
+    "sha256": "2c5f8661a59629e9210cee3af202d0e60c4ff5d0bb6ef0e57aea18fcac03e2d1",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-ink-24.png": {
+    "sha256": "9f4e4d94bc2e210f9f4624fc92e6e7eac8db1bcbe2bec11167367c5e004bb963",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-muted-20.png": {
+    "sha256": "c02f52c58a6d0b6ce0c5747cd4b661917df2a34cc2925d43f0f3faca9414d7b3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-muted-24.png": {
+    "sha256": "c0528d800720b389fa6d1b3003dae64e78c38f21707397e198ca70dc6596b32e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-white-20.png": {
+    "sha256": "3c781aa829ea6e739b43b123a84714a23f5d84869b4f56d330abee654a3b2d44",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/link-45deg-white-24.png": {
+    "sha256": "5a02d945d0f3ae96f9d8b25bc9a470001d1c8eb56ae6b38e31f219f268f18b1e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-accent-20.png": {
+    "sha256": "d9e8f1d9ffff9a654505f7138be561e0da376dd8875e5ff715bf15799536d869",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-accent-24.png": {
+    "sha256": "3003312472ed8108f57ed085d5d2ecd978c1de0c1b4ac3cde25c4e01ac8fb3b9",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-ink-20.png": {
+    "sha256": "0eef89d29bbf0482927ee59523c1e3d9cb3249b691e8ab570ff78609d6e9f123",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-ink-24.png": {
+    "sha256": "27ba47b4bed3e93703762eeaa30996185079a8d56a452fbb2dbdfdd7c146b31d",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-muted-20.png": {
+    "sha256": "e11608c066890e247e36015bad55d0e9aac20ca145c6419f85b9ae5b2c4f1ef7",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-muted-24.png": {
+    "sha256": "b7879fd2bd999e5234dea0fc9759e4ab2408eb32bd5da9499f6b6fddeb93705b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-white-20.png": {
+    "sha256": "8811485c40f8798211791663db6b918ba980ff0516139be14c4b5038c9ff58fc",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/list-task-white-24.png": {
+    "sha256": "52f605ab6e2438ff218848d9ff3527e150eacf31ad9bdd9d6fe40834eab62be7",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-accent-20.png": {
+    "sha256": "3f5bb4c0a383c484d1f53f199d2aee9b9fdcf879a74fb6f50cd236593dcf4b6e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-accent-24.png": {
+    "sha256": "fb6eb8f7469d04a2a36b54e99ef9819fd9b3f6f5d898a8680089d0c8b56e424b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-ink-20.png": {
+    "sha256": "47e66ca74f73e49ed2b2400f2b9e246a692236cbe1f47b2a935740ad4e04e2e8",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-ink-24.png": {
+    "sha256": "c864ea37aafaef0092611b1c809c16e3b06d954198aca830930f1ad13f594592",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-muted-20.png": {
+    "sha256": "7d317b02ac8b91fc4be262b81682bf0ac48cd80c5cf5705d47361d9290b0606e",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-muted-24.png": {
+    "sha256": "252a1c57c7ebaf7e47ef4eddfbe42cb7b0503d12dff7a53bc875a548d257e282",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-white-20.png": {
+    "sha256": "f4f6674bd63c868178f060b2ef431bb1933d3929011479f97c87de5c00f6d221",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/people-white-24.png": {
+    "sha256": "e9be9db5c1245eb0cc6cf3ffa9330fb409d59020a129e06c3c1ec7e166028839",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-accent-24.png": {
+    "sha256": "d5e235ccb1b3ccf95f3626617e97b849dc5aea71ac033755f7aebe584dd20734",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-accent-32.png": {
+    "sha256": "de8c598a1bf347fb727725f3c40561aa5080c3de76fad1c777326d4628947986",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-ink-24.png": {
+    "sha256": "a8a63033d63452ebc13d6f19c0e08166c0091c0b3be1c84af990b83e0adcf678",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-ink-32.png": {
+    "sha256": "53ca23c062b991399bb4b60bab9d2a69d9d3499eb3e2460807e8bfa16833c13d",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-muted-24.png": {
+    "sha256": "f0f320b071c15f4137a50c7e754fca93cddf80a25a87dc01fc5b617819024910",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-muted-32.png": {
+    "sha256": "037ddcada0c508ed4ca476009c2851eea787beb1e5b24de9b48e965750c753d9",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-white-24.png": {
+    "sha256": "6e485acdf1274e1e6908a320d80ad5a2eccf6e16fad3d69be5fa965bc69eb765",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/person-white-32.png": {
+    "sha256": "e8a04ba26b5fd146c90a6dcaf173bbf6d3b625567d5a87c5158e42fd3123544d",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-accent-20.png": {
+    "sha256": "18d0ecf747d77208a36b1588fd076daf1af310b3e3a50976912170250762ea11",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-accent-24.png": {
+    "sha256": "0e956d00517cdd4c16d0f89e99f4c8b65a86fd3dc22f4a9fbc2e7e9009e4a04f",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-ink-20.png": {
+    "sha256": "6c3159edb6f4501d0715c3010332601d0675f4b1c208335feb9a6413bae3a3fa",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-ink-24.png": {
+    "sha256": "42004873511f900801ebce86365d2e7a7d7a9f886c173fe335a97054b463cef4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-muted-20.png": {
+    "sha256": "0f6b4fbde6949af90473ae6eb8cede100f38a3d4df3165388b4c73ee1a53fec3",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-muted-24.png": {
+    "sha256": "bb576d47316ca608edf4c0ceb58d19de912005a1677f6bd01826ed1e96285220",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-white-20.png": {
+    "sha256": "92e900e2f20f494d3badbb22e188cb218e2d4c44f6e8a4df384de244329810c1",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/plus-lg-white-24.png": {
+    "sha256": "1bedff78f31d046e0d22b68afc55891e45d11ba712202759ed1731131aa6f7b4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-accent-20.png": {
+    "sha256": "56e827497d738af73823092b86207b6886040355a36b55fcf80241b9bbc9be3a",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-accent-24.png": {
+    "sha256": "2348d56406901dd86891760ebd9b9ad16e8725d160716c892e0921c74e9c5189",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-ink-20.png": {
+    "sha256": "8d60a5b608ae2820e55b5f164b437aefeaeaef63b2a59dcbba4cf76dea90aa6c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-ink-24.png": {
+    "sha256": "2183ae67cf3ead74e65c1b248fe26b7f1587c7f30ef1e454915a71e6bc8d28a9",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-muted-20.png": {
+    "sha256": "14f7178ac35ac146a689a5d481d42d1c51c8492492cf17611a91c3b88f22c299",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-muted-24.png": {
+    "sha256": "7028b971ba14c9f7e7fb113070bca29d839be0bfb55531f2e0524e709340f8d1",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-white-20.png": {
+    "sha256": "5840ca9156fb693223ed92ce549c65eb87ae3ebd670b14de65296bb448c60191",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/search-white-24.png": {
+    "sha256": "ac026c957cfa988600807f63aae6f6dbbc0a00c37e756b5bd20987b5ef1812b4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-accent-20.png": {
+    "sha256": "42802008fca8292b0ea2e8fb7a93923b8e392d55d15163adcc90a346fee678ab",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-accent-24.png": {
+    "sha256": "3782e1fad7307bef9679937336ac449f2a51e0875209d748ccafaf3f84980d76",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-ink-20.png": {
+    "sha256": "4ba17ae224bc29a79055d990ce2dd2feead1de04a52a5d7c376ca51adec1aa60",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-ink-24.png": {
+    "sha256": "bd80e6669aec0a6f4906e8ecec9dbe34288171819bc43cafaafc32aa21632466",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-muted-20.png": {
+    "sha256": "84e65fccd96eb730f56354a7b1fe425b84d308dd35c513ade07b82eccce65a20",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-muted-24.png": {
+    "sha256": "d393609f71b185e99ea34f2e14bccc619bb7ca2e59bf508b417ee17d325fc43c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-white-20.png": {
+    "sha256": "32bd177990fdac3514718c8725ac287f3183beabad2c403c68cafcb3e05b0b72",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/server-white-24.png": {
+    "sha256": "a8fdc34081cd17a1df1be5e1f97506039238361f0685aaf50f2d626eea191499",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-accent-20.png": {
+    "sha256": "a041a713dd97cc05e9a9bf1598911687cc4f3cebbb01e2d69d6580d875e0a071",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-accent-24.png": {
+    "sha256": "0a0da1cdee0af6410eca6a6affc54f766c2f12a34b86475a4fec79b0b85b70c4",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-ink-20.png": {
+    "sha256": "2b685d31cd2bfa1171d5992b2b230c7baf61bb0b28681271fa838ca75948facb",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-ink-24.png": {
+    "sha256": "a364e2258c8026d4e12e41480074de51fb324dfcb88f48e01856ad28cc7b5c5c",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-muted-20.png": {
+    "sha256": "bc67380b301274bedba70c9ff12cf0cf0857fa34e2a5c4d39406791523847714",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-muted-24.png": {
+    "sha256": "46f2f2c92dc424b9a1052ddd1ecc0183ce79d2e3b118b56d7ec025be7529d5ea",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-white-20.png": {
+    "sha256": "917dd9187d6009c8fe68090211a620bb883b2e3522df8f1fd1fb42e5934c598b",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "agent_pool/assets/icons/x-lg-white-24.png": {
+    "sha256": "2ce057e3940f0bf229a4d82f5303533f432ad4e258ab2453ad860eccbd49c8c0",
+    "purpose": "Bootstrap icon raster; MIT notice and companion SVG in agent_pool/assets/icons"
+  },
+  "desktop/public/fonts/AlbertSans-Light.ttf": {
+    "sha256": "7d5b06c4c3c6ca29d0f360970c581ec32c67550b807981574a6b19d64bb0f9eb",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "desktop/public/fonts/AlbertSans-Regular.ttf": {
+    "sha256": "12b4944b5b2c7a90ac98655d89fa3b02741f6759a307d3f6f40d8fe3d03150a4",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "desktop/public/fonts/AlbertSans-SemiBold.ttf": {
+    "sha256": "c0e234dff8d0ce1bc16124ea3af91c4c02009ff148db58336b9f63a08cc42f80",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  },
+  "desktop/src-tauri/icons/app.icns": {
+    "sha256": "5b4db3470dc0b28fa3ce0ca308c39544351e12aa41441b99dfe980386af64083",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "desktop/src-tauri/icons/app.ico": {
+    "sha256": "4d143528b63e08a2755d430af501254b849f81e72af9e9029ddbeb3eb155d3a8",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "desktop/src-tauri/icons/app.png": {
+    "sha256": "193e23f2cd20adf52fa84717c0c4f481a769f31c27f56ef389757c8adb4e8c37",
+    "purpose": "THE-FIN compass product icon; original geometry and attribution in agent_pool/assets/brand"
+  },
+  "site/assets/agent-fleet-desktop.png": {
+    "sha256": "8de30a9b03f57cacd18a7a26cb7cb71222f994e1e71708f7a48042dbca4a572c",
+    "purpose": "Native desktop screenshot with controlled reserved-domain example accounts"
+  },
+  "site/assets/albert-sans-latin.woff2": {
+    "sha256": "acf304385d0648fd9377eff186c269f2802a5311d3ae62dca46683b05c9c2b48",
+    "purpose": "Albert Sans font; SIL Open Font License stored beside bundled fonts"
+  }
+}

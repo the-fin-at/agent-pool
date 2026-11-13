@@ -2,7 +2,7 @@
 
 ## Quelle, Version und Bestand
 
-Quellprojekt: https://github.com/the-fin-at/agent-pool (privat). Fehlenden Repository-Zugriff über den berechtigten GitHub-Account lösen; keine Abos oder Zugangsdaten aus anderen Profilen übernehmen. Bestehenden Checkout anhand seiner Git-Remote identifizieren. Einen schmutzigen Checkout erhalten und in einem separaten Checkout bauen. Für einen neuen Checkout:
+Quellprojekt: https://github.com/the-fin-at/agent-pool (öffentlich). Für die Provider jeweils den eigenen berechtigten Account verwenden; keine Abos oder Zugangsdaten aus anderen Profilen übernehmen. Bestehenden Checkout anhand seiner Git-Remote identifizieren. Einen schmutzigen Checkout erhalten und in einem separaten Checkout bauen. Für einen neuen Checkout:
 
 ```sh
 git clone https://github.com/the-fin-at/agent-pool.git
