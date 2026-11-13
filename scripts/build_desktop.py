@@ -6,11 +6,13 @@ import sys
 import tempfile
 import zipapp
 from pathlib import Path
+from build_zipapp import validate_source
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--portable-only", action="store_true", help="Build .pyzw; no PyInstaller needed")
 args = parser.parse_args()
+validate_source()
 output = root / "dist"
 output.mkdir(exist_ok=True)
 portable = output / "Agent Fleet.pyzw"

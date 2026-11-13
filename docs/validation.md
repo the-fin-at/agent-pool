@@ -1,63 +1,53 @@
-# Prüfstand · 0.2.0
+# Validation
 
-Stand: 28. Oktober 2026. Lokale Tests, Paketprüfungen und CI-Ergebnisse werden getrennt festgehalten.
+Run checks from the repository root. Tests use disposable homes and controlled providers unless a command explicitly opts into a named host. A successful controlled test does not prove a user's real login, a desktop installer or another operating system.
 
-## Lokal auf macOS
+## Every source file and folder
 
-- Python 3.12.14, Tk 9.0.4, Apple Silicon.
-- **55 Tests erfolgreich**, einschließlich vier nativer Fenster-Tests. Ein Lauf ohne Tk überspringt die GUI-Tests und ist daher kein gleichwertiger Desktop-Nachweis.
-- Prozess-Tests prüfen tatsächliche Betriebssystemgrenzen: einreichendes CLI, Worker und kontrollierter Provider-Ersatzprozess. Sie ersetzen keinen echten Modellauftrag.
-- Abgedeckt: konkurrierende idempotente Einreichungen, OS-Workersperre, Persistenz, explizite Profilbindung, Provider-Trennung, Quoten-Buckets, spätester ausgeschöpfter Reset, unbekannte Reset-Zeiten, tatsächliche Subprozess-Timeouts und vorsichtiger Wiederanlauf.
-- Desktop-Tests prüfen Suche, Filter, Bedienbarkeit während blockierter Abfragen und Fehlerbehandlung. Der First-Window-Test startet einen frischen Prozess; er reproduzierte zunächst einen 200-Pixel-Clippingfehler und besteht nach der Layout-Korrektur.
+```sh
+python3 -m unittest tests.test_portability tests.test_packaging_reference -v
+python3 scripts/check_portability.py --report test-results/portability.json
+```
 
-## Tatsächliches Mac-App-Paket
+The inventory accounts for every distributable path, checks text and local documentation links, and requires an exact reviewed hash/purpose for binary assets. [Policy and review process](portability.md).
 
-Die mit PyInstaller gebaute Apple-Silicon-App wurde als eigener Prozess gestartet. Der [normalisierte Bericht](desktop-macos-smoke.json) zeigt:
+## Core and legacy compatibility
 
-- Fenstergröße **1100 × 790 Pixel**.
-- Abgeschlossene Metadaten-Aktualisierung.
-- Drei verbundene Accounts, insgesamt fünf vom Anbieter gemeldete Quotenfenster und keine Abfragefehler.
-- Zwei unverbundene Profile weiterhin als solche erkennbar.
+```sh
+python3 -m unittest discover -s tests -v
+cargo fmt --all -- --check
+cargo test -p fleet-core -p fleet-cli --locked
+cargo clippy -p fleet-core -p fleet-cli --all-targets --locked -- -D warnings
+cargo build -p fleet-cli --examples --locked
+cargo build -p fleet-cli --locked
+python3 scripts/test_rust_compatibility.py
+python3 -m unittest discover -s tests/real-host -p test_native_package.py -v
+python3 scripts/build_zipapp.py
+python3 dist/agent-fleet.pyz --version
+```
 
-`codesign --verify --deep --strict` erfolgreich. Ad-hoc-Signatur, keine öffentliche Apple-Notarisierung. Die abschließende Prüfung der Fenstergröße und Daten erfolgte im App-Prozess; eine externe Bildschirmaufnahme stand nach der Layout-Korrektur nicht mehr zur Verfügung.
+The compatibility harness defaults to the newly built debug CLI. Set `FLEET_RUST_BIN` to another explicitly selected artifact to test that artifact. Tk tests require an available Tk installation; skipped GUI tests are not native Tauri acceptance.
 
-## Native Provider
+## Frontend and desktop
 
-- Codex CLI **0.161.0**: dokumentierten App-Server-Handshake und `account/rateLimits/read` geprüft, zunächst mit leerem temporärem Profil und anschließend mit angemeldeten Profilen. Die echten Account- und Quotenabfragen wurden erfolgreich ausgeführt; dafür wurde kein Modellturn gestartet.
-- Claude Code **2.1.312**: Print-/JSONL-/Restricted-/Werkzeugoptionen und strukturierten Fehlerpfad mit leerem temporärem Profil geprüft. `subtype:success` zusammen mit `is_error:true` wird korrekt als Fehler behandelt.
-- Der Skill besteht den offiziellen Skill-Validator. Die dafür verwendete YAML-Bibliothek ist keine Laufzeitabhängigkeit des Programms.
+```sh
+cd desktop
+npm ci
+npm test
+npm run build
+npm run tauri build
+```
 
-## CI und Builds
+The last command requires the platform's native Tauri prerequisites. Browser/React tests do not prove macOS WKWebView, Windows WebView2, signing or installer behavior. `scripts/test_native_desktop.py` is an opt-in macOS native-window harness using controlled providers and an explicit output directory.
 
-Die Testmatrix in `.github/workflows/test.yml` umfasst macOS, Windows und Linux mit Python 3.11/3.14. Der manuell startbare Workflow `desktop-build` baut native Desktop-Pakete mit Python 3.12 auf Mac und Windows.
+## SSH integration
 
-Die ersten Läufe am 28. Oktober 2026 wurden **vor dem Start der eigentlichen Jobs durch GitHub blockiert**:
+`python3 scripts/test_remote_ssh.py` creates its own Docker/OpenSSH fixture, disposable key, loopback-bound port and synthetic accounts; no existing SSH alias is required. Docker must be available. It writes its report under ignored `test-results/`.
 
-- [Testmatrix](https://github.com/the-fin-at/agent-pool/actions/runs/40681076817)
-- [Native Desktop-Builds](https://github.com/the-fin-at/agent-pool/actions/runs/40681071080)
+Tests against an operator's actual host require explicit connection/profile inputs. Follow [remote validation](remote-validation.md). Live host checks and real provider inference are separate gates.
 
-Die Windows-Build- und Test-Annotations melden denselben Grund: fehlgeschlagene Kontozahlungen oder ein zu niedriges Ausgabenlimit. Es wurden keine Build-/Test-Schritte ausgeführt. Daraus folgt kein Code-Testergebnis; die CI ist aktuell nicht erfolgreich verifiziert. Kontoabrechnung und Limits wurden nicht verändert.
+## Distribution status
 
-Das Release enthält deshalb die lokal geprüfte Apple-Silicon-App und das portable Windows-Archiv mit Python-/Tk-Voraussetzung. Eine native Windows-EXE wurde nicht erzeugt. Nach Freigabe der GitHub-Abrechnung können die Workflows erneut gestartet werden.
+Build the current Rust/Tauri source for the current native version. Older published 0.2/0.3 downloads contain the Python/Tk application. Native Windows installation and runtime acceptance, and public macOS signing/notarization, remain open. A CI compilation or a local macOS test must not be relabeled as a successful Windows installer test. Packaging and handover tests require explicitly supplied candidate programs and trusted hashes; see [native distribution](native-distribution.md).
 
-## Offene Live-Prüfungen
-
-- Authentifizierte echte Modellaufträge mit allen verwendeten Provider-/Modellkombinationen.
-- Begleitung eines tatsächlichen Limit-/Reset-Zyklus; Zeitfenster und Wiederaufnahme sind bisher deterministisch getestet.
-- Interaktive Desktop-Prüfung auf einem eigenen Windows-Rechner, zusätzlich zu einem möglichen CI-Runner-Test.
-- Langzeitbetrieb und harte Prozess-Kills mit möglicherweise überlebenden nativen Kindprozessen.
-- Messung der Routingheuristik gegen reale Verbrauchsverläufe; es wird kein nachgewiesenes globales Optimum der Abo-Ausschöpfung behauptet.
-
-
-## Agent Fleet 0.3 · THE-FIN-Desktop
-
-93 Tests mit Tk bestanden. Native macOS-App und portable `.pyzw` starten mit eingebetteter Albert Sans; beide haben drei verbundene Accounts ohne Abfragefehler gelesen. Die native App wurde bei 1280 × 840 geprüft, der visuelle Vergleich bei 1568 × 956 sowie 760 × 700. [Design-Abnahme](../design-qa.md) und [maschinenlesbarer Nachweis](desktop-redesign-validation.json). Windows-EXE und Windows-GUI bleiben unbestätigt; die bestehende GitHub-Abrechnungsblockade gilt weiter.
-
-
-## Agent Fleet 0.4 · Übersicht und integrierter Login
-
-118 Tests mit echtem Tk bestanden. Die neue Kontextnavigation und sechs native Fensterzustände sind visuell geprüft. Das gebaute Mac-App-Paket startet den neuen Login-Worker korrekt und zeigt drei bestehende Accounts ohne Abfragefehler. Die echte GUI-/SSH-/Linux-Kette mit kontrollierten nativen Provider-CLIs umfasst beide Login-Verfahren und die Rückkehr zur verbundenen Account-Ansicht. [Gesamtnachweis](overview-validation.json), [Ablauf und Grenzen](overview-login.md). Neue echte Provider-Browserzustimmung auf einem produktiven Host und Windows-UI-/EXE-Abnahme stehen aus.
-
-## 0.4.1: realer Linux-Host
-
-[128 lokale Tests, Linux-Lauf, drei Prüfschleifen, realer Codex-Auftrag, Paket-Smoke und Review](claw-remote-validation.md). [Maschinenlesbare Nachweise](claw-remote-validation.json). Geprüfter Quellstand: 479e869; spätere Delivery-Commits ergänzen ausschließlich Dokumentation und Nachweise.
+Per-run logs and screenshots are machine-specific evidence and remain outside tracked product documentation. Record the exact source commit, command, platform, result and skips in your own test report.

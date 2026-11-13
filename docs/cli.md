@@ -10,11 +10,11 @@
 - Eine unbekannte Quote erlaubt einen ersten nativen Versuch. Meldet dieser ein Limit ohne Reset-Metadaten, wird das Profil angehalten. Der Broker erfindet weder einen Reset in fünf Stunden noch eine verbleibende Tokenzahl. Eine spätere erfolgreiche Codex-Quotenabfrage oder eine manuelle Beobachtung kann die unbekannte Sperre klären.
 - Der Prozess `work` muss für automatische Wiederaufnahme laufen. Bei Mac-Ruhezustand läuft kein Auftrag weiter; nach dem Aufwachen prüft der Worker erneut. Nach einem Neustart `work` erneut starten. Queue und Ergebnisse bleiben erhalten. Es wurde kein Autostart-Dienst installiert.
 
-Beispiel für eine **tatsächlich beobachtete** Quote (Zeitpunkt durch den echten künftigen Reset ersetzen):
+Beispiel für eine **tatsächlich beobachtete** Quote: Setze `FIVE_HOUR_RESET` und `WEEKLY_RESET` zuerst auf die vom Provider gemeldeten künftigen ISO-8601-Zeitpunkte.
 
 ```sh
-agent-fleet quota set claude-1 --window five-hour --used 100 --reset-at "2026-10-29T08:00:00+01:00"
-agent-fleet quota set claude-1 --window weekly --model opus --used 75 --reset-at "2026-11-02T12:00:00+01:00"
+agent-fleet quota set claude-1 --window five-hour --used 100 --reset-at "$FIVE_HOUR_RESET"
+agent-fleet quota set claude-1 --window weekly --model opus --used 75 --reset-at "$WEEKLY_RESET"
 ```
 
 `quota show` liefert beobachtete Fenster, Zeitpunkte und Sperrgründe; `quota_known:false` heißt unbekannt. Die Anzeige ist eine Beobachtung, keine Reservierung: Nutzung in einer anderen App kann den verbleibenden Anteil zwischen zwei Abfragen ändern. GPT- und Claude-Modelle bleiben getrennt; kein automatischer Provider- oder Modellwechsel ohne expliziten Auftrag.

@@ -43,14 +43,14 @@ describe('remote connections', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Gib einen Namen und eine SSH-Adresse ein.');
 
     await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Linux Server');
-    await user.type(screen.getByRole('textbox', { name: 'SSH-Adresse oder Alias' }), 'claw-remote');
+    await user.type(screen.getByRole('textbox', { name: 'SSH-Adresse oder Alias' }), 'pool-server');
     await user.click(screen.getByRole('button', { name: 'Verbinden' }));
 
     expect(await screen.findByRole('heading', { name: 'server-codex' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Verbindungen' })).toBeInTheDocument();
     expect(commands(null)).toEqual(expect.arrayContaining([
-      'remote discover claw-remote',
-      'remote add Linux Server --host claw-remote --command /home/u/.local/bin/agent-fleet --server-home /home/u/.agent-fleet',
+      'remote discover pool-server',
+      'remote add Linux Server --host pool-server --command /home/u/.local/bin/agent-fleet --server-home /home/u/.agent-fleet',
     ]));
     expect(commands('Linux Server')).toContain('status');
   });

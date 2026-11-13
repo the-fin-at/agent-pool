@@ -1,5 +1,5 @@
 """Opt-in native Mac/Tk user and performance checks against a configured real SSH host.
-No provider consent is completed. Starts and cancels one native device login in codex-1.
+No provider consent is completed. Starts and cancels one explicitly named disposable login.
 """
 import argparse
 import json
@@ -22,16 +22,21 @@ import tkinter as tk
 
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--remote',required=True)
+p.add_argument('--profile',required=True,help='Existing connected Codex profile to display')
+p.add_argument('--login-profile',required=True,help='New disposable Codex profile for the cancelled login')
+p.add_argument('--client-home',type=Path,help='Client configuration containing the named connection')
 p.add_argument('--output',type=Path,required=True)
 p.add_argument('--screenshot',type=Path)
 args=p.parse_args()
-config=RemoteConfig(default_home()).get(args.remote);client=RemoteClient(config)
+config=RemoteConfig(args.client_home or default_home()).get(args.remote);client=RemoteClient(config)
 report={'real_ssh':True,'real_server_metadata':True,'human_consent_completed':False,'checks':{}}
 latencies=[]
 for _ in range(20):
     start=time.monotonic();state=client.data(['status']);latencies.append((time.monotonic()-start)*1000)
 assert state['worker']['online']
 assert any(a['connected'] for a in state['accounts'])
+assert any(a['name']==args.profile and a['provider']=='codex' and a['connected'] for a in state['accounts']), 'Select a connected Codex profile'
+assert all(a['name']!=args.login_profile for a in state['accounts']), 'Use a new disposable login profile'
 p95=sorted(latencies)[18]
 report['status_latency_ms']={'samples':20,'p50':round(statistics.median(latencies),2),'p95':round(p95,2),'max':round(max(latencies),2)}
 assert p95<3000,report['status_latency_ms']
@@ -56,15 +61,15 @@ with tempfile.TemporaryDirectory(prefix='fleet-real-gui-') as tmp:
         settle(lambda:app.page=='accounts' and not app.refreshing)
         assert RemoteConfig(tmp).get('Real host')==config
         assert app.worker['online'];assert any(a['connected'] for a in app.accounts)
-        app.provider_filter.set('codex');app.search.set('server-codex');root.update()
-        assert app.rendered==['server-codex']
-        account=next(a for a in app.accounts if a['name']=='server-codex')
+        app.provider_filter.set('codex');app.search.set(args.profile);root.update()
+        assert args.profile in app.rendered
+        account=next(a for a in app.accounts if a['name']==args.profile)
         app.details(account_view(account));assert app.page=='details'
         app.go_back();app.search.set('');app.provider_filter.set('all');root.update()
         assert not any(isinstance(w,tk.Toplevel) for w in root.winfo_children())
         report['checks']['discovery_connection_filters_details_without_modals']=True
         # Real installed provider CLI supplies a device code; no code or login URL in artifacts.
-        app.show_login({'name':'codex-1','provider':'codex'});app.login_start_button.invoke()
+        app.show_login({'name':args.login_profile,'provider':'codex'});app.login_start_button.invoke()
         settle(lambda:app.login_state is not None and app.login_state['state']=='awaiting_browser')
         ident=app.login_state['id'];assert app.login_state.get('device_code')
         app.go_back()

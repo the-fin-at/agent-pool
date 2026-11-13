@@ -8,9 +8,11 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import tomllib
 import unittest
 
 SCRIPT = Path(__file__).resolve().parents[2] / 'scripts/package_native_release.py'
+VERSION = tomllib.loads((SCRIPT.parents[1] / 'Cargo.toml').read_text())['workspace']['package']['version']
 
 
 class NativePackageTests(unittest.TestCase):
@@ -29,7 +31,7 @@ class NativePackageTests(unittest.TestCase):
         candidate = root / 'candidate'
         candidate.write_text(f'#!/bin/sh\ntouch "{marker}"\n')
         candidate.chmod(0o755)
-        reference = {'version': '0.5.0', 'release': {
+        reference = {'version': VERSION, 'reviewed_implementation_commit': '0' * 40, 'release': {
             'mac_cli_sha256': '0' * 64, 'linux_cli_sha256': '0' * 64}}
         return candidate, reference, marker
 

@@ -167,7 +167,7 @@ Dieser Schlüssel führt nur den versionierten RPC-Endpunkt aus. `SSH_ORIGINAL_C
 
 `python -m unittest discover -s tests -v` prüft die Plattformlogik. `python scripts/test_remote_ssh.py` ist ein zusätzlicher, ausdrücklich gestarteter Test mit Docker, echtem OpenSSH und einer kontrollierten Provider-Test-CLI ohne Accounts. Der Test erzeugt einen temporären Schlüssel und einen nur an Loopback gebundenen Container; beides wird danach entfernt. Er unterbricht die Antwort nach gespeichertem Auftrag und prüft genau eine Ausführung.
 
-Die [Opus-Architekturprüfung](reviews/opus-remote-review.md) und die [Entscheidungen](remote-decisions.md) dokumentieren Befunde und Grenzen. Testnachweise ersetzen weder einen echten Provider-Login auf einem späteren Server noch native Windows-Abnahme.
+Die [Remote-Architektur](remote-decisions.md) und [Validierungsanleitung](validation.md) beschreiben die Grenzen und reproduzierbaren Prüfungen. Testnachweise ersetzen weder einen echten Provider-Login auf einem späteren Server noch native Windows-Abnahme.
 
 
 ## Native Anmeldung über die App ab 0.4

@@ -15,13 +15,16 @@ parser.add_argument('--remote',required=True)
 parser.add_argument('--client-home',type=Path,help='Use a disposable client configuration instead of the personal pool')
 parser.add_argument('--output',type=Path,required=True)
 args=parser.parse_args()
+args.output.parent.mkdir(parents=True,exist_ok=True)
 config=RemoteConfig(args.client_home or default_home()).get(args.remote)
 def shell(argv,input=None):
     done=subprocess.run(['ssh','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ForwardAgent=no',config['host'],shlex.join(argv)],input=input,text=True,capture_output=True,timeout=20)
     if done.returncode:raise RuntimeError(done.stderr[-800:])
     return done.stdout.strip()
 server_version=shell([config['command'],'--version'])
-folder=shell(['mktemp','-d',config['home']+'/../agent-fleet-validation/transport.XXXXXX'])
+folder=shell(['python3','-c',
+    'import pathlib,tempfile,sys; parent=pathlib.Path(sys.argv[1]); parent.mkdir(mode=0o700,parents=True,exist_ok=True); print(tempfile.mkdtemp(prefix="transport.",dir=parent))',
+    str(Path(config['home']).parent/'agent-fleet-validation')])
 child=None
 try:
     pool=folder+'/pool';workspace=folder+'/work';wrapper=folder+'/delayed-rpc'
