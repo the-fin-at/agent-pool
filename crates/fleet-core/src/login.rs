@@ -233,6 +233,7 @@ pub fn start_with(
         );
         return Ok(old);
     }
+    db.ensure_account_present(name)?;
     let existing = db.profiles()?.into_iter().find(|p| p["name"] == name);
     if let Some(e) = &existing {
         ensure!(!crate::monitor::native_default(e), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");

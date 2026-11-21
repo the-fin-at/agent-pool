@@ -199,3 +199,66 @@ fn default_codex_source_is_monitor_only_and_excluded_from_status() {
     );
     assert!(db.profiles().unwrap().is_empty());
 }
+
+#[test]
+fn local_account_management_preserves_profile_and_blocks_open_jobs() {
+    let (pool, _) = setup();
+    let authdir = pool.db().authdir("test-codex").unwrap();
+    std::fs::write(authdir.join("fixture.txt"), "fixture").unwrap();
+
+    assert_eq!(
+        pool.run(&[
+            "account",
+            "rename",
+            "test-codex",
+            "--display-name",
+            " Team Wien "
+        ])
+        .0,
+        0
+    );
+    let account = &snapshot(&pool.home, false).unwrap()[0];
+    assert_eq!(account["name"], "test-codex");
+    assert_eq!(account["display_name"], "Team Wien");
+    assert_eq!(
+        pool.run(&["account", "rename", "test-codex", "--display-name", "   "])
+            .0,
+        1
+    );
+    assert_eq!(pool.rpc(&["account", "remove", "test-codex"]).0, 1);
+
+    let root = pool.root();
+    let pinned = [
+        "job",
+        "submit",
+        "--provider",
+        "codex",
+        "--profile",
+        "test-codex",
+        "--cwd",
+        root.to_str().unwrap(),
+        "--prompt",
+        "fixture",
+    ];
+    let (code, job) = pool.json(&pinned);
+    assert_eq!(code, 0);
+    assert_eq!(pool.run(&["account", "remove", "test-codex"]).0, 1);
+    let id = job["id"].as_str().unwrap();
+    assert_eq!(pool.run(&["job", "cancel", id]).0, 0);
+    assert_eq!(pool.run(&["account", "remove", "test-codex"]).0, 0);
+    assert!(snapshot(&pool.home, false).unwrap().is_empty());
+    assert_eq!(pool.db().profile("test-codex").unwrap()["enabled"], 0);
+    assert_eq!(pool.db().job(id).unwrap()["status"], "cancelled");
+    assert_eq!(pool.run(&["profile", "enable", "test-codex"]).0, 1);
+    assert_eq!(pool.run(&["job", "retry", id]).0, 1);
+    assert_eq!(pool.run(&pinned).0, 1);
+
+    assert_eq!(pool.run(&["account", "restore", "test-codex"]).0, 0);
+    let restored = &snapshot(&pool.home, false).unwrap()[0];
+    assert_eq!(restored["display_name"], "Team Wien");
+    assert_eq!(restored["enabled"], false);
+    assert_eq!(
+        std::fs::read_to_string(authdir.join("fixture.txt")).unwrap(),
+        "fixture"
+    );
+}

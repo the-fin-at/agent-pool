@@ -296,6 +296,8 @@ impl Db {
         CREATE TABLE IF NOT EXISTS windows (
           profile TEXT NOT NULL, key TEXT NOT NULL, data TEXT NOT NULL,
           PRIMARY KEY(profile,key));
+        CREATE TABLE IF NOT EXISTS account_preferences (
+          name TEXT PRIMARY KEY, display_name TEXT, removed INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS monitor_cache (
           source TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS jobs (
@@ -390,6 +392,81 @@ impl Db {
             .ok_or_else(|| anyhow!("Unknown profile: {name}"))
     }
 
+    pub fn account_preferences(&self, name: &str) -> Result<Value> {
+        Ok(self
+            .conn
+            .query_row(
+                "SELECT display_name,removed FROM account_preferences WHERE name=?",
+                [name],
+                row_json,
+            )
+            .optional()?
+            .unwrap_or(Value::Null))
+    }
+
+    pub fn ensure_account_present(&self, name: &str) -> Result<()> {
+        ensure!(
+            !truth(&self.account_preferences(name)?["removed"]),
+            "Der Account wurde aus Agent Fleet entfernt"
+        );
+        Ok(())
+    }
+
+    pub fn rename_account(&self, name: &str, display_name: &str) -> Result<()> {
+        if name != crate::monitor::DEFAULT_SOURCE {
+            self.profile(name)?;
+        }
+        let display_name = display_name.trim();
+        ensure!(
+            !display_name.is_empty()
+                && display_name.chars().count() <= 80
+                && !display_name.chars().any(char::is_control),
+            "Der Anzeigename muss 1 bis 80 Zeichen enthalten"
+        );
+        self.conn.execute(
+            "INSERT INTO account_preferences(name,display_name) VALUES(?,?)
+             ON CONFLICT(name) DO UPDATE SET display_name=excluded.display_name",
+            params![name, display_name],
+        )?;
+        Ok(())
+    }
+
+    pub fn remove_account(&mut self, name: &str) -> Result<()> {
+        let managed = name != crate::monitor::DEFAULT_SOURCE;
+        if managed {
+            self.profile(name)?;
+        }
+        let tx = self
+            .conn
+            .transaction_with_behavior(TransactionBehavior::Immediate)?;
+        if managed {
+            let has_jobs: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM jobs
+                 WHERE (profile=? AND status IN ('queued','waiting','running'))
+                    OR (chosen_profile=? AND status='running'))",
+                params![name, name],
+                |r| r.get(0),
+            )?;
+            ensure!(!has_jobs, "Für diesen Account sind noch Aufträge offen");
+            tx.execute("UPDATE profiles SET enabled=0 WHERE name=?", [name])?;
+        }
+        tx.execute(
+            "INSERT INTO account_preferences(name,removed) VALUES(?,1)
+             ON CONFLICT(name) DO UPDATE SET removed=1",
+            [name],
+        )?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    pub fn restore_account(&self, name: &str) -> Result<()> {
+        self.conn.execute(
+            "UPDATE account_preferences SET removed=0 WHERE name=?",
+            [name],
+        )?;
+        Ok(())
+    }
+
     pub fn authdir(&self, name: &str) -> Result<PathBuf> {
         let profile = self.profile(name)?;
         if let Some(raw) = profile["auth_home"].as_str().filter(|s| !s.is_empty()) {
@@ -478,7 +555,8 @@ impl Db {
 
     pub fn update_profile(&self, name: &str, values: Value) -> Result<()> {
         self.profile(name)?;
-        self.update("profiles", "name", name, &values, PROFILE_FIELDS, None)?;
+        let updated = self.update("profiles", "name", name, &values, PROFILE_FIELDS, None)?;
+        ensure!(updated, "Der Account wurde aus Agent Fleet entfernt");
         Ok(())
     }
 
@@ -546,6 +624,14 @@ impl Db {
         }
         args.push(SqlValue::Text(id.into()));
         let mut query = format!("UPDATE {table} SET {} WHERE {key}=?", assigns.join(","));
+        if table == "profiles" && truth(&values["enabled"]) {
+            query +=
+                " AND NOT EXISTS (SELECT 1 FROM account_preferences WHERE name=? AND removed=1)";
+            args.push(SqlValue::Text(id.into()));
+        }
+        if table == "jobs" && values["status"] == "queued" {
+            query += " AND NOT EXISTS (SELECT 1 FROM account_preferences WHERE name=jobs.profile AND removed=1)";
+        }
         if let Some(states) = expected {
             ensure!(!states.is_empty(), "Invalid job transition");
             query += &format!(" AND status IN ({})", vec!["?"; states.len()].join(","));
@@ -712,6 +798,14 @@ impl Db {
                 ensure!(same, "Idempotency key already belongs to a different task");
                 return Ok(old);
             }
+        }
+        if let Some(name) = spec.profile.as_deref() {
+            let removed: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM account_preferences WHERE name=? AND removed=1)",
+                [name],
+                |r| r.get(0),
+            )?;
+            ensure!(!removed, "Der Account wurde aus Agent Fleet entfernt");
         }
         let id = uuid::Uuid::new_v4().simple().to_string();
         let t = now();

@@ -60,14 +60,21 @@ export function createDemoTransport(): Transport {
   const remotes: Record<string, Json> = { 'Linux Server': { host: 'demo-host', command: '/usr/local/bin/agent-fleet', home: '/srv/agent-fleet' } };
   const enabled = new Map<string, boolean>();
   const logins = new Map<string, DemoLogin>();
+  const displayNames = new Map<string, string>();
+  const removed = new Set<string>();
   const jobs: Json[] = [{
     id: '3e700bf6dd774f24a3a4ef3998b4517d', status: 'succeeded', provider: 'codex', chosen_profile: 'arbeit', model: null,
     allow_edits: false, attempts: 1, max_attempts: 6, created: now() - 3600, updated: now() - 3500, error: null,
     idempotency_key: '0123456789abcdef0123456789abcdef', result: 'Beispielbericht: Die Prüfung ist abgeschlossen.',
   }];
 
-  const accounts = (target: Target) => demoAccounts(target !== null).map((a) =>
-    enabled.has(a.name as string) ? { ...a, enabled: enabled.get(a.name as string) } : a);
+  const accounts = (target: Target) => demoAccounts(target !== null)
+    .filter((account) => target !== null || !removed.has(String(account.name)))
+    .map((account) => ({
+      ...account,
+      enabled: enabled.get(String(account.name)) ?? account.enabled,
+      display_name: target === null ? displayNames.get(String(account.name)) ?? account.display_name : account.display_name,
+    }));
 
   const session = (login: DemoLogin): Json => {
     const copy: Json = { ...login, updated_at: now(), expires_at: now() + 900 };
@@ -92,6 +99,11 @@ export function createDemoTransport(): Transport {
         if (operation === 'remove') delete remotes[arg];
         if (operation === 'test') return { checks: [{ provider: 'codex', ok: true, version: 'codex-cli (Vorschau)' }, { provider: 'claude', ok: false, error: 'nicht installiert' }] };
         return { ...remotes };
+      case 'account':
+        if (target !== null) break;
+        if (operation === 'rename') displayNames.set(arg, argv[3].slice('--display-name='.length));
+        if (operation === 'remove') removed.add(arg);
+        return { name: arg };
       case 'profile':
         enabled.set(arg, operation === 'enable');
         return [];

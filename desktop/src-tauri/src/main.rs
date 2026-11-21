@@ -26,6 +26,9 @@ fn initial_config(state: State<'_, AppState>) -> InitialConfig {
 fn ui_allowed(argv: &[String]) -> bool {
     match argv.first().map(String::as_str) {
         Some("overview" | "status" | "monitor" | "doctor" | "connection-info") => true,
+        Some("account") => argv
+            .get(1)
+            .is_some_and(|s| ["rename", "remove"].contains(&s.as_str())),
         Some("remote") => argv
             .get(1)
             .is_some_and(|s| ["list", "add", "remove", "test", "discover"].contains(&s.as_str())),

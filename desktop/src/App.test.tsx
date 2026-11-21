@@ -47,6 +47,46 @@ describe('account overview', () => {
     await waitFor(() => expect(commands(null)).toEqual(['overview', 'overview --refresh']));
   });
 
+  it('renames a local card and removes the default account only after confirmation', async () => {
+    const user = userEvent.setup();
+    let accounts = [
+      codexAccount('@codex-default', { managed: false, enabled: false }),
+      codexAccount('arbeit'),
+    ];
+    const { transport, calls } = fakeTransport((target, argv) => {
+      if (argv[0] === 'account') {
+        expect(target).toBeNull();
+        if (argv[1] === 'rename') {
+          accounts = accounts.map((account) => account.name === argv[2]
+            ? { ...account, display_name: argv[3].slice('--display-name='.length) }
+            : account);
+        } else if (argv[1] === 'remove') {
+          accounts = accounts.filter((account) => account.name !== argv[2]);
+        }
+      }
+      return status(accounts);
+    });
+    render(<App transport={transport} timing={FAST} />);
+
+    await user.click(await screen.findByRole('button', { name: 'arbeit umbenennen' }));
+    const name = screen.getByRole('textbox', { name: 'Anzeigename' });
+    await user.clear(name);
+    await user.type(name, 'Team Wien');
+    await user.click(screen.getByRole('button', { name: 'Speichern' }));
+    expect(await screen.findByRole('heading', { name: 'Team Wien' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Standardaccount entfernen' }));
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
+    expect(screen.getByRole('heading', { name: 'Standardaccount' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Standardaccount entfernen' }));
+    await user.click(screen.getByRole('button', { name: 'Account entfernen', exact: true }));
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Standardaccount' })).not.toBeInTheDocument());
+    expect(calls.filter(({ argv }) => argv[0] === 'account').map(({ argv }) => argv)).toEqual([
+      ['account', 'rename', 'arbeit', '--display-name=Team Wien'],
+      ['account', 'remove', '@codex-default'],
+    ]);
+  });
+
   it('filters by provider, searches and reveals unconnected profiles', async () => {
     const user = userEvent.setup();
     const { transport } = fakeTransport(() => status([

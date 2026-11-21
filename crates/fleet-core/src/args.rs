@@ -105,6 +105,7 @@ fn task_opts() -> Vec<Opt> {
 /// Commands that take an operation word.
 pub fn operations(action: &str) -> Option<&'static [&'static str]> {
     Some(match action {
+        "account" => &["rename", "remove", "restore"],
         "auth" => &["start", "get", "input", "cancel"],
         "workspace" => &["list", "add", "remove"],
         "remote" => &["list", "add", "remove", "test", "discover"],
@@ -117,6 +118,7 @@ pub fn operations(action: &str) -> Option<&'static [&'static str]> {
 
 pub const ACTIONS: &[&str] = &[
     "init",
+    "account",
     "rpc",
     "auth",
     "status",
@@ -150,6 +152,8 @@ fn spec(action: &str, op: Option<&str>) -> Option<Cmd> {
             opts.push(val("--wait-seconds"));
             Cmd::new(&[], &opts).requiring(&[TEXT])
         }
+        ("account", Some("rename")) => Cmd::new(&name, &[req("--display-name")]),
+        ("account", Some("remove" | "restore")) => Cmd::new(&name, &[]),
         ("auth", Some("start")) => Cmd::new(&name, &[provider_opt(), req("--key")]),
         ("auth", Some("get" | "cancel")) => Cmd::new(&id, &[]),
         ("auth", Some("input")) => Cmd::new(

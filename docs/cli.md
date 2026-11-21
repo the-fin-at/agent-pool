@@ -43,6 +43,18 @@ Die Provider-CLIs verwalten ihre eigenen Credentials unter `CODEX_HOME` bzw. `CL
 
 Nutzung bleibt an die Bedingungen des jeweiligen Accounts gebunden. Mehrere Profile vereinigen keine Token-Guthaben und erlauben keine Umgehung von Anbieterbeschränkungen. Diese Version ist für eigene autorisierte lokale Profile gedacht. Ob ein bestimmtes Multi-Account-Setup nach den Vertragsbedingungen zulässig ist, wird durch dieses Programm nicht entschieden.
 
+## Lokale Accounts verwalten
+
+In der Account-Übersicht ändert **Umbenennen** den Anzeigenamen. Der Profilname für `--profile` bleibt gleich. **Entfernen** blendet die Codex-Standardanmeldung aus oder nimmt ein verwaltetes Profil aus der Übersicht und deaktiviert es für neue Aufträge. Anmeldedaten und bisherige Aufträge bleiben erhalten. Ein verwaltetes Profil mit laufenden oder fest zugeordneten wartenden Aufträgen kann erst nach deren Abschluss oder Abbruch entfernt werden.
+
+```sh
+agent-fleet account rename codex-1 --display-name "Arbeit"
+agent-fleet account remove @codex-default
+agent-fleet account restore @codex-default
+```
+
+`account restore <name>` zeigt einen entfernten Account wieder an. Bei verwalteten Profilen aktiviert `profile enable <name>` anschließend die Auftragsannahme.
+
 ## Prüfen
 
 ```sh
