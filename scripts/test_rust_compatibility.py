@@ -495,6 +495,13 @@ class RustCompatibility(unittest.TestCase):
         (self.db.authdir(name)/'fixture-accepted').write_text('fixture-only')
         return name
 
+    def test_codex_metadata_probe_closes_stdin_and_reaps_the_server(self):
+        name = self.native_fixture()
+        account = next(a for a in self.call('monitor', '--refresh') if a['name'] == name)
+        self.assertTrue(account['connected'])
+        self.assertTrue(account['windows'])
+        self.assertEqual((self.db.authdir(name) / 'fixture-metadata-eof').read_text(), 'metadata-only')
+
     def test_native_worker_completes_readonly_and_edit_tasks_without_api_keys(self):
         name = self.native_fixture()
         ids = []
