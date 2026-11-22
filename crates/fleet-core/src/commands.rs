@@ -91,6 +91,10 @@ pub fn execute(home: &Path, argv: &[String]) -> Result<Reply> {
         _ => {}
     }
     if let Some(name) = args.remote.clone() {
+        ensure!(
+            args.action != "account",
+            "Account-Verwaltung ist nur lokal verfügbar"
+        );
         return dispatch_remote(home, &name, &args);
     }
     dispatch(home, &args, false)
@@ -221,6 +225,7 @@ fn doctor(db: &Db) -> Result<Value> {
 }
 
 fn interactive_login(db: &mut Db, name: &str, device_auth: bool) -> Result<Value> {
+    db.ensure_account_present(name)?;
     ensure!(!crate::monitor::native_default(&db.profile(name)?), "Diese Anmeldung wird von deiner normalen Claude-CLI verwaltet. Bitte dort mit claude auth login anmelden und hier aktualisieren.");
     crate::monitor::coalesce_claude(db)?;
     let dir = db.authdir(name)?;
@@ -386,6 +391,18 @@ pub fn dispatch(home: &Path, args: &Args, rpc: bool) -> Result<Reply> {
             )
         }
         ("doctor", _) => ok(doctor(&db)?),
+        ("account", op) => {
+            let name = args.need("name")?;
+            match op {
+                "rename" => {
+                    db.rename_account(name, args.opt("--display-name").unwrap_or_default())?
+                }
+                "remove" => db.remove_account(name)?,
+                "restore" => db.restore_account(name)?,
+                _ => unreachable!("validated account operation"),
+            }
+            ok(json!({"name": name}))
+        }
         ("profile", op) => {
             match op {
                 "add" => {
@@ -517,6 +534,9 @@ pub fn dispatch(home: &Path, args: &Args, rpc: bool) -> Result<Reply> {
                 "Job is running; inspect its status. Only the server administrator should recover a stopped worker"
             );
             if op == "retry" {
+                if let Some(name) = job["profile"].as_str() {
+                    db.ensure_account_present(name)?;
+                }
                 ensure!(
                     matches!(
                         job["status"].as_str(),

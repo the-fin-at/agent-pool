@@ -31,6 +31,8 @@ export function AccountsView(props: {
   onAdd: () => void;
   onDetails: (account: Account) => void;
   onLogin: (account: Account) => void;
+  onRename?: (name: string, displayName: string) => Promise<void>;
+  onRemove?: (name: string) => Promise<void>;
   onBack: (() => void) | null;
 }) {
   const { state, filter, search, showAll, now, compact } = props;
@@ -109,7 +111,8 @@ export function AccountsView(props: {
           {visible.map((account) => (
             <li key={account.name}>
               <AccountCard view={accountView(account, now)} compact={compact}
-                onDetails={() => props.onDetails(account)} onLogin={() => props.onLogin(account)} />
+                onDetails={() => props.onDetails(account)} onLogin={() => props.onLogin(account)}
+                onRename={props.onRename} onRemove={props.onRemove} />
             </li>
           ))}
         </ul>

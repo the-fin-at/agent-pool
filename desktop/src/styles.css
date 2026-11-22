@@ -172,6 +172,10 @@ button:disabled { cursor: default; }
 .card { display: flex; flex-direction: column; gap: 14px; height: 100%; }
 .identity { display: flex; gap: 14px; align-items: flex-start; min-height: 144px; }
 .avatar { width: 68px; height: 68px; flex: none; border-radius: 50%; background: var(--raised); display: grid; place-items: center; }
+.account-management { display: flex; flex-wrap: wrap; gap: 0 10px; }
+.account-management .btn { min-height: 32px; padding: 0; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.account-edit { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-block: 12px; }
+.account-edit p { margin: 0; overflow-wrap: anywhere; }
 .identity-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .account-name { font-size: 23px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
 .account-email { color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -368,6 +368,14 @@ export function App({ transport, timing: override }: { transport: Transport; tim
         <AccountsView state={accounts} filter={filter} search={search} showAll={showAll} now={now} compact={compact}
           remote={remote} onSearch={setSearch} onShowAll={setShowAll} onRefresh={refreshAccounts} onAdd={() => showLogin()}
           onDetails={(account) => { setDetailName(account.name); setPage('details'); }}
+          onRename={scope === 'local' ? async (name, displayName) => {
+            await fleet.renameAccount(name, displayName);
+            await loadAccounts(null, false);
+          } : undefined}
+          onRemove={scope === 'local' ? async (name) => {
+            await fleet.removeAccount(name);
+            await loadAccounts(null, false);
+          } : undefined}
           onLogin={showLogin} onBack={scope === 'remote' ? () => switchContext('remote', null) : null} />
       );
   }

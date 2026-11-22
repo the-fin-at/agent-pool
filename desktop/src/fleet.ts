@@ -237,6 +237,14 @@ export class Fleet {
     await this.transport.request(target, ['auth', 'cancel', id]);
   }
 
+  async renameAccount(name: string, displayName: string): Promise<void> {
+    await this.transport.request(null, ['account', 'rename', name, '--display-name=' + displayName]);
+  }
+
+  async removeAccount(name: string): Promise<void> {
+    await this.transport.request(null, ['account', 'remove', name]);
+  }
+
   async setProfileEnabled(target: Target, name: string, enabled: boolean): Promise<void> {
     await this.transport.request(target, ['profile', enabled ? 'enable' : 'disable', name]);
   }

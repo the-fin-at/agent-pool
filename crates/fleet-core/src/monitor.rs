@@ -511,7 +511,15 @@ pub fn collect_with(home: &Path, include_default: bool, probe: &Probe) -> Result
     let items = {
         let mut db = Db::open(home)?;
         coalesce_claude(&mut db)?;
-        sources(&db, include_default)?
+        let mut visible = Vec::new();
+        for source in sources(&db, include_default)? {
+            if !truth(
+                &db.account_preferences(source["name"].as_str().unwrap_or_default())?["removed"],
+            ) {
+                visible.push(source);
+            }
+        }
+        visible
     };
     refresh_sources(home, items, probe);
     snapshot(home, include_default)
@@ -543,6 +551,10 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
     let mut result = Vec::new();
     for source in sources(&db, include_default)? {
         let name = source["name"].as_str().unwrap_or_default();
+        let prefs = db.account_preferences(name)?;
+        if truth(&prefs["removed"]) {
+            continue;
+        }
         let managed = truth(&source["managed"]);
         let cached = db.cached(name)?;
         let empty = cached.as_object().is_none_or(|m| m.is_empty());
@@ -576,6 +588,9 @@ pub fn snapshot(home: &Path, include_default: bool) -> Result<Vec<Value>> {
             account["display_name"] = json!("Claude CLI");
         } else if let Some(default) = claude_group(&db, &source)?.into_iter().find(native_default) {
             result.last_mut().unwrap()["alias_of"] = default["name"].clone();
+        }
+        if prefs["display_name"].is_string() {
+            result.last_mut().unwrap()["display_name"] = prefs["display_name"].clone();
         }
     }
     Ok(result)
