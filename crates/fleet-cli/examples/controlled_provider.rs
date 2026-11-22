@@ -41,7 +41,8 @@ fn main() {
     let accepted = home.join("fixture-accepted");
     let logged_in =
         accepted.exists() && !(config_override && home.join("fixture-default-only").exists());
-    if args == ["app-server"] {
+    let metadata_only = args == ["app-server", "-c", "features.plugins=false"];
+    if args == ["app-server"] || metadata_only {
         if home.join("fixture-metadata-error").exists() {
             eprintln!("Controlled metadata unavailable");
             std::process::exit(1);
@@ -68,6 +69,12 @@ fn main() {
             println!("{}", json!({"id":r["id"],"result":result}));
             io::stdout().flush().unwrap();
         }
+        let mode = if metadata_only {
+            "metadata-only"
+        } else {
+            "default"
+        };
+        fs::write(home.join("fixture-metadata-eof"), mode).unwrap();
         return;
     }
     if args == ["login", "status"] {

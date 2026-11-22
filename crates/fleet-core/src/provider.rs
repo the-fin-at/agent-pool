@@ -590,7 +590,8 @@ pub struct CodexSession {
 impl CodexSession {
     pub fn open(profile: &Value, dir: &Path, timeout: f64) -> Result<Self> {
         let mut cmd = auth_command("codex", profile["binary"].as_str().unwrap_or("codex"), dir)?;
-        cmd.arg("app-server")
+        // Metadata probes do not need the plugin marketplace or its Git subprocesses.
+        cmd.args(["app-server", "-c", "features.plugins=false"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
@@ -664,6 +665,20 @@ impl CodexSession {
 
 impl Drop for CodexSession {
     fn drop(&mut self) {
+        // Closing the stdio transport lets app-server stop its background tasks.
+        drop(self.child.stdin.take());
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            match self.child.try_wait() {
+                Ok(Some(_)) => return,
+                Ok(None) if Instant::now() < deadline => {
+                    // Keep draining stdout so shutdown cannot block on a full pipe.
+                    self.lines.try_iter().take(256).for_each(drop);
+                    thread::sleep(Duration::from_millis(20));
+                }
+                _ => break,
+            }
+        }
         kill_tree(&mut self.child);
     }
 }
