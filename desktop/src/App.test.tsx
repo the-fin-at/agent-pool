@@ -79,7 +79,7 @@ describe('account overview', () => {
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
     expect(screen.getByRole('heading', { name: 'Standardaccount' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Standardaccount entfernen' }));
-    await user.click(screen.getByRole('button', { name: 'Account entfernen', exact: true }));
+    await user.click(screen.getByRole('button', { name: /^Account entfernen$/ }));
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Standardaccount' })).not.toBeInTheDocument());
     expect(calls.filter(({ argv }) => argv[0] === 'account').map(({ argv }) => argv)).toEqual([
       ['account', 'rename', 'arbeit', '--display-name=Team Wien'],
